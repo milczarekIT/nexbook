@@ -1,7 +1,6 @@
 package org.nexbook.repository
 
 import org.nexbook.core.OrderBook
-import org.nexbook.domain.{Buy, Sell, Side}
 
 class OrderBookRepository(symbols: List[String]) {
   val orderBooks = init()

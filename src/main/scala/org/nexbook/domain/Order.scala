@@ -31,20 +31,15 @@ object OrderOrdering {
   val bookSellOrdering = Ordering.fromLessThan[LimitOrder](bookSellCompare(_, _))
 
   private def timestampDescCompare(o1: Order, o2: Order): Boolean = {
-    if(o1.timestamp isEqual o2.timestamp) o1.sequence > o2.sequence
+    if (o1.timestamp isEqual o2.timestamp) o1.sequence > o2.sequence
     else o1.timestamp isBefore o2.timestamp
-  }
-
-  private def timestampAscCompare(o1: Order, o2: Order): Boolean = {
-    if(o1.timestamp isEqual o2.timestamp) o1.sequence > o2.sequence
-    else o1.timestamp isAfter o2.timestamp
   }
 
   /**
    * limit DESC
    */
   private def bookBuyCompare(o1: LimitOrder, o2: LimitOrder): Boolean = {
-    if(o1.limit == o2.limit) timestampAscCompare(o1, o2)
+    if (o1.limit == o2.limit) timestampAscCompare(o1, o2)
     else o1.limit < o2.limit
   }
 
@@ -52,7 +47,12 @@ object OrderOrdering {
    * limit ASC
    */
   private def bookSellCompare(o1: LimitOrder, o2: LimitOrder): Boolean = {
-    if(o1.limit == o2.limit) timestampAscCompare(o1, o2)
+    if (o1.limit == o2.limit) timestampAscCompare(o1, o2)
     else o1.limit > o2.limit
+  }
+
+  private def timestampAscCompare(o1: Order, o2: Order): Boolean = {
+    if (o1.timestamp isEqual o2.timestamp) o1.sequence > o2.sequence
+    else o1.timestamp isAfter o2.timestamp
   }
 }

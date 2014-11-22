@@ -1,6 +1,6 @@
 package org.nexbook.core
 
-import org.nexbook.domain.{Buy, Order, Sell}
+import org.nexbook.domain.Order
 import org.nexbook.repository.{OrderBookRepository, OrderRepository}
 import org.nexbook.utils.Assert
 
