@@ -1,25 +1,27 @@
 package org.nexbook.fix
 
+import org.slf4j.LoggerFactory
 import quickfix._
-import quickfix.fix50.NewOrderSingle
+import quickfix.fix44.NewOrderSingle
 
 class FixOrderHandler extends MessageCracker with Application {
 
+  val LOGGER = LoggerFactory.getLogger(classOf[FixOrderHandler])
+
   override def onCreate(sessionId: SessionID) {
-    println("FixOrderHandler Session Created with SessionID = " + sessionId)
+    LOGGER.info("FixOrderHandler Session Created with SessionID = {}", sessionId)
   }
 
-
   override def onLogon(sessionId: SessionID) {
-    println("Logon: " + sessionId)
+    LOGGER.info("Logon: {}", sessionId)
   }
 
   override def onLogout(sessionId: SessionID) {
-    println("Logout: " + sessionId)
+    LOGGER.info("Logout: {}", sessionId)
   }
 
   override def toAdmin(message: Message, sessionId: SessionID) {
-    println("toAdmin: " + message)
+    LOGGER.debug("ToAdmin: {}", message)
   }
 
   @throws(classOf[RejectLogon])
@@ -27,12 +29,12 @@ class FixOrderHandler extends MessageCracker with Application {
   @throws(classOf[IncorrectDataFormat])
   @throws(classOf[FieldNotFound])
   override def fromAdmin(message: Message, sessionId: SessionID) {
-    println("fromAdmin: " + message)
+    LOGGER.debug("FromAdmin: {}", message)
   }
 
   @throws(classOf[DoNotSend])
   override def toApp(message: Message, sessionId: SessionID) {
-    println("toApp: " + message)
+    LOGGER.info("ToApp: {}", message)
   }
 
   @throws(classOf[UnsupportedMessageType])
@@ -40,12 +42,12 @@ class FixOrderHandler extends MessageCracker with Application {
   @throws(classOf[IncorrectDataFormat])
   @throws(classOf[FieldNotFound])
   override def fromApp(message: Message, sessionId: SessionID) {
-    println("fromApp - crack: " + message)
+    LOGGER.trace("FromApp: {}", message)
     crack(message, sessionId)
   }
 
   def onMessage(order: NewOrderSingle, sessionId: SessionID) {
-    println("Handled order: " + order)
+    LOGGER.debug("HandledOrder ClOrdID: " + order.getClOrdID.getValue + ", symbol: " + order.getSymbol.getValue + ", orderQty: " + order.getOrderQty.getValue + ", order: " + order)
   }
 
 }
