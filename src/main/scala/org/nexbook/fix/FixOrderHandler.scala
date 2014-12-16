@@ -1,10 +1,11 @@
 package org.nexbook.fix
 
+import org.nexbook.core.OrderHandler
 import org.slf4j.LoggerFactory
 import quickfix._
 import quickfix.fix44.NewOrderSingle
 
-class FixOrderHandler extends MessageCracker with Application {
+class FixOrderHandler(orderHandler: OrderHandler) extends MessageCracker with Application {
 
   val LOGGER = LoggerFactory.getLogger(classOf[FixOrderHandler])
 
@@ -21,7 +22,7 @@ class FixOrderHandler extends MessageCracker with Application {
   }
 
   override def toAdmin(message: Message, sessionId: SessionID) {
-    LOGGER.debug("ToAdmin: {}", message)
+    LOGGER.trace("ToAdmin: {}", message)
   }
 
   @throws(classOf[RejectLogon])
@@ -48,6 +49,7 @@ class FixOrderHandler extends MessageCracker with Application {
 
   def onMessage(order: NewOrderSingle, sessionId: SessionID) {
     LOGGER.debug("HandledOrder ClOrdID: " + order.getClOrdID.getValue + ", symbol: " + order.getSymbol.getValue + ", orderQty: " + order.getOrderQty.getValue + ", order: " + order)
+    orderHandler.handle(FixOrderConverter.convert(order))
   }
 
 }

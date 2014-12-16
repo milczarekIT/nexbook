@@ -3,24 +3,27 @@ package org.nexbook.domain
 import org.joda.time.DateTime
 
 trait Order {
-  val sequence: Long
+  val tradeID: String
   val symbol: String
   val clientId: String
   val size: Double
   val side: Side
   val timestamp: DateTime
   val orderType: OrderType
+  var sequence: Long = -1;
+
+  def setSequence(sequence: Long) = if (this.sequence == -1) this.sequence = sequence else throw new IllegalStateException("Sequence already set!")
 }
 
-case class MarketOrder(sequence: Long, symbol: String, clientId: String, side: Side, size: Double, timestamp: DateTime, orderType: OrderType) extends Order {
+case class MarketOrder(tradeID: String, symbol: String, clientId: String, side: Side, size: Double, timestamp: DateTime, orderType: OrderType) extends Order {
 
-  def this(sequence: Long, symbol: String, clientId: String, side: Side, size: Double, timestamp: DateTime) = this(sequence, symbol, clientId, side, size, timestamp, Market)
+  def this(tradeID: String, symbol: String, clientId: String, side: Side, size: Double, timestamp: DateTime) = this(tradeID, symbol, clientId, side, size, timestamp, Market)
 }
 
 
-case class LimitOrder(sequence: Long, symbol: String, clientId: String, side: Side, size: Double, limit: Double, timestamp: DateTime, orderType: OrderType) extends Order {
+case class LimitOrder(tradeID: String, symbol: String, clientId: String, side: Side, size: Double, limit: Double, timestamp: DateTime, orderType: OrderType) extends Order {
 
-  def this(sequence: Long, symbol: String, clientId: String, side: Side, size: Double, limit: Double, timestamp: DateTime) = this(sequence, symbol, clientId, side, size, limit, timestamp, Limit)
+  def this(tradeID: String, symbol: String, clientId: String, side: Side, size: Double, limit: Double, timestamp: DateTime) = this(tradeID, symbol, clientId, side, size, limit, timestamp, Limit)
 }
 
 object OrderOrdering {

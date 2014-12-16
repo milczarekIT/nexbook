@@ -1,7 +1,7 @@
 package org.nexbook.repository
 
-import org.joda.time.{DateTimeZone, DateTime}
-import org.nexbook.domain.{Buy, MarketOrder, Order}
+import org.joda.time.{DateTime, DateTimeZone}
+import org.nexbook.domain.{Buy, MarketOrder}
 import org.scalatest._
 
 import scala.collection.immutable.List
@@ -15,7 +15,7 @@ class OrderRepositoryTest extends FlatSpec with Matchers {
 
   "OrderRepository" should "not contains duplicates" in {
     val repository = new OrderRepository
-    val order = new MarketOrder(1, "EUR/USD", "client1", Buy, 100, DateTime.now(DateTimeZone.UTC))
+    val order = new MarketOrder("1", "EUR/USD", "client1", Buy, 100, DateTime.now(DateTimeZone.UTC))
 
     repository add order
     repository add order
@@ -28,8 +28,8 @@ class OrderRepositoryTest extends FlatSpec with Matchers {
   "OrderRepository" should "be orderdered by timestamo desc" in {
     val repository = new OrderRepository
     val now = DateTime.now(DateTimeZone.UTC)
-    val order1 = new MarketOrder(1, "EUR/USD", "client1", Buy, 100, now)
-    val order2 = new MarketOrder(1, "EUR/USD", "client1", Buy, 100, now minusMillis 3)
+    val order1 = new MarketOrder("1", "EUR/USD", "client1", Buy, 100, now)
+    val order2 = new MarketOrder("1", "EUR/USD", "client1", Buy, 100, now minusMillis 3)
 
     repository add order1
     repository add order2

@@ -1,0 +1,28 @@
+package org.nexbook.fix
+
+import org.joda.time.{DateTime, DateTimeZone}
+import org.nexbook.domain
+import org.nexbook.domain._
+import quickfix.field.{OrdType, Side, TransactTime}
+import quickfix.fix44.NewOrderSingle
+
+/**
+ * Created by milczu on 16.12.14.
+ */
+object FixOrderConverter {
+
+  // (tradeID: Long, symbol: String, clientId: String, side: Side, size: Double, limit: Double, timestamp: DateTime)
+
+  def convert(fixOrder: NewOrderSingle): Order = fixOrder.getOrdType.getValue match {
+    case OrdType.LIMIT => new LimitOrder(fixOrder.getClOrdID.getValue, fixOrder.getSymbol.getValue, fixOrder.getAccount.getValue, resolveSide(fixOrder.getSide), fixOrder.getOrderQty.getValue, fixOrder.getPrice.getValue, toDateTime(fixOrder.getTransactTime))
+    case OrdType.MARKET => new MarketOrder(fixOrder.getClOrdID.getValue, fixOrder.getSymbol.getValue, fixOrder.getAccount.getValue, resolveSide(fixOrder.getSide), fixOrder.getOrderQty.getValue, toDateTime(fixOrder.getTransactTime))
+
+  }
+
+  private def resolveSide(fixSide: Side): domain.Side = fixSide.getValue match {
+    case Side.BUY => Buy
+    case Side.SELL => Sell
+  }
+
+  private def toDateTime(transactTime: TransactTime): DateTime = new DateTime(transactTime.getValue.getTime, DateTimeZone.UTC)
+}
