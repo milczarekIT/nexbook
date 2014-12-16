@@ -6,7 +6,7 @@ import org.nexbook.utils.Assert
 import org.slf4j.LoggerFactory
 
 
-class OrderHandler(orderBookRepository: OrderBookRepository, orderRepository: OrderRepository) {
+class OrderHandler(sequencer: Sequencer, orderBookRepository: OrderBookRepository, orderRepository: OrderRepository) {
   val LOGGER = LoggerFactory.getLogger(classOf[OrderHandler])
 
   val orderMatchers = initMatchers
@@ -15,6 +15,7 @@ class OrderHandler(orderBookRepository: OrderBookRepository, orderRepository: Or
 
   def handle(order: Order) {
     Assert.isTrue(orderMatchers.contains(order.symbol))
+    order.setSequence(sequencer.nextValue)
     LOGGER.debug("Handled order: {}", order)
     orderRepository add order
 
