@@ -2,7 +2,7 @@ package org.nexbook.core
 
 import org.nexbook.domain._
 
-import scala.collection.immutable.{SortedSet, TreeSet}
+import scala.collection.mutable.{SortedSet, TreeSet}
 
 
 trait AbstractOrderBook {
@@ -34,7 +34,7 @@ case class SideOrderBook(ordering: Ordering[LimitOrder]) extends AbstractOrderBo
 
   val orders: SortedSet[LimitOrder] = TreeSet.empty(ordering)
 
-  def add(order: LimitOrder) = orders.+(order)
+  def add(order: LimitOrder) = orders += order
 
   def top: Option[Order] = orders.toSeq match {
     case Seq() => None

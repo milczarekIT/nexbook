@@ -48,7 +48,7 @@ class FixOrderHandler(orderHandler: OrderHandler) extends MessageCracker with Ap
   }
 
   def onMessage(order: NewOrderSingle, sessionId: SessionID) {
-    LOGGER.debug("HandledOrder ClOrdID: " + order.getClOrdID.getValue + ", symbol: " + order.getSymbol.getValue + ", orderQty: " + order.getOrderQty.getValue + ", order: " + order)
+    LOGGER.trace("HandledOrder ClOrdID: " + order.getClOrdID.getValue + ", symbol: " + order.getSymbol.getValue + ", orderQty: " + order.getOrderQty.getValue + ", order: " + order)
     orderHandler.handle(FixOrderConverter.convert(order))
   }
 
