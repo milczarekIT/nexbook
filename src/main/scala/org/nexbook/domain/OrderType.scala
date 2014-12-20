@@ -1,6 +1,6 @@
 package org.nexbook.domain
 
-trait OrderType
+sealed trait OrderType
 
 case object Limit extends OrderType
 

@@ -9,16 +9,16 @@ object App {
 
   val LOGGER = LoggerFactory.getLogger(classOf[App])
 
+  val FIX_CONFIGURATION_FILE = "config/fix_connection.config";
+  val SUPPORTED_CURRENCY_PAIRS = List("EUR/USD", "AUD/USD", "GBP/USD", "USD/JPY", "EUR/JPY", "EUR/GBP", "USD/CAD", "USD/CHF")
+
   def main(args: Array[String]) {
     LOGGER.info("NexBook starting")
-    val currencyPairs = List("EUR/USD", "AUD/USD", "GBP/USD", "USD/JPY", "EUR/JPY", "EUR/GBP", "USD/CAD", "USD/CHF")
-    val orderBookRepository = new OrderBookRepository(currencyPairs)
+    val orderBookRepository = new OrderBookRepository(SUPPORTED_CURRENCY_PAIRS)
     val orderRepository = new OrderRepository
 
     val orderHandler = new OrderHandler(new Sequencer, orderBookRepository, orderRepository)
     val fixOrderHandler = new FixOrderHandler(orderHandler)
-
-
 
 
     initFix(fixOrderHandler)
@@ -26,7 +26,7 @@ object App {
   }
 
   def initFix(fixApplication: Application) {
-    val fixOrderHandlerSettings = new SessionSettings("config/fix_connection.config")
+    val fixOrderHandlerSettings = new SessionSettings(FIX_CONFIGURATION_FILE)
     val fileStoreFactory = new FileStoreFactory(fixOrderHandlerSettings)
     val messageFactory = new DefaultMessageFactory
     val fileLogFactory = new FileLogFactory(fixOrderHandlerSettings)
