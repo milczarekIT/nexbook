@@ -19,6 +19,6 @@ class OrderHandler(sequencer: Sequencer, orderBookRepository: OrderBookRepositor
     LOGGER.debug("Handled order: {}", order)
     orderRepository add order
 
-    orderMatchers.get(order.symbol).get.apply(order)
+    orderMatchers.get(order.symbol).get.acceptOrder(order)
   }
 }

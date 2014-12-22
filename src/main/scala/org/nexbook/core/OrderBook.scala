@@ -8,6 +8,7 @@ import scala.collection.mutable.{SortedSet, TreeSet}
 trait AbstractOrderBook {
 
   def add(order: LimitOrder)
+
 }
 
 class OrderBook extends AbstractOrderBook {
@@ -19,8 +20,12 @@ class OrderBook extends AbstractOrderBook {
     book(order.side) add order
   }
 
-  def top(side: Side): Option[Order] = {
+  def top(side: Side): Option[LimitOrder] = {
     book(side) top
+  }
+
+  def removeTop(side: Side) {
+    book(side) removeTop
   }
 
   def book(side: Side): SideOrderBook = side match {
@@ -36,9 +41,11 @@ case class SideOrderBook(ordering: Ordering[LimitOrder]) extends AbstractOrderBo
 
   def add(order: LimitOrder) = orders += order
 
-  def top: Option[Order] = orders.toSeq match {
+  def top: Option[LimitOrder] = orders.toSeq match {
     case Seq() => None
     case _ => Some(orders.head)
   }
+
+  def removeTop = orders -= orders.head
 }
 

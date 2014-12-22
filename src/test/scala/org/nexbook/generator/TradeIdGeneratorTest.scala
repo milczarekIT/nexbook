@@ -1,6 +1,6 @@
 package org.nexbook.generator
 
-import org.scalatest.{Matchers, FlatSpec}
+import org.scalatest.{FlatSpec, Matchers}
 
 class TradeIdGeneratorTest extends FlatSpec with Matchers  {
 
@@ -17,7 +17,7 @@ class TradeIdGeneratorTest extends FlatSpec with Matchers  {
     generator.next should be ("AAC000000")
   }
 
-  "TradeIdGenerator initialized with AAB999999" should "return AAC000000" in {
+  "TradeIdGenerator initialized with AAZ999999" should "return ABA000000" in {
     val generator = new TradeIdGenerator("AAZ999999")
     generator.next should be ("ABA000000")
   }

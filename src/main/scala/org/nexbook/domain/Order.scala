@@ -1,8 +1,10 @@
 package org.nexbook.domain
 
 import org.joda.time.DateTime
+import org.nexbook.utils.Assert
 
 trait Order {
+
   val tradeID: String
   val symbol: String
   val clientId: String
@@ -10,11 +12,19 @@ trait Order {
   val side: Side
   val timestamp: DateTime
   val orderType: OrderType
+  private var fillSize: Double = 0.0
   private var sequenceVal: Long = -1;
 
   def setSequence(sequence: Long) = if (this.sequenceVal == -1) this.sequenceVal = sequence else throw new IllegalStateException("Sequence already set!")
 
   def sequence = sequenceVal
+
+  def addFillSize(fill: Double) = {
+    Assert.isTrue(fill <= remainingSize)
+    this.fillSize += fill
+  }
+
+  def remainingSize = size - fillSize
 }
 
 case class MarketOrder(tradeID: String, symbol: String, clientId: String, side: Side, size: Double, timestamp: DateTime, orderType: OrderType) extends Order {
