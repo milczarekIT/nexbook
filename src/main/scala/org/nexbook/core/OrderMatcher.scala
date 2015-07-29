@@ -23,13 +23,19 @@ class OrderMatcher(book: OrderBook) extends mutable.Publisher[OrderProcessorEven
 
   private def tryMatch(order: Order, firstCounterOrder: Option[LimitOrder]): Option[LimitOrder] = firstCounterOrder match {
     case None => {
-      publish(OrderRejectionEvent(order))
-      None
+      order.orderType match {
+        case Market => {
+          publish(OrderRejectionEvent(order))
+          None
+        }
+        case _ => Some(order.asInstanceOf[LimitOrder])
+      }
     }
     case Some(counterOrder) => {
       if (ordersCrossing(order, counterOrder)) {
-        val (buy, sell, dealSize) = matchOrders(order, counterOrder)
-        publish(OrderExecutionEvent(buy, sell, dealSize, DateTime.now(DateTimeZone.UTC)))
+        val (buy, sell, dealSize, dealPrice) = matchOrders(order, counterOrder)
+        publish(OrderExecutionEvent(buy, sell, dealSize, dealPrice, DateTime.now(DateTimeZone.UTC)))
+
 
         if (order.remainingSize > 0) return tryMatch(order, book top order.side.reverse)
         else return None
@@ -48,18 +54,24 @@ class OrderMatcher(book: OrderBook) extends mutable.Publisher[OrderProcessorEven
   }
 
   /**
-   * @return (buyOrder, sellOrder, dealSize)
+   * @return (buyOrder, sellOrder, dealSize, dealPrice)
    */
-  private def matchOrders(order: Order, counterOrder: Order): (Order, Order, Double) = {
+  private def matchOrders(order: Order, counterOrder: LimitOrder): (Order, Order, Double, Double) = {
+    def determineDealSize(order: Order, counter: LimitOrder): Double = if (order.remainingSize <= counter.remainingSize) order.remainingSize else counter.remainingSize
+    def determineDealPrice(order: Order, counter: LimitOrder): Double = order match {
+      case o: MarketOrder => counter.limit
+      case o: LimitOrder => if (o.limit == counter.limit) o.limit else (o.limit + counter.limit) / 2.0
+    }
+
     val dealSize = determineDealSize(order, counterOrder)
+    val dealPrice = determineDealPrice(order, counterOrder)
     order addFillSize dealSize
     counterOrder addFillSize dealSize
     if (counterOrder.remainingSize == 0.00) {
       book removeTop counterOrder.side
     }
-    if (order.side == Buy) (order, counterOrder, dealSize) else (counterOrder, order, dealSize)
+    if (order.side == Buy) (order, counterOrder, dealSize, dealPrice) else (counterOrder, order, dealSize, dealPrice)
   }
 
-  private def determineDealSize(order: Order, counter: Order) = if (order.remainingSize <= counter.remainingSize) order.remainingSize else counter.remainingSize
 }
 

@@ -20,17 +20,17 @@ class OrderBook extends AbstractOrderBook {
     book(order.side) add order
   }
 
+  def book(side: Side): SideOrderBook = side match {
+    case Buy => buyBook
+    case Sell => sellBook
+  }
+
   def top(side: Side): Option[LimitOrder] = {
     book(side) top
   }
 
   def removeTop(side: Side) {
     book(side) removeTop
-  }
-
-  def book(side: Side): SideOrderBook = side match {
-    case Buy => buyBook
-    case Sell => sellBook
   }
 
 }
@@ -46,6 +46,6 @@ case class SideOrderBook(ordering: Ordering[LimitOrder]) extends AbstractOrderBo
     case _ => Some(orders.head)
   }
 
-  def removeTop = orders -= orders.head
+  def removeTop = if (!orders.isEmpty) orders -= orders.head
 }
 

@@ -10,8 +10,8 @@ trait Order {
   val clientId: String
   val size: Double
   val side: Side
-  val timestamp: DateTime
   val orderType: OrderType
+  private var timestampVal: DateTime = new DateTime(0)
   private var fillSize: Double = 0.0
   private var sequenceVal: Long = -1;
 
@@ -25,17 +25,21 @@ trait Order {
   }
 
   def remainingSize = size - fillSize
+
+  def setTimestamp(timestamp: DateTime) = this.timestampVal = timestamp
+
+  def timestamp = timestampVal
 }
 
-case class MarketOrder(tradeID: String, symbol: String, clientId: String, side: Side, size: Double, timestamp: DateTime, orderType: OrderType) extends Order {
+case class MarketOrder(tradeID: String, symbol: String, clientId: String, side: Side, size: Double, orderType: OrderType) extends Order {
 
-  def this(tradeID: String, symbol: String, clientId: String, side: Side, size: Double, timestamp: DateTime) = this(tradeID, symbol, clientId, side, size, timestamp, Market)
+  def this(tradeID: String, symbol: String, clientId: String, side: Side, size: Double) = this(tradeID, symbol, clientId, side, size, Market)
 }
 
 
-case class LimitOrder(tradeID: String, symbol: String, clientId: String, side: Side, size: Double, limit: Double, timestamp: DateTime, orderType: OrderType) extends Order {
+case class LimitOrder(tradeID: String, symbol: String, clientId: String, side: Side, size: Double, limit: Double, orderType: OrderType) extends Order {
 
-  def this(tradeID: String, symbol: String, clientId: String, side: Side, size: Double, limit: Double, timestamp: DateTime) = this(tradeID, symbol, clientId, side, size, limit, timestamp, Limit)
+  def this(tradeID: String, symbol: String, clientId: String, side: Side, size: Double, limit: Double) = this(tradeID, symbol, clientId, side, size, limit, Limit)
 
 }
 

@@ -11,16 +11,17 @@ import quickfix.fix44.NewOrderSingle
  */
 object FixOrderConverter {
 
-  def convert(fixOrder: NewOrderSingle): Order = fixOrder.getOrdType.getValue match {
-    case OrdType.LIMIT => new LimitOrder(fixOrder.getClOrdID.getValue, fixOrder.getSymbol.getValue, fixOrder.getAccount.getValue, resolveSide(fixOrder.getSide), fixOrder.getOrderQty.getValue, fixOrder.getPrice.getValue, toDateTime(fixOrder.getTransactTime))
-    case OrdType.MARKET => new MarketOrder(fixOrder.getClOrdID.getValue, fixOrder.getSymbol.getValue, fixOrder.getAccount.getValue, resolveSide(fixOrder.getSide), fixOrder.getOrderQty.getValue, toDateTime(fixOrder.getTransactTime))
+  def convert(fixOrder: NewOrderSingle): Order = {
+    def resolveSide(fixSide: Side): domain.Side = fixSide.getValue match {
+      case Side.BUY => Buy
+      case Side.SELL => Sell
+    }
+    def toDateTime(transactTime: TransactTime): DateTime = new DateTime(transactTime.getValue.getTime, DateTimeZone.UTC)
 
+    fixOrder.getOrdType.getValue match {
+      case OrdType.LIMIT => new LimitOrder(fixOrder.getClOrdID.getValue, fixOrder.getSymbol.getValue, fixOrder.getAccount.getValue, resolveSide(fixOrder.getSide), fixOrder.getOrderQty.getValue, fixOrder.getPrice.getValue)
+      case OrdType.MARKET => new MarketOrder(fixOrder.getClOrdID.getValue, fixOrder.getSymbol.getValue, fixOrder.getAccount.getValue, resolveSide(fixOrder.getSide), fixOrder.getOrderQty.getValue)
+    }
   }
 
-  private def resolveSide(fixSide: Side): domain.Side = fixSide.getValue match {
-    case Side.BUY => Buy
-    case Side.SELL => Sell
-  }
-
-  private def toDateTime(transactTime: TransactTime): DateTime = new DateTime(transactTime.getValue.getTime, DateTimeZone.UTC)
 }
