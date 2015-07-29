@@ -6,6 +6,7 @@ import org.nexbook.event.{OrderExecutionEvent, OrderProcessorEvent, OrderRejecti
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable
+import scala.math.BigDecimal.RoundingMode
 
 class OrderMatcher(book: OrderBook) extends mutable.Publisher[OrderProcessorEvent] {
 
@@ -23,17 +24,18 @@ class OrderMatcher(book: OrderBook) extends mutable.Publisher[OrderProcessorEven
 
   private def tryMatch(order: Order, firstCounterOrder: Option[LimitOrder]): Option[LimitOrder] = firstCounterOrder match {
     case None => {
-      order.orderType match {
-        case Market => {
+      order match {
+        case o: MarketOrder => {
           publish(OrderRejectionEvent(order))
           None
         }
-        case _ => Some(order.asInstanceOf[LimitOrder])
+        case o: LimitOrder => Some(o)
       }
     }
     case Some(counterOrder) => {
       if (ordersCrossing(order, counterOrder)) {
         val (buy, sell, dealSize, dealPrice) = matchOrders(order, counterOrder)
+        println("Deal done: " +(dealPrice, dealSize, buy, sell))
         publish(OrderExecutionEvent(buy, sell, dealSize, dealPrice, DateTime.now(DateTimeZone.UTC)))
 
 
@@ -60,7 +62,7 @@ class OrderMatcher(book: OrderBook) extends mutable.Publisher[OrderProcessorEven
     def determineDealSize(order: Order, counter: LimitOrder): Double = if (order.remainingSize <= counter.remainingSize) order.remainingSize else counter.remainingSize
     def determineDealPrice(order: Order, counter: LimitOrder): Double = order match {
       case o: MarketOrder => counter.limit
-      case o: LimitOrder => if (o.limit == counter.limit) o.limit else (o.limit + counter.limit) / 2.0
+      case o: LimitOrder => if (o.limit == counter.limit) o.limit else BigDecimal((o.limit + counter.limit) / 2.0).setScale(5, RoundingMode.HALF_DOWN).toDouble
     }
 
     val dealSize = determineDealSize(order, counterOrder)
