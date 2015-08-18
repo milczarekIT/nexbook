@@ -22,7 +22,7 @@ class OrderMatcher(book: OrderBook) extends mutable.Publisher[OrderProcessorEven
 
   }
 
-  private def tryMatch(order: Order, firstCounterOrder: Option[LimitOrder]): Option[LimitOrder] = firstCounterOrder match {
+  protected def tryMatch(order: Order, firstCounterOrder: Option[LimitOrder]): Option[LimitOrder] = firstCounterOrder match {
     case None => {
       order match {
         case o: MarketOrder => {
@@ -34,13 +34,13 @@ class OrderMatcher(book: OrderBook) extends mutable.Publisher[OrderProcessorEven
     }
     case Some(counterOrder) => {
       if (ordersCrossing(order, counterOrder)) {
-        val (buy, sell, dealSize, dealPrice) = matchOrders(order, counterOrder)
-        println("Deal done: " +(dealPrice, dealSize, buy, sell))
-        publish(OrderExecutionEvent(buy, sell, dealSize, dealPrice, DateTime.now(DateTimeZone.UTC)))
+        val dealDone = matchOrders(order, counterOrder)
+        println("Deal done: " + dealDone)
+        publish(OrderExecutionEvent(dealDone))
 
 
-        if (order.remainingSize > 0) return tryMatch(order, book top order.side.reverse)
-        else return None
+        if (order.remainingSize > 0) tryMatch(order, book top order.side.reverse)
+        else None
       } else {
         Some(order.asInstanceOf[LimitOrder])
       }
@@ -58,7 +58,7 @@ class OrderMatcher(book: OrderBook) extends mutable.Publisher[OrderProcessorEven
   /**
    * @return (buyOrder, sellOrder, dealSize, dealPrice)
    */
-  private def matchOrders(order: Order, counterOrder: LimitOrder): (Order, Order, Double, Double) = {
+  private def matchOrders(order: Order, counterOrder: LimitOrder): DealDone = {
     def determineDealSize(order: Order, counter: LimitOrder): Double = if (order.remainingSize <= counter.remainingSize) order.remainingSize else counter.remainingSize
     def determineDealPrice(order: Order, counter: LimitOrder): Double = order match {
       case o: MarketOrder => counter.limit
@@ -72,7 +72,10 @@ class OrderMatcher(book: OrderBook) extends mutable.Publisher[OrderProcessorEven
     if (counterOrder.remainingSize == 0.00) {
       book removeTop counterOrder.side
     }
-    if (order.side == Buy) (order, counterOrder, dealSize, dealPrice) else (counterOrder, order, dealSize, dealPrice)
+    val buyOrder = if (order.side == Buy) order else counterOrder
+    val sellOrder = if (order.side == Buy) counterOrder else order
+
+    DealDone(buyOrder, sellOrder, dealSize, dealPrice, DateTime.now(DateTimeZone.UTC))
   }
 
 }

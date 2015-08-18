@@ -17,7 +17,7 @@ object App {
     val orderBookRepository = new OrderBookRepository(SUPPORTED_CURRENCY_PAIRS)
     val orderRepository = new OrderRepository
 
-    val orderHandler = new OrderHandler(new Sequencer, orderBookRepository, orderRepository)
+    val orderHandler = new OrderHandler(new Sequencer, orderBookRepository, orderRepository, new ExecutionHandler)
     val fixOrderHandler = new FixOrderHandler(orderHandler)
 
 

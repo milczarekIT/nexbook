@@ -1,10 +1,9 @@
 package org.nexbook.event
 
-import org.joda.time.DateTime
-import org.nexbook.domain.Order
+import org.nexbook.domain.{DealDone, Order}
 
 sealed trait OrderProcessorEvent
 
 case class OrderRejectionEvent(order: Order) extends OrderProcessorEvent
 
-case class OrderExecutionEvent(buy: Order, sell: Order, dealSize: Double, dealPrice: Double, executionTime: DateTime) extends OrderProcessorEvent
+case class OrderExecutionEvent(dealDone: DealDone) extends OrderProcessorEvent
