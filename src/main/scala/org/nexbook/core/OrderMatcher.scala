@@ -26,7 +26,7 @@ class OrderMatcher(book: OrderBook) extends mutable.Publisher[OrderProcessorEven
     case None => {
       order match {
         case o: MarketOrder => {
-          publish(OrderRejectionEvent(order))
+          publish(OrderRejectionEvent(order,"TODO "))
           None
         }
         case o: LimitOrder => Some(o)

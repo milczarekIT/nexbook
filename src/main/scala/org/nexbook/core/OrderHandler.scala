@@ -6,8 +6,9 @@ import org.nexbook.repository.{OrderBookRepository, OrderRepository}
 import org.slf4j.LoggerFactory
 
 
-class OrderHandler(sequencer: Sequencer, orderBookRepository: OrderBookRepository, orderRepository: OrderRepository, executionHandler: ExecutionHandler) {
+class OrderHandler(orderBookRepository: OrderBookRepository, orderRepository: OrderRepository, executionHandler: ExecutionHandler) {
   val LOGGER = LoggerFactory.getLogger(classOf[OrderHandler])
+  val sequencer = new Sequencer
 
   val orderMatchers = initMatchers
 

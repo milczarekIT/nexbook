@@ -16,7 +16,6 @@ object FixOrderConverter {
       case Side.BUY => Buy
       case Side.SELL => Sell
     }
-    def toDateTime(transactTime: TransactTime): DateTime = new DateTime(transactTime.getValue.getTime, DateTimeZone.UTC)
 
     fixOrder.getOrdType.getValue match {
       case OrdType.LIMIT => new LimitOrder(fixOrder.getClOrdID.getValue, fixOrder.getSymbol.getValue, fixOrder.getAccount.getValue, resolveSide(fixOrder.getSide), fixOrder.getOrderQty.getValue, fixOrder.getPrice.getValue)
