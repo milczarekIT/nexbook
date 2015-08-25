@@ -13,7 +13,7 @@ trait Order {
   val orderType: OrderType
   private var timestampVal: DateTime = new DateTime(0)
   private var fillSize: Double = 0.0
-  private var sequenceVal: Long = -1;
+  private var sequenceVal: Long = -1
 
   def setSequence(sequence: Long) = if (this.sequenceVal == -1) this.sequenceVal = sequence else throw new IllegalStateException("Sequence already set!")
 

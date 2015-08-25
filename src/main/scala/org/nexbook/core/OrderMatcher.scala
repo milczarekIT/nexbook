@@ -2,22 +2,22 @@ package org.nexbook.core
 
 import org.joda.time.{DateTime, DateTimeZone}
 import org.nexbook.domain._
-import org.nexbook.event.{OrderExecutionEvent, OrderProcessorEvent, OrderRejectionEvent}
+import org.nexbook.orderprocessing.OrderProcessingResponseSender
+import org.nexbook.orderprocessing.response.{OrderExecutionResponse, OrderRejectionResponse}
 import org.slf4j.LoggerFactory
 
-import scala.collection.mutable
 import scala.math.BigDecimal.RoundingMode
 
-class OrderMatcher(book: OrderBook) extends mutable.Publisher[OrderProcessorEvent] {
+class OrderMatcher(book: OrderBook, orderSender: OrderProcessingResponseSender) {
 
-  val LOGGER = LoggerFactory.getLogger(classOf[OrderMatcher])
+  val logger = LoggerFactory.getLogger(classOf[OrderMatcher])
 
   def acceptOrder(order: Order) = this.synchronized {
     val firstCounterOrder = book top order.side.reverse
     val unfilledOrder = tryMatch(order, firstCounterOrder)
     unfilledOrder match {
       case Some(unfilledOrder) => book add unfilledOrder
-      case _ => LOGGER.trace("Order adhoc filled: {}", order)
+      case _ => logger.trace("Order adhoc filled: {}", order)
     }
 
   }
@@ -26,7 +26,7 @@ class OrderMatcher(book: OrderBook) extends mutable.Publisher[OrderProcessorEven
     case None => {
       order match {
         case o: MarketOrder => {
-          publish(OrderRejectionEvent(order,"TODO "))
+          orderSender.send(OrderRejectionResponse(order,"No orders in book"))
           None
         }
         case o: LimitOrder => Some(o)
@@ -36,8 +36,7 @@ class OrderMatcher(book: OrderBook) extends mutable.Publisher[OrderProcessorEven
       if (ordersCrossing(order, counterOrder)) {
         val dealDone = matchOrders(order, counterOrder)
         println("Deal done: " + dealDone)
-        publish(OrderExecutionEvent(dealDone))
-
+        orderSender.send(OrderExecutionResponse(dealDone))
 
         if (order.remainingSize > 0) tryMatch(order, book top order.side.reverse)
         else None
@@ -55,9 +54,7 @@ class OrderMatcher(book: OrderBook) extends mutable.Publisher[OrderProcessorEven
     }
   }
 
-  /**
-   * @return (buyOrder, sellOrder, dealSize, dealPrice)
-   */
+
   private def matchOrders(order: Order, counterOrder: LimitOrder): DealDone = {
     def determineDealSize(order: Order, counter: LimitOrder): Double = if (order.remainingSize <= counter.remainingSize) order.remainingSize else counter.remainingSize
     def determineDealPrice(order: Order, counter: LimitOrder): Double = order match {
