@@ -11,6 +11,4 @@ import scala.collection.mutable
 class OrderProcessingResponsePublisher extends OrderProcessingResponseSender with mutable.Publisher[OrderProcessingResponse] {
 
   override def send(response: OrderProcessingResponse) = publish(response)
-
-  override def registerHandler(handler: OrderProcessingResponseHandler) = subscribe(handler.asInstanceOf[Sub])
 }

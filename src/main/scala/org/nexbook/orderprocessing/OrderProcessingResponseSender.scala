@@ -8,6 +8,4 @@ import org.nexbook.orderprocessing.response.OrderProcessingResponse
 trait OrderProcessingResponseSender {
 
   def send(response: OrderProcessingResponse)
-
-  def registerHandler(handler: OrderProcessingResponseHandler)
 }

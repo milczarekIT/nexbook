@@ -12,7 +12,7 @@ class PubSubOrderProcessingResponseLifecycleFactory extends OrderProcessingRespo
   def initialize = {
     val pub = new OrderProcessingResponsePublisher
     val sub = new OrderProcessingResponseSubscriber(pub)
-    pub.subscribe(sub)
+    pub subscribe sub
     (pub, sub)
   }
 
