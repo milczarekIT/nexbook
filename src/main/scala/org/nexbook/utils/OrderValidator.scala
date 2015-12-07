@@ -12,8 +12,8 @@ class OrderValidator {
 
   type OrderValidation = Order => Option[ValidationError]
 
-  val symbolValidation: OrderValidation = order => if(allowedSymbols.contains(order.symbol)) None else Some(ValidationError("Not supported instrument: " + order.symbol))
-  val sizeValidation: OrderValidation = order => if(order.size > 0.00) None else Some(ValidationError("Invalid order size"))
+  val symbolValidation: OrderValidation = order => if (allowedSymbols.contains(order.symbol)) None else Some(ValidationError("Not supported instrument: " + order.symbol))
+  val sizeValidation: OrderValidation = order => if (order.size > 0.00) None else Some(ValidationError("Invalid order size"))
 
   val defaultValidations = List(symbolValidation, sizeValidation)
 
@@ -25,16 +25,14 @@ class OrderValidator {
       case _ => {
         val result: Option[ValidationError] = validations.head.apply(order)
         result match {
-            case None => validate(order, validations.tail)
-            case _ => result
+          case None => validate(order, validations.tail)
+          case _ => result
         }
       }
 
     }
     validate(order, defaultValidations)
   }
-
-
 
 
 }

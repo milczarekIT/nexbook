@@ -1,14 +1,14 @@
 package org.nexbook.core
 
-import org.joda.time.{DateTime, DateTimeZone}
 import org.nexbook.domain._
 import org.nexbook.orderprocessing.OrderProcessingResponseSender
 import org.nexbook.orderprocessing.response.{OrderExecutionResponse, OrderRejectionResponse}
+import org.nexbook.utils.Clock
 import org.slf4j.LoggerFactory
 
 import scala.math.BigDecimal.RoundingMode
 
-class OrderMatcher(book: OrderBook, orderSender: OrderProcessingResponseSender) {
+class OrderMatcher(execIDSequencer: Sequencer, book: OrderBook, orderSender: OrderProcessingResponseSender, clock: Clock) {
 
   val logger = LoggerFactory.getLogger(classOf[OrderMatcher])
 
@@ -26,7 +26,7 @@ class OrderMatcher(book: OrderBook, orderSender: OrderProcessingResponseSender) 
     case None => {
       order match {
         case o: MarketOrder => {
-          orderSender.send(OrderRejectionResponse(order,"No orders in book"))
+          orderSender.send(OrderRejectionResponse(OrderRejection(execIDSequencer.nextValue, o, "No orders in book", clock.getCurrentDateTime)))
           None
         }
         case o: LimitOrder => Some(o)
@@ -72,7 +72,7 @@ class OrderMatcher(book: OrderBook, orderSender: OrderProcessingResponseSender) 
     val buyOrder = if (order.side == Buy) order else counterOrder
     val sellOrder = if (order.side == Buy) counterOrder else order
 
-    DealDone(buyOrder, sellOrder, dealSize, dealPrice, DateTime.now(DateTimeZone.UTC))
+    DealDone(execIDSequencer.nextValue, buyOrder, sellOrder, dealSize, dealPrice, clock.getCurrentDateTime)
   }
 
 }

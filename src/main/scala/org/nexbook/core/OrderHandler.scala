@@ -1,25 +1,25 @@
 package org.nexbook.core
 
-import org.joda.time.{DateTime, DateTimeZone}
 import org.nexbook.config.ConfigFactory
 import org.nexbook.domain.Order
 import org.nexbook.orderprocessing.response.OrderValidationRejectionResponse
 import org.nexbook.orderprocessing.{OrderProcessingResponseLifecycleFactory, OrderProcessingResponseSender}
 import org.nexbook.repository.{OrderBookRepository, OrderRepository}
-import org.nexbook.utils.{OrderValidator, ValidationError}
+import org.nexbook.utils.{Clock, OrderValidator, ValidationError}
 import org.slf4j.LoggerFactory
 
 
-class OrderHandler(orderBookRepository: OrderBookRepository, orderRepository: OrderRepository, orderProcessingResponseLifecycleFactory: OrderProcessingResponseLifecycleFactory) {
+class OrderHandler(orderBookRepository: OrderBookRepository, orderRepository: OrderRepository, orderProcessingResponseLifecycleFactory: OrderProcessingResponseLifecycleFactory, clock: Clock) {
   val logger = LoggerFactory.getLogger(classOf[OrderHandler])
   val sequencer = new Sequencer
+  val execIDSequencer = new Sequencer
   val orderValidator = new OrderValidator
   val orderProcessingSender: OrderProcessingResponseSender = orderProcessingResponseLifecycleFactory.sender
 
   val orderMatchers = initMatchers
 
   def initMatchers: Map[String, OrderMatcher] = {
-    def orderMatcher(symbol: String):OrderMatcher = new OrderMatcher(orderBookRepository.getOrderBook(symbol), orderProcessingSender)
+    def orderMatcher(symbol: String): OrderMatcher = new OrderMatcher(execIDSequencer, orderBookRepository.getOrderBook(symbol), orderProcessingSender, clock)
 
     ConfigFactory.supportedCurrencyPairs.map(symbol => symbol -> orderMatcher(symbol)).toMap
   }
@@ -27,7 +27,7 @@ class OrderHandler(orderBookRepository: OrderBookRepository, orderRepository: Or
   def handle(order: Order) {
     def onValidationSuccess(order: Order) {
       order.setSequence(sequencer.nextValue)
-      order.setTimestamp(DateTime.now(DateTimeZone.UTC))
+      order.setTimestamp(clock.getCurrentDateTime)
       logger.debug("Handled order: {} from: " + order.fixId, order)
       orderRepository add order
       orderMatchers.get(order.symbol).get.acceptOrder(order)
@@ -39,9 +39,6 @@ class OrderHandler(orderBookRepository: OrderBookRepository, orderRepository: Or
       case Some(validationError) => onValidationError(order, validationError)
     }
   }
-
-
-
 
 
 }

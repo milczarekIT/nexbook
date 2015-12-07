@@ -10,9 +10,9 @@ class ResponseLoggingHandler extends ResponseHandler {
 
   val logger = LoggerFactory.getLogger(classOf[ResponseLoggingHandler])
 
-  override def handle(response: OrderProcessingResponse) = response match  {
+  override def handle(response: OrderProcessingResponse) = response match {
     case execution: OrderExecutionResponse => logger.info("Handled deal done: {}", execution.dealDone)
-    case rejection: OrderRejectionResponse => logger.info("Rejection reject reason: {}", rejection.rejectReason)
+    case rejection: OrderRejectionResponse => logger.info("Rejection reject reason: {}", rejection.rejection)
     case other => logger.info("Other: {}", other)
   }
 }

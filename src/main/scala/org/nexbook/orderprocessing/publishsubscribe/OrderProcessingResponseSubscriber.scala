@@ -10,7 +10,7 @@ import scala.collection.mutable
 /**
  * Created by milczu on 18.08.15.
  */
-class OrderProcessingResponseSubscriber(pub: mutable.Publisher[OrderProcessingResponse], generalResponseHandler :GeneralResponseHandler) extends OrderProcessingResponseHandler with mutable.Subscriber[OrderProcessingResponse, mutable.Publisher[OrderProcessingResponse]] {
+class OrderProcessingResponseSubscriber(pub: mutable.Publisher[OrderProcessingResponse], generalResponseHandler: GeneralResponseHandler) extends OrderProcessingResponseHandler with mutable.Subscriber[OrderProcessingResponse, mutable.Publisher[OrderProcessingResponse]] {
 
   val logger = LoggerFactory.getLogger(classOf[OrderProcessingResponseSubscriber])
 

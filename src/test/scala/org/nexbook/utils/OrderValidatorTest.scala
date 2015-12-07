@@ -8,7 +8,7 @@ import scala.collection.immutable.List
 /**
  * Created by milczu on 25.08.15.
  */
-class OrderValidatorTest extends FlatSpec with Matchers{
+class OrderValidatorTest extends FlatSpec with Matchers {
 
   def sampleOrder: Order = ???
 

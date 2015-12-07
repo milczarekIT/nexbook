@@ -8,25 +8,27 @@ import org.nexbook.orderprocessing.OrderProcessingResponseLifecycleFactory
 import org.nexbook.orderprocessing.actors.ActorsOrderProcessingResponseLifecycleFactory
 import org.nexbook.orderprocessing.publishsubscribe.PubSubOrderProcessingResponseLifecycleFactory
 import org.nexbook.repository.{OrderBookRepository, OrderRepository}
+import org.nexbook.utils.DefaultClock
 import org.slf4j.LoggerFactory
 
 object App {
 
   val LOGGER = LoggerFactory.getLogger(classOf[App])
 
-  val FIX_CONFIGURATION_FILE = "config/fix_connection.config"
   val config = ConfigFactory.load()
+  val fixConfigPath = config.getString("org.nexbook.fix.config.path")
 
   val orderBookRepository = wire[OrderBookRepository]
   val orderRepository = wire[OrderRepository]
   val mode = config.getString("org.nexbook.mode")
   val generalResponseHandler = wire[GeneralResponseHandler]
+  val clock = new DefaultClock
   val orderHandler = wire[OrderHandler]
 
   def resolveLifeCycleFactory: OrderProcessingResponseLifecycleFactory = mode match {
     case "PubSub" => wire[PubSubOrderProcessingResponseLifecycleFactory]
     case "Actors" => wire[ActorsOrderProcessingResponseLifecycleFactory]
-    case _ =>  throw new IllegalArgumentException
+    case _ => throw new IllegalArgumentException
   }
 
   def responseHandlers: List[ResponseHandler] = List(wire[ResponseLoggingHandler], wire[ResponseFixResponseSender])
@@ -36,7 +38,7 @@ object App {
     LOGGER.debug("Mode: {}", mode)
 
     val fixOrderHandler = wire[FixOrderHandler]
-    val fixOrderHandlerRunner = new FixOrderHandlerRunner(fixOrderHandler, FIX_CONFIGURATION_FILE)
+    val fixOrderHandlerRunner = new FixOrderHandlerRunner(fixOrderHandler, fixConfigPath)
     fixOrderHandlerRunner.run
   }
 }
