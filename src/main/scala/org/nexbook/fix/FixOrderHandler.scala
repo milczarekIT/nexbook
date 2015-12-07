@@ -35,7 +35,7 @@ class FixOrderHandler(orderHandler: OrderHandler) extends MessageCracker with Ap
 
   @throws(classOf[DoNotSend])
   override def toApp(message: Message, sessionId: SessionID) {
-    LOGGER.info("ToApp: {}", message)
+    LOGGER.trace("ToApp: {}", message)
   }
 
   @throws(classOf[UnsupportedMessageType])

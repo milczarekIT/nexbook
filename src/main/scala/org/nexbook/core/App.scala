@@ -3,7 +3,7 @@ package org.nexbook.core
 import com.softwaremill.macwire._
 import com.typesafe.config.ConfigFactory
 import org.nexbook.fix.{FixOrderHandler, FixOrderHandlerRunner}
-import org.nexbook.handler.{GeneralResponseHandler, ResponseFixResponseSender, ResponseHandler, ResponseLoggingHandler}
+import org.nexbook.handler.{GeneralResponseHandler, ResponseFixResponseSender, ResponseHandler, ResponseJsonLoggingHandler}
 import org.nexbook.orderprocessing.OrderProcessingResponseLifecycleFactory
 import org.nexbook.orderprocessing.actors.ActorsOrderProcessingResponseLifecycleFactory
 import org.nexbook.orderprocessing.publishsubscribe.PubSubOrderProcessingResponseLifecycleFactory
@@ -31,7 +31,7 @@ object App {
     case _ => throw new IllegalArgumentException
   }
 
-  def responseHandlers: List[ResponseHandler] = List(wire[ResponseLoggingHandler], wire[ResponseFixResponseSender])
+  def responseHandlers: List[ResponseHandler] = List(wire[ResponseJsonLoggingHandler], wire[ResponseFixResponseSender])
 
   def main(args: Array[String]) {
     LOGGER.info("NexBook starting")

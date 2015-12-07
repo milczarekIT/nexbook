@@ -18,5 +18,6 @@ libraryDependencies ++= Seq(
   "com.softwaremill.macwire" % "runtime_2.11" % "1.0.6",
   "com.typesafe" % "config" % "1.2.1",
   "com.typesafe.akka" % "akka-actor_2.11" % "2.3.12",
-  "org.mongodb" % "casbah" % "2.8.2"
+  "net.liftweb" % "lift-json_2.11" % "2.6.2",
+  "net.liftweb" % "lift-json-ext_2.11" % "2.6.2"
 )

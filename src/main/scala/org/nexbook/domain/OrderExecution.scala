@@ -11,5 +11,6 @@ class OrderExecution(order: Order, executionSequence: Long, executionSize: Doubl
   val symbol = order.symbol
   setTimestamp(executionTimestamp)
   val clientId = order.clientId
+  val fixId = order.fixId
 
 }

@@ -14,7 +14,7 @@ class OrderRepositoryTest extends FlatSpec with Matchers {
 
   "OrderRepository" should "not contains duplicates" in {
     val repository = new OrderRepository
-    val order = new MarketOrder("1", "EUR/USD", "client1", Buy, 100)
+    val order = new MarketOrder("1", "EUR/USD", "client1", Buy, 100, "NEX")
 
     repository add order
     repository add order
@@ -26,8 +26,8 @@ class OrderRepositoryTest extends FlatSpec with Matchers {
 
   "OrderRepository" should "be orderdered by timestamo desc" in {
     val repository = new OrderRepository
-    val order1 = new MarketOrder("1", "EUR/USD", "client1", Buy, 100)
-    val order2 = new MarketOrder("1", "EUR/USD", "client1", Buy, 100)
+    val order1 = new MarketOrder("1", "EUR/USD", "client1", Buy, 100, "NEX")
+    val order2 = new MarketOrder("1", "EUR/USD", "client1", Buy, 100, "NEX")
 
     repository add order1
     repository add order2

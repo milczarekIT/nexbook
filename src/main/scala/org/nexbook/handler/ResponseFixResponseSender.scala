@@ -2,7 +2,7 @@ package org.nexbook.handler
 
 import com.typesafe.config.ConfigFactory
 import org.nexbook.domain._
-import org.nexbook.orderprocessing.response.{OrderExecutionResponse, OrderProcessingResponse, OrderRejectionResponse}
+import org.nexbook.orderprocessing.response.{OrderValidationRejectionResponse, OrderExecutionResponse, OrderProcessingResponse, OrderRejectionResponse}
 import org.nexbook.utils.FixUtils
 import org.slf4j.LoggerFactory
 import quickfix.field.{Side, _}
@@ -27,7 +27,7 @@ class ResponseFixResponseSender extends ResponseHandler {
   def toFixMessages(response: OrderProcessingResponse): List[(Message, SessionID)] = response match {
     case execution: OrderExecutionResponse => convert(execution)
     case rejection: OrderRejectionResponse => convert(rejection)
-    case _ => {
+    case validationRejection: OrderValidationRejectionResponse => {
       logger.info("TODO")
       List()
     }
@@ -50,6 +50,7 @@ class ResponseFixResponseSender extends ResponseHandler {
       executionReport.set(new LastPx(dealDone.dealPrice))
       executionReport.set(new LastQty(dealDone.dealSize))
       executionReport.set(new TransactTime(dealDone.executionTime.toDate))
+      executionReport.set(new Account(order.clientId))
       executionReport.set(ordType)
       executionReport.set(new Instrument(new Symbol(order.symbol)))
 
@@ -72,6 +73,7 @@ class ResponseFixResponseSender extends ResponseHandler {
     executionReport.set(new TransactTime(rejectionDetails.rejectDateTime.toDate))
     executionReport.set(ordType)
     executionReport.set(new OrdRejReason(OrdRejReason.OTHER))
+    executionReport.set(new Account(order.clientId))
     executionReport.set(new Text(rejectionDetails.rejectReason))
     executionReport.set(new Instrument(new Symbol(order.symbol)))
 
