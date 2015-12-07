@@ -2,7 +2,7 @@ name := "nexbook"
 
 version := "1.0"
 
-scalaVersion := "2.11.2"
+scalaVersion := "2.11.7"
 
 resolvers += Resolver.mavenLocal
 
@@ -19,5 +19,6 @@ libraryDependencies ++= Seq(
   "com.typesafe" % "config" % "1.2.1",
   "com.typesafe.akka" % "akka-actor_2.11" % "2.3.12",
   "net.liftweb" % "lift-json_2.11" % "2.6.2",
-  "net.liftweb" % "lift-json-ext_2.11" % "2.6.2"
+  "net.liftweb" % "lift-json-ext_2.11" % "2.6.2",
+  "org.mongodb" % "casbah_2.11" % "2.8.2"
 )

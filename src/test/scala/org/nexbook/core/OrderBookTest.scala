@@ -26,15 +26,21 @@ class OrderBookTest extends FlatSpec with Matchers {
     val orderBook = new OrderBook
 
     val order1 = new LimitOrder("TID_1", "EUR/CHF", "CID", Sell, 2000.00, 2.95, "NEX")
+    order1.setSequence(1)
     val order2 = new LimitOrder("TID_2", "EUR/CHF", "CID", Sell, 2000.00, 2.96, "NEX")
+    order2.setSequence(2)
     orderBook add order1
     orderBook add order2
 
-    orderBook.top(Sell) should be(order1)
+    orderBook.top(Sell).get should be(order1)
 
     orderBook removeTop Sell
 
-    orderBook.top(Sell) should be(order2)
+    orderBook.top(Sell).get should be(order2)
+
+    orderBook removeTop Sell
+
+    orderBook.top(Sell) should be(None)
   }
 
   "Sell OrderBook top" should "return LimitOrder with the lowest limit price" in {
@@ -111,6 +117,6 @@ class OrderBookTest extends FlatSpec with Matchers {
     orderBook add limitOrder2
     orderBook add limitOrder3
 
-    orderBook.top(Buy).get should be(limitOrder2)
+    orderBook.top(Buy).get should be(limitOrder2) should not be limitOrder1
   }
 }

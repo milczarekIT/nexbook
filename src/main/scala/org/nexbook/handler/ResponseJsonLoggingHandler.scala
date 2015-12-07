@@ -2,12 +2,10 @@ package org.nexbook.handler
 
 import net.liftweb.json.Extraction._
 import net.liftweb.json.Serialization.write
-import net.liftweb.json._
 import net.liftweb.json.ext.JodaTimeSerializers
-import org.nexbook.domain.{ProcessingResponse, Side}
+import org.nexbook.domain.ProcessingResponse
 import org.nexbook.orderprocessing.response.OrderProcessingResponse
 import org.nexbook.utils.JsonCustom
-import org.nexbook.utils.JsonCustom.SideSerializer
 import org.slf4j.LoggerFactory
 
 
@@ -18,8 +16,9 @@ class ResponseJsonLoggingHandler extends ResponseHandler {
 
   val logger = LoggerFactory.getLogger(classOf[ResponseJsonLoggingHandler])
 
+  implicit val formats = net.liftweb.json.DefaultFormats ++ JsonCustom.allCustomFormats ++ JodaTimeSerializers.all
+
   def buildLogLine(payload: ProcessingResponse): String = {
-    implicit val formats = net.liftweb.json.DefaultFormats ++ JsonCustom.allCustomFormats ++ JodaTimeSerializers.all
     def asJson(a: AnyRef): String = write(decompose(a))
     payload.getClass.getSimpleName + ":" + asJson(payload)
   }

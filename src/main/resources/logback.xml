@@ -24,6 +24,7 @@
 
     <logger name="quickfix.mina.NetworkingOptions" level="warn"/>
     <logger name="quickfix.mina.message.FIXMessageDecoder" level="info"/>
+    <logger name="com.mongodb.casbah" level="info" />
 
     <logger name="org.nexbook.handler.ResponseJsonLoggingHandler" level="debug" additivity="false">
         <appender-ref ref="TRADES" />

@@ -10,6 +10,6 @@ class OrderRepository {
 
   def add(order: Order) = orders += order
 
-  def getOrders(): List[Order] = orders.toList
+  def findAll: List[Order] = orders.toList
 
 }

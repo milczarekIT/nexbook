@@ -7,7 +7,7 @@ import org.nexbook.handler.{GeneralResponseHandler, ResponseFixResponseSender, R
 import org.nexbook.orderprocessing.OrderProcessingResponseLifecycleFactory
 import org.nexbook.orderprocessing.actors.ActorsOrderProcessingResponseLifecycleFactory
 import org.nexbook.orderprocessing.publishsubscribe.PubSubOrderProcessingResponseLifecycleFactory
-import org.nexbook.repository.{OrderBookRepository, OrderRepository}
+import org.nexbook.repository.{OrderDatabaseRepository, OrderBookRepository, OrderRepository}
 import org.nexbook.utils.DefaultClock
 import org.slf4j.LoggerFactory
 
@@ -20,6 +20,7 @@ object App {
 
   val orderBookRepository = wire[OrderBookRepository]
   val orderRepository = wire[OrderRepository]
+  val orderDatabaseRepository = wire[OrderDatabaseRepository]
   val mode = config.getString("org.nexbook.mode")
   val generalResponseHandler = wire[GeneralResponseHandler]
   val clock = new DefaultClock
