@@ -1,9 +1,10 @@
-package org.nexbook.actors
+package org.nexbook.orderprocessing.actors
 
 import akka.actor._
 import org.nexbook.orderprocessing.OrderProcessingResponseHandler
-import org.nexbook.orderprocessing.response.{OrderExecutionResponse, OrderProcessingResponse, OrderRejectionResponse}
+import org.nexbook.orderprocessing.response.OrderProcessingResponse
 import org.slf4j.LoggerFactory
+
 
 /**
  * Created by milczu on 11.10.15.
@@ -13,8 +14,7 @@ class OrderProcessingResponseListener extends OrderProcessingResponseHandler wit
   val logger = LoggerFactory.getLogger(classOf[OrderProcessingResponseListener])
 
   override def receive = {
-    case OrderExecutionResponse(dealDone) => logger.info("Handled deal done: {}", dealDone)
-    case OrderRejectionResponse(order, rejectReason) => logger.info("Rejection reject reason: {}", rejectReason)
+    case response: OrderProcessingResponse => logger.info("received: {}", response) //TODO// generalResponseHandler doHandle response
   }
 
   override def handle(response: OrderProcessingResponse) = receive(response)

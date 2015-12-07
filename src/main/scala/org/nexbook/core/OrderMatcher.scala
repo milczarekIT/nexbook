@@ -35,7 +35,7 @@ class OrderMatcher(book: OrderBook, orderSender: OrderProcessingResponseSender) 
     case Some(counterOrder) => {
       if (ordersCrossing(order, counterOrder)) {
         val dealDone = matchOrders(order, counterOrder)
-        println("Deal done: " + dealDone)
+        logger.debug("Deal done: " + dealDone)
         orderSender.send(OrderExecutionResponse(dealDone))
 
         if (order.remainingSize > 0) tryMatch(order, book top order.side.reverse)

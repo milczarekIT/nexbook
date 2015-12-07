@@ -7,5 +7,5 @@ trait OrderProcessingResponseLifecycleFactory {
 
   def sender: OrderProcessingResponseSender
 
-  def handler: OrderProcessingResponseHandler
+  protected def initializeHandler: OrderProcessingResponseHandler
 }

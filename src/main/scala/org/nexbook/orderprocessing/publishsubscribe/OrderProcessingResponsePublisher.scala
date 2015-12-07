@@ -1,7 +1,8 @@
-package org.nexbook.publishsubscribe
+package org.nexbook.orderprocessing.publishsubscribe
 
+import org.nexbook.orderprocessing.OrderProcessingResponseSender
 import org.nexbook.orderprocessing.response.OrderProcessingResponse
-import org.nexbook.orderprocessing.{OrderProcessingResponseHandler, OrderProcessingResponseSender}
+import org.slf4j.LoggerFactory
 
 import scala.collection.mutable
 
@@ -10,5 +11,8 @@ import scala.collection.mutable
  */
 class OrderProcessingResponsePublisher extends OrderProcessingResponseSender with mutable.Publisher[OrderProcessingResponse] {
 
+  val logger = LoggerFactory.getLogger(classOf[OrderProcessingResponsePublisher])
+
   override def send(response: OrderProcessingResponse) = publish(response)
+
 }

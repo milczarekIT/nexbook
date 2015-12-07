@@ -11,6 +11,7 @@ trait Order {
   val size: Double
   val side: Side
   val orderType: OrderType
+  val fixId: String
   private var timestampVal: DateTime = new DateTime(0)
   private var fillSize: Double = 0.0
   private var sequenceVal: Long = -1
@@ -31,15 +32,15 @@ trait Order {
   def timestamp = timestampVal
 }
 
-case class MarketOrder(tradeID: String, symbol: String, clientId: String, side: Side, size: Double, orderType: OrderType) extends Order {
+case class MarketOrder(tradeID: String, symbol: String, clientId: String, side: Side, size: Double, orderType: OrderType, fixId: String) extends Order {
 
-  def this(tradeID: String, symbol: String, clientId: String, side: Side, size: Double) = this(tradeID, symbol, clientId, side, size, Market)
+  def this(tradeID: String, symbol: String, clientId: String, side: Side, size: Double, fixId: String) = this(tradeID, symbol, clientId, side, size, Market, fixId: String)
 }
 
 
-case class LimitOrder(tradeID: String, symbol: String, clientId: String, side: Side, size: Double, limit: Double, orderType: OrderType) extends Order {
+case class LimitOrder(tradeID: String, symbol: String, clientId: String, side: Side, size: Double, limit: Double, orderType: OrderType, fixId: String) extends Order {
 
-  def this(tradeID: String, symbol: String, clientId: String, side: Side, size: Double, limit: Double) = this(tradeID, symbol, clientId, side, size, limit, Limit)
+  def this(tradeID: String, symbol: String, clientId: String, side: Side, size: Double, limit: Double, fixId: String) = this(tradeID, symbol, clientId, side, size, limit, Limit, fixId: String)
 
 }
 

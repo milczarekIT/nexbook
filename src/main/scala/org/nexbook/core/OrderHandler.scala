@@ -4,10 +4,9 @@ import org.joda.time.{DateTime, DateTimeZone}
 import org.nexbook.config.ConfigFactory
 import org.nexbook.domain.Order
 import org.nexbook.orderprocessing.response.OrderValidationRejectionResponse
-import org.nexbook.orderprocessing.{OrderProcessingResponseSender, OrderProcessingResponseLifecycleFactory}
-import org.nexbook.publishsubscribe.OrderProcessingResponseSubscriber
+import org.nexbook.orderprocessing.{OrderProcessingResponseLifecycleFactory, OrderProcessingResponseSender}
 import org.nexbook.repository.{OrderBookRepository, OrderRepository}
-import org.nexbook.utils.{ValidationError, OrderValidator}
+import org.nexbook.utils.{OrderValidator, ValidationError}
 import org.slf4j.LoggerFactory
 
 
@@ -25,11 +24,11 @@ class OrderHandler(orderBookRepository: OrderBookRepository, orderRepository: Or
     ConfigFactory.supportedCurrencyPairs.map(symbol => symbol -> orderMatcher(symbol)).toMap
   }
 
-  def handle(order: Order, sender: String) {
+  def handle(order: Order) {
     def onValidationSuccess(order: Order) {
       order.setSequence(sequencer.nextValue)
       order.setTimestamp(DateTime.now(DateTimeZone.UTC))
-      logger.debug("Handled order: {} from: " + sender, order)
+      logger.debug("Handled order: {} from: " + order.fixId, order)
       orderRepository add order
       orderMatchers.get(order.symbol).get.acceptOrder(order)
     }

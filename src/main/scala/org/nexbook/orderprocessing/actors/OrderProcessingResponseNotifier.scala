@@ -1,7 +1,7 @@
-package org.nexbook.actors
+package org.nexbook.orderprocessing.actors
 
 import akka.actor.ActorRef
-import org.nexbook.orderprocessing.{OrderProcessingResponseSender}
+import org.nexbook.orderprocessing.OrderProcessingResponseSender
 import org.nexbook.orderprocessing.response.OrderProcessingResponse
 
 /**

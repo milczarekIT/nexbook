@@ -1,13 +1,14 @@
 package org.nexbook.core
 
+import com.softwaremill.macwire._
 import com.typesafe.config.ConfigFactory
-import org.nexbook.actors.ActorsOrderProcessingResponseLifecycleFactory
-import org.nexbook.fix.{FixOrderHandlerRunner, FixOrderHandler}
+import org.nexbook.fix.{FixOrderHandler, FixOrderHandlerRunner}
+import org.nexbook.handler.{GeneralResponseHandler, ResponseFixResponseSender, ResponseHandler, ResponseLoggingHandler}
 import org.nexbook.orderprocessing.OrderProcessingResponseLifecycleFactory
-import org.nexbook.publishsubscribe.{PubSubOrderProcessingResponseLifecycleFactory}
+import org.nexbook.orderprocessing.actors.ActorsOrderProcessingResponseLifecycleFactory
+import org.nexbook.orderprocessing.publishsubscribe.PubSubOrderProcessingResponseLifecycleFactory
 import org.nexbook.repository.{OrderBookRepository, OrderRepository}
 import org.slf4j.LoggerFactory
-import com.softwaremill.macwire._
 
 object App {
 
@@ -18,25 +19,21 @@ object App {
 
   val orderBookRepository = wire[OrderBookRepository]
   val orderRepository = wire[OrderRepository]
-  val orderHandler = wire[OrderHandler]
   val mode = config.getString("org.nexbook.mode")
-  val lifecycleFactory = resolveLifeCycleFactory
+  val generalResponseHandler = wire[GeneralResponseHandler]
+  val orderHandler = wire[OrderHandler]
 
-  def resolveLifeCycleFactory: OrderProcessingResponseLifecycleFactory = {
-    if(mode.equals("PubSub")) {
-      wire[PubSubOrderProcessingResponseLifecycleFactory]
-    } else if(mode.equals("Actors")) {
-      wire[ActorsOrderProcessingResponseLifecycleFactory]
-    } else {
-      throw new IllegalArgumentException
-    }
+  def resolveLifeCycleFactory: OrderProcessingResponseLifecycleFactory = mode match {
+    case "PubSub" => wire[PubSubOrderProcessingResponseLifecycleFactory]
+    case "Actors" => wire[ActorsOrderProcessingResponseLifecycleFactory]
+    case _ =>  throw new IllegalArgumentException
   }
+
+  def responseHandlers: List[ResponseHandler] = List(wire[ResponseLoggingHandler], wire[ResponseFixResponseSender])
 
   def main(args: Array[String]) {
     LOGGER.info("NexBook starting")
     LOGGER.debug("Mode: {}", mode)
-
-
 
     val fixOrderHandler = wire[FixOrderHandler]
     val fixOrderHandlerRunner = new FixOrderHandlerRunner(fixOrderHandler, FIX_CONFIGURATION_FILE)

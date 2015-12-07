@@ -26,7 +26,7 @@ trait FixApplicationRunner {
   }
 
   def run = {
-    socketAcceptor.start
+    socketAcceptorInstance.start
     logger.info("FIX Acceptor Initialized")
   }
 }
