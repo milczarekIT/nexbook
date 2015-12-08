@@ -34,4 +34,5 @@ object JsonCustom {
 
     def serialize(implicit format: Formats) = ser(format)._2
   }
+
 }

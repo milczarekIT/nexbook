@@ -8,6 +8,7 @@ import com.typesafe.config.ConfigFactory
 trait DatabaseRepository[T] {
 
   import com.mongodb.casbah.Imports._
+
   val dbConfig = ConfigFactory.load().getConfig("org.nexbook.mongo")
   val (host, port, db) = (dbConfig.getString("host"), dbConfig.getInt("port"), dbConfig.getString("dbName"))
   val client = MongoClient(host, port)(db)

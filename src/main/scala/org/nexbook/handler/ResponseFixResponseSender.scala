@@ -2,7 +2,7 @@ package org.nexbook.handler
 
 import com.typesafe.config.ConfigFactory
 import org.nexbook.domain._
-import org.nexbook.orderprocessing.response.{OrderValidationRejectionResponse, OrderExecutionResponse, OrderProcessingResponse, OrderRejectionResponse}
+import org.nexbook.orderprocessing.response.{OrderExecutionResponse, OrderProcessingResponse, OrderRejectionResponse, OrderValidationRejectionResponse}
 import org.nexbook.utils.FixUtils
 import org.slf4j.LoggerFactory
 import quickfix.field.{Side, _}
@@ -40,12 +40,12 @@ class ResponseFixResponseSender extends ResponseHandler {
       def convertFixFields(order: Order): (ExecType, OrdStatus, Side, OrdType) = {
         val side = FixUtils.side(order)
         val ordType = FixUtils.ordType(order)
-        val (execType, ordStatus) = if (order.remainingSize == 0.00) (new ExecType(ExecType.TRADE), new OrdStatus(OrdStatus.FILLED)) else (new ExecType(ExecType.TRADE), new OrdStatus(OrdStatus.PARTIALLY_FILLED))
+        val (execType, ordStatus) = if (order.leaveQty == 0.00) (new ExecType(ExecType.TRADE), new OrdStatus(OrdStatus.FILLED)) else (new ExecType(ExecType.TRADE), new OrdStatus(OrdStatus.PARTIALLY_FILLED))
         (execType, ordStatus, side, ordType)
       }
       val (execType, ordStatus, side, ordType) = convertFixFields(order)
-      val executionReport = new ExecutionReport(new OrderID(order.tradeID), new ExecID(execution.dealDone.execID.toString), execType, ordStatus, side, new LeavesQty(order.remainingSize), new CumQty(order.size), new AvgPx(dealDone.dealPrice))
-      val sessionID = sessionIDByTargetCompID(order.fixId)
+      val executionReport = new ExecutionReport(new OrderID(order.clOrdId), new ExecID(execution.dealDone.execID.toString), execType, ordStatus, side, new LeavesQty(order.leaveQty), new CumQty(order.qty), new AvgPx(dealDone.dealPrice))
+      val sessionID = sessionIDByTargetCompID(order.connector)
 
       executionReport.set(new LastPx(dealDone.dealPrice))
       executionReport.set(new LastQty(dealDone.dealSize))
@@ -67,7 +67,7 @@ class ResponseFixResponseSender extends ResponseHandler {
     val rejectionDetails = rejection.rejection
     val order = rejectionDetails.order
     val (execType, ordStatus, side, ordType) = convertFixFields(order)
-    val executionReport = new ExecutionReport(new OrderID(order.tradeID), new ExecID(rejectionDetails.execID.toString), execType, ordStatus, side, new LeavesQty(order.remainingSize), new CumQty(order.size), new AvgPx(0.00))
+    val executionReport = new ExecutionReport(new OrderID(order.clOrdId), new ExecID(rejectionDetails.execID.toString), execType, ordStatus, side, new LeavesQty(order.leaveQty), new CumQty(order.qty), new AvgPx(0.00))
     executionReport.set(new LastPx(0.00))
     executionReport.set(new LastQty(0.00))
     executionReport.set(new TransactTime(rejectionDetails.rejectDateTime.toDate))
@@ -78,6 +78,6 @@ class ResponseFixResponseSender extends ResponseHandler {
     executionReport.set(new Instrument(new Symbol(order.symbol)))
 
 
-    List((executionReport, sessionIDByTargetCompID(order.fixId)))
+    List((executionReport, sessionIDByTargetCompID(order.connector)))
   }
 }

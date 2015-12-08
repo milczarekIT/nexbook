@@ -10,7 +10,7 @@ import quickfix.fix44.NewOrderSingle
  */
 object FixOrderConverter {
 
-  def convert(fixOrder: NewOrderSingle): Order = {
+  def convert(fixOrder: NewOrderSingle): NewOrder = {
     def resolveSide(fixSide: Side): domain.Side = fixSide.getValue match {
       case Side.BUY => Buy
       case Side.SELL => Sell
@@ -18,8 +18,8 @@ object FixOrderConverter {
     def senderCompId: String = fixOrder.getHeader.getField(new SenderCompID()).getValue
 
     fixOrder.getOrdType.getValue match {
-      case OrdType.LIMIT => new LimitOrder(fixOrder.getClOrdID.getValue, fixOrder.getSymbol.getValue, fixOrder.getAccount.getValue, resolveSide(fixOrder.getSide), fixOrder.getOrderQty.getValue, fixOrder.getPrice.getValue, senderCompId)
-      case OrdType.MARKET => new MarketOrder(fixOrder.getClOrdID.getValue, fixOrder.getSymbol.getValue, fixOrder.getAccount.getValue, resolveSide(fixOrder.getSide), fixOrder.getOrderQty.getValue, senderCompId)
+      case OrdType.LIMIT => new NewLimitOrder(fixOrder.getClOrdID.getValue, fixOrder.getSymbol.getValue, fixOrder.getAccount.getValue, resolveSide(fixOrder.getSide), fixOrder.getOrderQty.getValue, fixOrder.getPrice.getValue, senderCompId)
+      case OrdType.MARKET => new NewMarketOrder(fixOrder.getClOrdID.getValue, fixOrder.getSymbol.getValue, fixOrder.getAccount.getValue, resolveSide(fixOrder.getSide), fixOrder.getOrderQty.getValue, senderCompId)
     }
   }
 

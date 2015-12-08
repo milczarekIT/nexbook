@@ -1,5 +1,6 @@
 package org.nexbook.core
 
+import org.joda.time.{DateTimeZone, DateTime}
 import org.mockito.ArgumentMatcher
 import org.nexbook.domain._
 import org.nexbook.orderprocessing.OrderProcessingResponseSender
@@ -16,10 +17,10 @@ import org.mockito.Matchers._
  */
 class OrderMatcherTest extends FlatSpec with Matchers {
 
+  val now = DateTime.now(DateTimeZone.UTC)
 
-
-  def limitOrder(side: Side = Buy, limit: Double = 4.32, size: Double  = 100) = LimitOrder("1", "EUR/PLN", "cl1", side, size, limit, Limit, "FIX1")
-  def marketOrder(side: Side = Buy, size: Double = 100) = MarketOrder("1", "EUR/PLN", "cl2", side, size, Market, "FIX2")
+  def limitOrder(side: Side = Buy, limit: Double = 4.32, size: Double  = 100, sequence: Long = 1) = LimitOrder(sequence, "EUR/PLN", "cl1", side, size, limit, "FIX1", now, "1", Limit)
+  def marketOrder(side: Side = Buy, size: Double = 100, sequence: Long = 2) = MarketOrder(sequence, "EUR/PLN", "cl2", side, size, "FIX2", now, "2", Market)
 
   "Empty OrderMatcher" should "send rejection for first MarketOrder" in {
     val execIDSequencer = new Sequencer
@@ -29,7 +30,7 @@ class OrderMatcherTest extends FlatSpec with Matchers {
 
     val marketOrder1 = marketOrder()
 
-    orderMatcher.acceptOrder(marketOrder1)
+    orderMatcher.processOrder(marketOrder1)
 
     orderBook.top(Buy) should be(None)
     orderBook.top(Sell) should be(None)
@@ -46,7 +47,7 @@ class OrderMatcherTest extends FlatSpec with Matchers {
 
     val order = limitOrder()
 
-    orderMatcher.acceptOrder(order)
+    orderMatcher.processOrder(order)
 
     orderBook.top(Buy)  should not be None
     orderBook.top(Buy).get shouldEqual order
@@ -68,16 +69,16 @@ class OrderMatcherTest extends FlatSpec with Matchers {
     val orderBuy = limitOrder(side = Buy, limit = price, size = size)
     val orderSell = limitOrder(side = Sell, limit = price, size = size)
 
-    orderBuy.size shouldEqual orderSell.size
+    orderBuy.qty shouldEqual orderSell.qty
     orderBuy.limit shouldEqual orderSell.limit
 
-    orderMatcher.acceptOrder(orderBuy)
+    orderMatcher.processOrder(orderBuy)
 
     orderBook.top(Buy)  should not be None
     orderBook.top(Buy).get shouldEqual orderBuy
     orderBook.top(Sell) should be (None)
 
-    orderMatcher.acceptOrder(orderSell)
+    orderMatcher.processOrder(orderSell)
 
     orderBook.top(Buy)  should be (None)
     orderBook.top(Sell) should be (None)
@@ -97,15 +98,15 @@ class OrderMatcherTest extends FlatSpec with Matchers {
     val orderBuy = limitOrder(side = Buy, limit = price, size = size)
     val orderSell = marketOrder(side = Sell, size = size)
 
-    orderBuy.size shouldEqual orderSell.size
+    orderBuy.qty shouldEqual orderSell.qty
 
-    orderMatcher.acceptOrder(orderBuy)
+    orderMatcher.processOrder(orderBuy)
 
     orderBook.top(Buy)  should not be None
     orderBook.top(Buy).get shouldEqual orderBuy
     orderBook.top(Sell) should be (None)
 
-    orderMatcher.acceptOrder(orderSell)
+    orderMatcher.processOrder(orderSell)
 
     orderBook.top(Buy)  should be (None)
     orderBook.top(Sell) should be (None)
@@ -122,23 +123,20 @@ class OrderMatcherTest extends FlatSpec with Matchers {
     val price = 4.32
     val size = 100
 
-    val orderBuy1 = limitOrder(side = Buy, limit = price, size = size / 2)
-    orderBuy1.setSequence(1)
-    val orderBuy2 = limitOrder(side = Buy, limit = price, size = size / 2)
-    orderBuy2.setSequence(2)
-    val orderSell = marketOrder(side = Sell, size = size)
-    orderSell.setSequence(3)
+    val orderBuy1 = limitOrder(side = Buy, limit = price, size = size / 2, sequence = 1)
+    val orderBuy2 = limitOrder(side = Buy, limit = price, size = size / 2, sequence = 2)
+    val orderSell = marketOrder(side = Sell, size = size, sequence = 3)
 
-    orderBuy1.size shouldEqual orderSell.size / 2
+    orderBuy1.qty shouldEqual orderSell.qty / 2
 
-    orderMatcher.acceptOrder(orderBuy1)
-    orderMatcher.acceptOrder(orderBuy2)
+    orderMatcher.processOrder(orderBuy1)
+    orderMatcher.processOrder(orderBuy2)
 
     orderBook.top(Buy)  should not be None
     orderBook.top(Buy).get shouldEqual orderBuy1
     orderBook.top(Sell) should be (None)
 
-    orderMatcher.acceptOrder(orderSell)
+    orderMatcher.processOrder(orderSell)
 
     orderBook.top(Buy)  should be (None)
     orderBook.top(Sell) should be (None)
@@ -156,23 +154,20 @@ class OrderMatcherTest extends FlatSpec with Matchers {
     val price = 4.32
     val size = 100
 
-    val orderBuy1 = limitOrder(side = Buy, limit = price, size = size)
-    orderBuy1.setSequence(1)
-    val orderBuy2 = limitOrder(side = Buy, limit = price, size = size)
-    orderBuy2.setSequence(2)
-    val orderSell = marketOrder(side = Sell, size = size * 3)
-    orderSell.setSequence(3)
+    val orderBuy1 = limitOrder(side = Buy, limit = price, size = size, sequence = 1)
+    val orderBuy2 = limitOrder(side = Buy, limit = price, size = size, sequence = 2)
+    val orderSell = marketOrder(side = Sell, size = size * 3, sequence = 3)
 
-    orderBuy1.size shouldEqual orderSell.size / 3
+    orderBuy1.qty shouldEqual orderSell.qty / 3
 
-    orderMatcher.acceptOrder(orderBuy1)
-    orderMatcher.acceptOrder(orderBuy2)
+    orderMatcher.processOrder(orderBuy1)
+    orderMatcher.processOrder(orderBuy2)
 
     orderBook.top(Buy)  should not be None
     orderBook.top(Buy).get shouldEqual orderBuy1
     orderBook.top(Sell) should be (None)
 
-    orderMatcher.acceptOrder(orderSell)
+    orderMatcher.processOrder(orderSell)
 
     orderBook.top(Buy)  should be (None)
     orderBook.top(Sell) should be (None)
@@ -191,14 +186,12 @@ class OrderMatcherTest extends FlatSpec with Matchers {
     val priceSell = 4.40
     val size = 100
 
-    val orderBuy = limitOrder(side = Buy, limit = priceBuy, size = size)
-    orderBuy.setSequence(1)
-    val orderSell = limitOrder(side = Sell, limit = priceSell, size = size)
-    orderSell.setSequence(2)
+    val orderBuy = limitOrder(side = Buy, limit = priceBuy, size = size, sequence = 1)
+    val orderSell = limitOrder(side = Sell, limit = priceSell, size = size, sequence = 2)
 
 
-    orderMatcher.acceptOrder(orderBuy)
-    orderMatcher.acceptOrder(orderSell)
+    orderMatcher.processOrder(orderBuy)
+    orderMatcher.processOrder(orderSell)
 
     orderBook.top(Buy)  should not be None
     orderBook.top(Buy).get shouldEqual orderBuy

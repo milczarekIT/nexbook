@@ -1,10 +1,10 @@
 package org.nexbook.core
 
 import org.nexbook.config.ConfigFactory
-import org.nexbook.domain.Order
+import org.nexbook.domain._
 import org.nexbook.orderprocessing.response.OrderValidationRejectionResponse
 import org.nexbook.orderprocessing.{OrderProcessingResponseLifecycleFactory, OrderProcessingResponseSender}
-import org.nexbook.repository.{OrderDatabaseRepository, OrderBookRepository, OrderRepository}
+import org.nexbook.repository.{OrderBookRepository, OrderDatabaseRepository}
 import org.nexbook.utils.{Clock, OrderValidator, ValidationError}
 import org.slf4j.LoggerFactory
 
@@ -24,19 +24,23 @@ class OrderHandler(orderBookRepository: OrderBookRepository, orderRepository: Or
     ConfigFactory.supportedCurrencyPairs.map(symbol => symbol -> orderMatcher(symbol)).toMap
   }
 
-  def handle(order: Order) {
-    def onValidationSuccess(order: Order) {
-      order.setSequence(sequencer.nextValue)
-      order.setTimestamp(clock.getCurrentDateTime)
-      logger.debug("Handled order: {} from: " + order.fixId, order)
-      orderRepository add order
-      orderMatchers.get(order.symbol).get.acceptOrder(order)
-    }
-    def onValidationError(order: Order, validationError: ValidationError) = orderProcessingSender.send(OrderValidationRejectionResponse(order, validationError.message))
+  def acceptOrder(newOrder: NewOrder) = newOrder match {
+    case l: NewLimitOrder => new LimitOrder(l, clock.getCurrentDateTime, sequencer.nextValue)
+    case m: NewMarketOrder => new MarketOrder(m, clock.getCurrentDateTime, sequencer.nextValue)
+  }
 
-    orderValidator.validate(order) match {
-      case None => onValidationSuccess(order)
-      case Some(validationError) => onValidationError(order, validationError)
+  def handle(newOrder: NewOrder) {
+    def onValidationSuccess(order: NewOrder) {
+      logger.debug("Handled order: {} from: " + order.connector, order)
+      val acceptedOrder = acceptOrder(newOrder)
+      orderRepository add acceptedOrder
+      orderMatchers.get(order.symbol).get.processOrder(acceptedOrder)
+    }
+    def onValidationError(order: NewOrder, validationError: ValidationError) = orderProcessingSender.send(OrderValidationRejectionResponse(newOrder, validationError.message))
+
+    orderValidator.validate(newOrder) match {
+      case None => onValidationSuccess(newOrder)
+      case Some(validationError) => onValidationError(newOrder, validationError)
     }
   }
 

@@ -3,79 +3,31 @@ package org.nexbook.domain
 import org.joda.time.DateTime
 import org.nexbook.utils.Assert
 
-trait Order {
+trait Order extends OrderDetails {
 
-  val tradeID: String
-  val symbol: String
-  val clientId: String
-  val size: Double
-  val side: Side
-  val orderType: OrderType
-  val fixId: String
-  private var timestampVal: DateTime = new DateTime(0)
-  private var fillSize: Double = 0.0
-  private var sequenceVal: Long = -1
+  val tradeID: Long
+  val timestamp: DateTime
+  private var filledQty: Double = 0.0
 
-  def setSequence(sequence: Long) = if (this.sequenceVal == -1) this.sequenceVal = sequence else throw new IllegalStateException("Sequence already set!")
-
-  def sequence = sequenceVal
-
-  def addFillSize(fill: Double) = {
-    Assert.isTrue(fill <= remainingSize)
-    this.fillSize += fill
+  def addFillQty(qty: Double) = {
+    Assert.isTrue(qty <= leaveQty)
+    this.filledQty += qty
   }
 
-  def remainingSize = size - fillSize
-
-  def setTimestamp(timestamp: DateTime) = this.timestampVal = timestamp
-
-  def timestamp = timestampVal
-}
-
-case class MarketOrder(tradeID: String, symbol: String, clientId: String, side: Side, size: Double, orderType: OrderType, fixId: String) extends Order {
-
-  def this(tradeID: String, symbol: String, clientId: String, side: Side, size: Double, fixId: String) = this(tradeID, symbol, clientId, side, size, Market, fixId: String)
-}
-
-
-case class LimitOrder(tradeID: String, symbol: String, clientId: String, side: Side, size: Double, limit: Double, orderType: OrderType, fixId: String) extends Order {
-
-  def this(tradeID: String, symbol: String, clientId: String, side: Side, size: Double, limit: Double, fixId: String) = this(tradeID, symbol, clientId, side, size, limit, Limit, fixId: String)
+  def leaveQty = qty - filledQty
 
 }
 
-object OrderOrdering {
-  val timestampDesc = Ordering.fromLessThan[Order](timestampDescCompare(_, _))
-  val timestampAsc = Ordering.fromLessThan[Order](timestampAscCompare(_, _))
+case class MarketOrder(tradeID: Long, symbol: String, clientId: String, side: Side, qty: Double, connector: String, timestamp: DateTime, clOrdId: String, orderType: OrderType = Market) extends Order {
 
-  val sequenceAsc = Ordering.fromLessThan[Long](_ < _)
-
-  val bookBuyOrdering = Ordering.fromLessThan[LimitOrder](bookBuyCompare(_, _))
-  val bookSellOrdering = Ordering.fromLessThan[LimitOrder](bookSellCompare(_, _))
-
-  private def timestampDescCompare(o1: Order, o2: Order): Boolean = {
-    if (o1.timestamp isEqual o2.timestamp) o1.sequence < o2.sequence
-    else o1.timestamp isAfter o2.timestamp
-  }
-
-  private def timestampAscCompare(o1: Order, o2: Order): Boolean = {
-    if (o1.timestamp isEqual o2.timestamp) o1.sequence < o2.sequence
-    else o1.timestamp isBefore o2.timestamp
-  }
-
-  /**
-   * limit DESC
-   */
-  private def bookBuyCompare(o1: LimitOrder, o2: LimitOrder): Boolean = {
-    if (o1.limit == o2.limit) sequenceAsc.lt(o1.sequence, o2.sequence)
-    else o1.limit > o2.limit
-  }
-
-  /**
-   * limit ASC
-   */
-  private def bookSellCompare(o1: LimitOrder, o2: LimitOrder): Boolean = {
-    if (o1.limit == o2.limit) sequenceAsc.lt(o1.sequence, o2.sequence)
-    else o1.limit < o2.limit
-  }
+  def this(newOrder: NewMarketOrder, timestamp: DateTime, tradeID: Long) = this(tradeID, newOrder.symbol, newOrder.clientId, newOrder.side, newOrder.qty, newOrder.connector, timestamp, newOrder.clOrdId)
 }
+
+
+case class LimitOrder(tradeID: Long, symbol: String, clientId: String, side: Side, qty: Double, limit: Double, connector: String, timestamp: DateTime, clOrdId: String, orderType: OrderType = Limit) extends Order {
+
+  def this(newOrder: NewLimitOrder, timestamp: DateTime, tradeID: Long) = this(tradeID, newOrder.symbol, newOrder.clientId, newOrder.side, newOrder.qty, newOrder.limit, newOrder.connector, timestamp, newOrder.clOrdId)
+
+}
+
+

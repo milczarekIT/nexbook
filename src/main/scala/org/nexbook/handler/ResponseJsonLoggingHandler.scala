@@ -26,9 +26,4 @@ class ResponseJsonLoggingHandler extends ResponseHandler {
   override def handle(response: OrderProcessingResponse) = logger.debug(buildLogLine(response.payload))
 
 
-
-
-
-
-
 }

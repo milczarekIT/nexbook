@@ -7,7 +7,7 @@ import org.nexbook.handler.{GeneralResponseHandler, ResponseFixResponseSender, R
 import org.nexbook.orderprocessing.OrderProcessingResponseLifecycleFactory
 import org.nexbook.orderprocessing.actors.ActorsOrderProcessingResponseLifecycleFactory
 import org.nexbook.orderprocessing.publishsubscribe.PubSubOrderProcessingResponseLifecycleFactory
-import org.nexbook.repository.{OrderDatabaseRepository, OrderBookRepository, OrderRepository}
+import org.nexbook.repository.{OrderBookRepository, OrderDatabaseRepository, OrderRepository}
 import org.nexbook.utils.DefaultClock
 import org.slf4j.LoggerFactory
 

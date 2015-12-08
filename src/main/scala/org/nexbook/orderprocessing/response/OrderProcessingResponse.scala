@@ -1,6 +1,6 @@
 package org.nexbook.orderprocessing.response
 
-import org.nexbook.domain.{ProcessingResponse, DealDone, Order, OrderRejection}
+import org.nexbook.domain._
 
 sealed trait OrderProcessingResponse {
 
@@ -11,7 +11,7 @@ case class OrderRejectionResponse(rejection: OrderRejection) extends OrderProces
   override def payload: OrderRejection = rejection
 }
 
-case class OrderValidationRejectionResponse(order: Order, rejectReason: String) extends OrderProcessingResponse {
+case class OrderValidationRejectionResponse(order: NewOrder, rejectReason: String) extends OrderProcessingResponse {
   override def payload: ProcessingResponse = ???
 }
 

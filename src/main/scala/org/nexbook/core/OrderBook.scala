@@ -1,6 +1,7 @@
 package org.nexbook.core
 
 import org.nexbook.domain._
+import org.nexbook.utils.OrderOrdering
 
 import scala.collection.mutable.{SortedSet, TreeSet}
 

@@ -12,7 +12,7 @@ class OrderMatcher(execIDSequencer: Sequencer, book: OrderBook, orderSender: Ord
 
   val logger = LoggerFactory.getLogger(classOf[OrderMatcher])
 
-  def acceptOrder(order: Order) = this.synchronized {
+  def processOrder(order: Order) = this.synchronized {
     val firstCounterOrder = book top order.side.reverse
     val unfilledOrder = tryMatch(order, firstCounterOrder)
     unfilledOrder match {
@@ -26,7 +26,7 @@ class OrderMatcher(execIDSequencer: Sequencer, book: OrderBook, orderSender: Ord
     case None =>
       order match {
         case o: MarketOrder =>
-          logger.debug("Rejection for order: {} with remaining size: {}", o, o.remainingSize)
+          logger.debug("Rejection for order: {} with remaining size: {}", o, o.leaveQty)
           orderSender.send(OrderRejectionResponse(OrderRejection(execIDSequencer.nextValue, o, "No orders in book", clock.getCurrentDateTime)))
           None
         case o: LimitOrder => Some(o)
@@ -37,7 +37,7 @@ class OrderMatcher(execIDSequencer: Sequencer, book: OrderBook, orderSender: Ord
         logger.debug("Deal done: " + dealDone)
         orderSender.send(OrderExecutionResponse(dealDone))
 
-        if (order.remainingSize > 0) tryMatch(order, book top order.side.reverse)
+        if (order.leaveQty > 0) tryMatch(order, book top order.side.reverse)
         else None
       } else {
         Some(order.asInstanceOf[LimitOrder])
@@ -55,7 +55,7 @@ class OrderMatcher(execIDSequencer: Sequencer, book: OrderBook, orderSender: Ord
 
   private def matchOrders(order: Order, counterOrder: LimitOrder): DealDone = {
     val execDateTime = clock.getCurrentDateTime
-    def determineDealSize(order: Order, counter: LimitOrder): Double = if (order.remainingSize <= counter.remainingSize) order.remainingSize else counter.remainingSize
+    def determineDealSize(order: Order, counter: LimitOrder): Double = if (order.leaveQty <= counter.leaveQty) order.leaveQty else counter.leaveQty
     def determineDealPrice(order: Order, counter: LimitOrder): Double = order match {
       case o: MarketOrder => counter.limit
       case o: LimitOrder => if (o.limit == counter.limit) o.limit else BigDecimal((o.limit + counter.limit) / 2.0).setScale(5, RoundingMode.HALF_DOWN).toDouble
@@ -63,9 +63,9 @@ class OrderMatcher(execIDSequencer: Sequencer, book: OrderBook, orderSender: Ord
 
     val dealSize = determineDealSize(order, counterOrder)
     val dealPrice = determineDealPrice(order, counterOrder)
-    order addFillSize dealSize
-    counterOrder addFillSize dealSize
-    if (counterOrder.remainingSize == 0.00) {
+    order addFillQty dealSize
+    counterOrder addFillQty dealSize
+    if (counterOrder.leaveQty == 0.00) {
       book removeTop counterOrder.side
     }
     val buyOrder = if (order.side == Buy) order else counterOrder
