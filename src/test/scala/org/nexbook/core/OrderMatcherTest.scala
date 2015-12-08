@@ -180,6 +180,33 @@ class OrderMatcherTest extends FlatSpec with Matchers {
     verify(orderSender, times(2)).send(argThat(new OrderExecutionResponseArgumentMatcher(size, price)))
     verify(orderSender).send(argThat(new OrderRejectionResponseArgumentMatcher))
   }
+
+  "OrderMatcher" should "should add 2 counter order to books without any deals" in {
+    val execIDSequencer = new Sequencer
+    val orderBook = spy(new OrderBook)
+    val orderSender = mock[OrderProcessingResponseSender]
+    val orderMatcher = new OrderMatcher(execIDSequencer, orderBook, orderSender, new DefaultClock)
+
+    val priceBuy = 4.30
+    val priceSell = 4.40
+    val size = 100
+
+    val orderBuy = limitOrder(side = Buy, limit = priceBuy, size = size)
+    orderBuy.setSequence(1)
+    val orderSell = limitOrder(side = Sell, limit = priceSell, size = size)
+    orderSell.setSequence(2)
+
+
+    orderMatcher.acceptOrder(orderBuy)
+    orderMatcher.acceptOrder(orderSell)
+
+    orderBook.top(Buy)  should not be None
+    orderBook.top(Buy).get shouldEqual orderBuy
+    orderBook.top(Sell) should not be None
+    orderBook.top(Sell).get shouldEqual orderSell
+
+    verify(orderSender, never).send(any(classOf[OrderProcessingResponse]))
+  }
 }
 
 class OrderExecutionResponseArgumentMatcher(dealSize: Double, dealPrice: Double) extends ArgumentMatcher[OrderProcessingResponse] {
