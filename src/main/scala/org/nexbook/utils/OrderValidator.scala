@@ -22,13 +22,12 @@ class OrderValidator {
   def validate(order: Order): Option[ValidationError] = {
     def validate(order: Order, validations: List[OrderValidation]): Option[ValidationError] = validations match {
       case List() => None
-      case _ => {
+      case _ =>
         val result: Option[ValidationError] = validations.head.apply(order)
         result match {
           case None => validate(order, validations.tail)
           case _ => result
         }
-      }
 
     }
     validate(order, defaultValidations)

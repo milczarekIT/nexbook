@@ -16,23 +16,21 @@ class OrderMatcher(execIDSequencer: Sequencer, book: OrderBook, orderSender: Ord
     val firstCounterOrder = book top order.side.reverse
     val unfilledOrder = tryMatch(order, firstCounterOrder)
     unfilledOrder match {
-      case Some(unfilledOrder) => book add unfilledOrder
-      case _ => logger.trace("Order adhoc filled: {}", order)
+      case Some(unfilled) => book add unfilled
+      case _ => logger.info("Order adhoc filled: {}", order)
     }
 
   }
 
   protected def tryMatch(order: Order, firstCounterOrder: Option[LimitOrder]): Option[LimitOrder] = firstCounterOrder match {
-    case None => {
+    case None =>
       order match {
-        case o: MarketOrder => {
+        case o: MarketOrder =>
           orderSender.send(OrderRejectionResponse(OrderRejection(execIDSequencer.nextValue, o, "No orders in book", clock.getCurrentDateTime)))
           None
-        }
         case o: LimitOrder => Some(o)
       }
-    }
-    case Some(counterOrder) => {
+    case Some(counterOrder) =>
       if (ordersCrossing(order, counterOrder)) {
         val dealDone = matchOrders(order, counterOrder)
         logger.debug("Deal done: " + dealDone)
@@ -43,7 +41,6 @@ class OrderMatcher(execIDSequencer: Sequencer, book: OrderBook, orderSender: Ord
       } else {
         Some(order.asInstanceOf[LimitOrder])
       }
-    }
   }
 
   private def ordersCrossing(order: Order, counter: LimitOrder): Boolean = order match {
@@ -56,6 +53,7 @@ class OrderMatcher(execIDSequencer: Sequencer, book: OrderBook, orderSender: Ord
 
 
   private def matchOrders(order: Order, counterOrder: LimitOrder): DealDone = {
+    val execDateTime = clock.getCurrentDateTime
     def determineDealSize(order: Order, counter: LimitOrder): Double = if (order.remainingSize <= counter.remainingSize) order.remainingSize else counter.remainingSize
     def determineDealPrice(order: Order, counter: LimitOrder): Double = order match {
       case o: MarketOrder => counter.limit
@@ -72,7 +70,7 @@ class OrderMatcher(execIDSequencer: Sequencer, book: OrderBook, orderSender: Ord
     val buyOrder = if (order.side == Buy) order else counterOrder
     val sellOrder = if (order.side == Buy) counterOrder else order
 
-    DealDone(execIDSequencer.nextValue, buyOrder, sellOrder, dealSize, dealPrice, clock.getCurrentDateTime)
+    DealDone(execIDSequencer.nextValue, buyOrder, sellOrder, dealSize, dealPrice, execDateTime)
   }
 
 }

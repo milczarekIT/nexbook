@@ -11,6 +11,7 @@ resolvers += "Sonatype OSS" at "https://oss.sonatype.org/content/repositories/re
 libraryDependencies ++= Seq(
   "joda-time" % "joda-time" % "2.8.1",
   "org.scalatest" % "scalatest_2.11" % "2.2.5",
+  "org.mockito" % "mockito-all" % "1.10.19",
   "org.apache.mina" % "mina-core" % "1.1.7",
   "org.slf4j" % "slf4j-api" % "1.7.5",
   "ch.qos.logback" % "logback-classic" % "1.0.13",

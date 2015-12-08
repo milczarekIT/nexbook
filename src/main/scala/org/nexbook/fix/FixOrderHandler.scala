@@ -1,6 +1,7 @@
 package org.nexbook.fix
 
 import org.nexbook.core.OrderHandler
+import org.nexbook.domain.Order
 import org.slf4j.LoggerFactory
 import quickfix._
 import quickfix.fix44.NewOrderSingle
