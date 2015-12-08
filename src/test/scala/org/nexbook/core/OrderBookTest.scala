@@ -1,6 +1,6 @@
 package org.nexbook.core
 
-import org.joda.time.{DateTimeZone, DateTime}
+import org.joda.time.{DateTime, DateTimeZone}
 import org.nexbook.domain.{Buy, LimitOrder, Sell}
 import org.scalatest._
 

@@ -6,7 +6,7 @@ import org.nexbook.repository.OrderDatabaseRepository
  * Created by milczu on 08.12.15.
  */
 class SequencerFactory(orderDatabaseRepository: OrderDatabaseRepository) {
-  
+
   val tradeIDSequencerName = "tradeIDSequencer"
   val execIDSequencerName = "execIDSequencer"
 

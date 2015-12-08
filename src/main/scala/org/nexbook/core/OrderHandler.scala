@@ -2,10 +2,10 @@ package org.nexbook.core
 
 import org.nexbook.config.ConfigFactory
 import org.nexbook.domain._
-import org.nexbook.sequence.{SequencerFactory}
 import org.nexbook.orderprocessing.response.OrderValidationRejectionResponse
 import org.nexbook.orderprocessing.{OrderProcessingResponseLifecycleFactory, OrderProcessingResponseSender}
-import org.nexbook.repository.{OrderChainedRepository, OrderBookRepository}
+import org.nexbook.repository.{OrderBookRepository, OrderChainedRepository}
+import org.nexbook.sequence.SequencerFactory
 import org.nexbook.utils.{Clock, OrderValidator, ValidationError}
 import org.slf4j.LoggerFactory
 

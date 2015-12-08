@@ -11,6 +11,7 @@ import scala.collection.immutable.List
 class OrderValidatorTest extends FlatSpec with Matchers {
 
   import org.scalatest.OptionValues._
+
   def sampleOrder(symbol: String = "EUR/PLN", size: Double = 1000.00): NewOrder = NewMarketOrder("a", symbol, "cl1", Buy, size, "FIX_ID")
 
   def createValidator(allowedSymbolsList: List[String]): OrderValidator = {

@@ -3,7 +3,6 @@ package org.nexbook.repository
 import org.nexbook.domain.Order
 
 
-
 class OrderChainedRepository(inMemoryRepository: OrderInMemoryRepository, databaseRepository: OrderDatabaseRepository) extends OrderRepository {
 
   def add(order: Order) = {

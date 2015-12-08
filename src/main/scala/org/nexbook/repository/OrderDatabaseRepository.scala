@@ -29,11 +29,11 @@ class OrderDatabaseRepository extends DatabaseRepository[Order] with OrderReposi
   }
 
   def findLastTradeID: Long = {
-    val q  = MongoDBObject.empty
+    val q = MongoDBObject.empty
     val fields = MongoDBObject("_id" -> 1)
     val descId = MongoDBObject("_id" -> -1)
     val cursor = collection.find(q, fields).sort(descId).limit(1)
-    if(cursor.isEmpty) 0 else cursor.next().getAsOrElse[Long]("_id", 0)
+    if (cursor.isEmpty) 0 else cursor.next().getAsOrElse[Long]("_id", 0)
   }
 
 }

@@ -1,6 +1,6 @@
 package org.nexbook.repository
 
-import org.joda.time.{DateTimeZone, DateTime}
+import org.joda.time.{DateTime, DateTimeZone}
 import org.nexbook.domain.{Buy, MarketOrder}
 import org.scalatest._
 
