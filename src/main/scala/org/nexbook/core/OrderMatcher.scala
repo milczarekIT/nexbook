@@ -17,7 +17,7 @@ class OrderMatcher(execIDSequencer: Sequencer, book: OrderBook, orderSender: Ord
     val unfilledOrder = tryMatch(order, firstCounterOrder)
     unfilledOrder match {
       case Some(unfilled) => book add unfilled
-      case _ => logger.info("Order adhoc filled: {}", order)
+      case _ => logger.info("Order adhoc filled or rejected: {}", order)
     }
 
   }
@@ -26,6 +26,7 @@ class OrderMatcher(execIDSequencer: Sequencer, book: OrderBook, orderSender: Ord
     case None =>
       order match {
         case o: MarketOrder =>
+          logger.debug("Rejection for order: {} with remaining size: {}", o, o.remainingSize)
           orderSender.send(OrderRejectionResponse(OrderRejection(execIDSequencer.nextValue, o, "No orders in book", clock.getCurrentDateTime)))
           None
         case o: LimitOrder => Some(o)

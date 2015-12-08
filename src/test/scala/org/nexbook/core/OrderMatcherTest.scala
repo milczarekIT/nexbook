@@ -10,7 +10,6 @@ import org.scalatest.mock.MockitoSugar._
 import org.mockito.Mockito.{verify, spy, never, times}
 import org.mockito.Matchers._
 
-import scala.None
 
 /**
  * Created by milczu on 08.12.15.
@@ -67,7 +66,7 @@ class OrderMatcherTest extends FlatSpec with Matchers {
     val size = 100
 
     val orderBuy = limitOrder(side = Buy, limit = price, size = size)
-    val orderSell = limitOrder(side = Sell)
+    val orderSell = limitOrder(side = Sell, limit = price, size = size)
 
     orderBuy.size shouldEqual orderSell.size
     orderBuy.limit shouldEqual orderSell.limit
@@ -85,6 +84,102 @@ class OrderMatcherTest extends FlatSpec with Matchers {
 
     verify(orderSender).send(argThat(new OrderExecutionResponseArgumentMatcher(size, price)))
   }
+
+  "OrderMatcher" should "generate one deal: 2 orders on both sides with same size. First: Limit, Second: Market" in {
+    val execIDSequencer = new Sequencer
+    val orderBook = spy(new OrderBook)
+    val orderSender = mock[OrderProcessingResponseSender]
+    val orderMatcher = new OrderMatcher(execIDSequencer, orderBook, orderSender, new DefaultClock)
+
+    val price = 4.32
+    val size = 100
+
+    val orderBuy = limitOrder(side = Buy, limit = price, size = size)
+    val orderSell = marketOrder(side = Sell, size = size)
+
+    orderBuy.size shouldEqual orderSell.size
+
+    orderMatcher.acceptOrder(orderBuy)
+
+    orderBook.top(Buy)  should not be None
+    orderBook.top(Buy).get shouldEqual orderBuy
+    orderBook.top(Sell) should be (None)
+
+    orderMatcher.acceptOrder(orderSell)
+
+    orderBook.top(Buy)  should be (None)
+    orderBook.top(Sell) should be (None)
+
+    verify(orderSender).send(argThat(new OrderExecutionResponseArgumentMatcher(size, price)))
+  }
+
+  "OrderMatcher" should "generate 2 deals: 2 buy orders, 1 sell order, with same size. Size is matching, Fulfill" in {
+    val execIDSequencer = new Sequencer
+    val orderBook = spy(new OrderBook)
+    val orderSender = mock[OrderProcessingResponseSender]
+    val orderMatcher = new OrderMatcher(execIDSequencer, orderBook, orderSender, new DefaultClock)
+
+    val price = 4.32
+    val size = 100
+
+    val orderBuy1 = limitOrder(side = Buy, limit = price, size = size / 2)
+    orderBuy1.setSequence(1)
+    val orderBuy2 = limitOrder(side = Buy, limit = price, size = size / 2)
+    orderBuy2.setSequence(2)
+    val orderSell = marketOrder(side = Sell, size = size)
+    orderSell.setSequence(3)
+
+    orderBuy1.size shouldEqual orderSell.size / 2
+
+    orderMatcher.acceptOrder(orderBuy1)
+    orderMatcher.acceptOrder(orderBuy2)
+
+    orderBook.top(Buy)  should not be None
+    orderBook.top(Buy).get shouldEqual orderBuy1
+    orderBook.top(Sell) should be (None)
+
+    orderMatcher.acceptOrder(orderSell)
+
+    orderBook.top(Buy)  should be (None)
+    orderBook.top(Sell) should be (None)
+
+    verify(orderSender, times(2)).send(argThat(new OrderExecutionResponseArgumentMatcher(size / 2, price)))
+    verify(orderSender, never).send(argThat(new OrderRejectionResponseArgumentMatcher))
+  }
+
+  "OrderMatcher" should "generate 2 deals: 2 buy orders, 1 sell order and 1 rejection" in {
+    val execIDSequencer = new Sequencer
+    val orderBook = spy(new OrderBook)
+    val orderSender = mock[OrderProcessingResponseSender]
+    val orderMatcher = new OrderMatcher(execIDSequencer, orderBook, orderSender, new DefaultClock)
+
+    val price = 4.32
+    val size = 100
+
+    val orderBuy1 = limitOrder(side = Buy, limit = price, size = size)
+    orderBuy1.setSequence(1)
+    val orderBuy2 = limitOrder(side = Buy, limit = price, size = size)
+    orderBuy2.setSequence(2)
+    val orderSell = marketOrder(side = Sell, size = size * 3)
+    orderSell.setSequence(3)
+
+    orderBuy1.size shouldEqual orderSell.size / 3
+
+    orderMatcher.acceptOrder(orderBuy1)
+    orderMatcher.acceptOrder(orderBuy2)
+
+    orderBook.top(Buy)  should not be None
+    orderBook.top(Buy).get shouldEqual orderBuy1
+    orderBook.top(Sell) should be (None)
+
+    orderMatcher.acceptOrder(orderSell)
+
+    orderBook.top(Buy)  should be (None)
+    orderBook.top(Sell) should be (None)
+
+    verify(orderSender, times(2)).send(argThat(new OrderExecutionResponseArgumentMatcher(size, price)))
+    verify(orderSender).send(argThat(new OrderRejectionResponseArgumentMatcher))
+  }
 }
 
 class OrderExecutionResponseArgumentMatcher(dealSize: Double, dealPrice: Double) extends ArgumentMatcher[OrderProcessingResponse] {
@@ -99,4 +194,8 @@ class OrderExecutionResponseArgumentMatcher(dealSize: Double, dealPrice: Double)
       matchesDealSize(dealDone) && matchesDealPrice(dealDone)
       }
   }
+}
+
+class OrderRejectionResponseArgumentMatcher extends ArgumentMatcher[OrderProcessingResponse] {
+  override def matches(argument: scala.Any): Boolean = argument.isInstanceOf[OrderRejectionResponse]
 }
