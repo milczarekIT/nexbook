@@ -2,17 +2,18 @@ package org.nexbook.core
 
 import org.nexbook.config.ConfigFactory
 import org.nexbook.domain._
+import org.nexbook.sequence.{SequencerFactory}
 import org.nexbook.orderprocessing.response.OrderValidationRejectionResponse
 import org.nexbook.orderprocessing.{OrderProcessingResponseLifecycleFactory, OrderProcessingResponseSender}
-import org.nexbook.repository.{OrderBookRepository, OrderDatabaseRepository}
+import org.nexbook.repository.{OrderChainedRepository, OrderBookRepository}
 import org.nexbook.utils.{Clock, OrderValidator, ValidationError}
 import org.slf4j.LoggerFactory
 
 
-class OrderHandler(orderBookRepository: OrderBookRepository, orderRepository: OrderDatabaseRepository, orderProcessingResponseLifecycleFactory: OrderProcessingResponseLifecycleFactory, clock: Clock) {
+class OrderHandler(orderBookRepository: OrderBookRepository, orderRepository: OrderChainedRepository, orderProcessingResponseLifecycleFactory: OrderProcessingResponseLifecycleFactory, clock: Clock, sequencerFactory: SequencerFactory) {
   val logger = LoggerFactory.getLogger(classOf[OrderHandler])
-  val sequencer = new Sequencer
-  val execIDSequencer = new Sequencer
+  val sequencer = sequencerFactory.getSequencer(sequencerFactory.tradeIDSequencerName)
+  val execIDSequencer = sequencerFactory.getSequencer(sequencerFactory.execIDSequencerName)
   val orderValidator = new OrderValidator
   val orderProcessingSender: OrderProcessingResponseSender = orderProcessingResponseLifecycleFactory.sender
 

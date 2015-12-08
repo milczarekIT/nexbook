@@ -6,17 +6,17 @@ import org.scalatest._
 
 import scala.collection.immutable.List
 
-class OrderRepositoryTest extends FlatSpec with Matchers {
+class OrderInMemoryRepositoryTest extends FlatSpec with Matchers {
 
   val now = DateTime.now(DateTimeZone.UTC)
 
   "A new OrderRepository" should "be empty" in {
-    val repository = new OrderRepository
+    val repository = new OrderInMemoryRepository
     repository.findAll should be(List.empty)
   }
 
   "OrderRepository" should "not contains duplicates" in {
-    val repository = new OrderRepository
+    val repository = new OrderInMemoryRepository
     val order = new MarketOrder(1, "EUR/USD", "client1", Buy, 100, "NEX", now, "1")
 
     repository add order
@@ -28,7 +28,7 @@ class OrderRepositoryTest extends FlatSpec with Matchers {
   }
 
   "OrderRepository" should "be orderdered by timestamp desc" in {
-    val repository = new OrderRepository
+    val repository = new OrderInMemoryRepository
     val now = DateTime.now(DateTimeZone.UTC)
 
     val order1 = new MarketOrder(1, "EUR/USD", "client1", Buy, 100, "NEX", now.minusSeconds(10), "1")

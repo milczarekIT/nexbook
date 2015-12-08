@@ -1,4 +1,4 @@
-package org.nexbook.generator
+package org.nexbook.sequence
 
 import org.scalatest.{FlatSpec, Matchers}
 

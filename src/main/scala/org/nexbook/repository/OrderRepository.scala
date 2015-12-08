@@ -1,16 +1,13 @@
 package org.nexbook.repository
 
 import org.nexbook.domain.Order
-import org.nexbook.utils.OrderOrdering
 
-import scala.collection.mutable
+/**
+ * Created by milczu on 08.12.15.
+ */
+trait OrderRepository {
 
-class OrderRepository {
-  val timestampDescOrdering = OrderOrdering.timestampDesc
-  val orders = mutable.TreeSet.empty(timestampDescOrdering)
+  def add(order: Order)
 
-  def add(order: Order) = orders += order
-
-  def findAll: List[Order] = orders.toList
-
+  def findAll: List[Order]
 }

@@ -1,4 +1,4 @@
-package org.nexbook.generator
+package org.nexbook.sequence
 
 import java.util.concurrent.atomic.AtomicLong
 

@@ -1,6 +1,7 @@
 package org.nexbook.core
 
 import org.nexbook.domain._
+import org.nexbook.sequence.Sequencer
 import org.nexbook.orderprocessing.OrderProcessingResponseSender
 import org.nexbook.orderprocessing.response.{OrderExecutionResponse, OrderRejectionResponse}
 import org.nexbook.utils.Clock
