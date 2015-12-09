@@ -3,7 +3,7 @@ package org.nexbook.domain
 /**
  * Created by milczu on 08.12.15.
  */
-trait OrderDetails {
+trait TradeDetails {
 
   val symbol: String
   val clientId: String
@@ -12,4 +12,6 @@ trait OrderDetails {
   val orderType: OrderType
   val connector: String
   val clOrdId: String
+
+  def status: OrderStatus
 }

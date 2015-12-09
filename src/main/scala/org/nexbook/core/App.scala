@@ -3,11 +3,11 @@ package org.nexbook.core
 import com.softwaremill.macwire._
 import com.typesafe.config.ConfigFactory
 import org.nexbook.fix.{FixOrderHandler, FixOrderHandlerRunner}
-import org.nexbook.handler.{GeneralResponseHandler, ResponseFixResponseSender, ResponseHandler, ResponseJsonLoggingHandler}
-import org.nexbook.orderprocessing.OrderProcessingResponseLifecycleFactory
+import org.nexbook.handler._
 import org.nexbook.orderprocessing.actors.ActorsOrderProcessingResponseLifecycleFactory
 import org.nexbook.orderprocessing.publishsubscribe.PubSubOrderProcessingResponseLifecycleFactory
-import org.nexbook.repository.{OrderBookRepository, OrderChainedRepository, OrderDatabaseRepository, OrderInMemoryRepository}
+import org.nexbook.orderprocessing.{OrderProcessingResponseLifecycleFactory, OrderProcessingResponseSender}
+import org.nexbook.repository._
 import org.nexbook.sequence.SequencerFactory
 import org.nexbook.utils.DefaultClock
 import org.slf4j.LoggerFactory
@@ -19,15 +19,17 @@ object App {
   val config = ConfigFactory.load()
   val fixConfigPath = config.getString("org.nexbook.fix.config.path")
 
-  val orderBookRepository = wire[OrderBookRepository]
   val orderInMemoryRepository = wire[OrderInMemoryRepository]
   val orderDatabaseRepository = wire[OrderDatabaseRepository]
   val orderRepository = wire[OrderChainedRepository]
+  val executionDatabaseRepository = wire[ExecutionDatabaseRepository]
   val mode = config.getString("org.nexbook.mode")
   val generalResponseHandler = wire[GeneralResponseHandler]
   val clock = new DefaultClock
   val sequencerFactory = wire[SequencerFactory]
+  val orderMatchersRepository = wire[OrderMatchersRepository]
   val orderHandler = wire[OrderHandler]
+  val orderCancelHandler = wire[OrderCancelHandler]
 
   def resolveLifeCycleFactory: OrderProcessingResponseLifecycleFactory = mode match {
     case "PubSub" => wire[PubSubOrderProcessingResponseLifecycleFactory]
@@ -35,7 +37,9 @@ object App {
     case _ => throw new IllegalArgumentException
   }
 
-  def responseHandlers: List[ResponseHandler] = List(wire[ResponseJsonLoggingHandler], wire[ResponseFixResponseSender])
+  def orderProcessingResponseSender: OrderProcessingResponseSender = resolveLifeCycleFactory.sender
+
+  def responseHandlers: List[ResponseHandler] = List(wire[ResponseJsonLoggingHandler], wire[ResponseTradeDatabaseSaver], wire[ResponseFixResponseSender])
 
   def main(args: Array[String]) {
     LOGGER.info("NexBook starting")

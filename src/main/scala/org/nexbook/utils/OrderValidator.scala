@@ -23,7 +23,7 @@ class OrderValidator {
     def validate(order: NewOrder, validations: List[OrderValidation]): Option[ValidationError] = validations match {
       case List() => None
       case _ =>
-        val result: Option[ValidationError] = validations.head.apply(order)
+        val result: Option[ValidationError] = validations.head(order)
         result match {
           case None => validate(order, validations.tail)
           case _ => result

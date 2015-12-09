@@ -12,7 +12,7 @@ trait DatabaseRepository[T] {
   val dbConfig = ConfigFactory.load().getConfig("org.nexbook.mongo")
   val (host, port, db) = (dbConfig.getString("host"), dbConfig.getInt("port"), dbConfig.getString("dbName"))
   val client = MongoClient(host, port)(db)
-  val findAllLimit = 1000
+  val findAllLimit = 10000
 
   protected val collectionName: String
 
@@ -28,5 +28,13 @@ trait DatabaseRepository[T] {
   def findAll(): List[T] = {
     val cursor = collection.find().sort(MongoDBObject("_id" -> -1)).limit(findAllLimit)
     (for (x <- cursor) yield deserialize(x)).toList
+  }
+
+  protected def findMaxNumericField(fieldName: String): Long = {
+    val q = MongoDBObject.empty
+    val fields = MongoDBObject(fieldName -> 1)
+    val descId = MongoDBObject(fieldName -> -1)
+    val cursor = collection.find(q, fields).sort(descId).limit(1)
+    if (cursor.isEmpty) 0 else cursor.next().as[Long](fieldName)
   }
 }

@@ -1,26 +1,37 @@
 package org.nexbook.core
 
+import org.joda.time.DateTime
 import org.nexbook.domain._
 import org.nexbook.orderprocessing.OrderProcessingResponseSender
-import org.nexbook.orderprocessing.response.{OrderExecutionResponse, OrderRejectionResponse}
-import org.nexbook.sequence.Sequencer
+import org.nexbook.orderprocessing.response.{OrderAcceptResponse, OrderExecutionResponse, OrderRejectionResponse}
+import org.nexbook.repository.OrderInMemoryRepository
+import org.nexbook.sequence.SequencerFactory
 import org.nexbook.utils.Clock
 import org.slf4j.LoggerFactory
 
 import scala.math.BigDecimal.RoundingMode
 
-class OrderMatcher(execIDSequencer: Sequencer, book: OrderBook, orderSender: OrderProcessingResponseSender, clock: Clock) {
+class OrderMatcher(orderRepository: OrderInMemoryRepository, sequencerFactory: SequencerFactory, book: OrderBook, orderProcessingSender: OrderProcessingResponseSender, clock: Clock) {
 
   val logger = LoggerFactory.getLogger(classOf[OrderMatcher])
 
-  def processOrder(order: Order) = this.synchronized {
-    val firstCounterOrder = book top order.side.reverse
-    val unfilledOrder = tryMatch(order, firstCounterOrder)
-    unfilledOrder match {
-      case Some(unfilled) => book add unfilled
-      case _ => logger.info("Order adhoc filled or rejected: {}", order)
-    }
+  import org.nexbook.sequence.SequencerFactory._
 
+  val tradeIDSequencer = sequencerFactory sequencer tradeIDSequencerName
+  val execIDSequencer = sequencerFactory sequencer execIDSequencerName
+
+  def processOrder(order: Order) = this.synchronized {
+    orderRepository add order
+    order match {
+      case cancel: OrderCancel => tryCancel(cancel)
+      case _ =>
+        val firstCounterOrder = book top order.side.reverse
+        val unfilledOrder = tryMatch(order, firstCounterOrder)
+        unfilledOrder match {
+          case Some(unfilled) => book add unfilled
+          case _ => logger.trace("Order ad-hoc filled or rejected: {}", order)
+        }
+    }
   }
 
   protected def tryMatch(order: Order, firstCounterOrder: Option[LimitOrder]): Option[LimitOrder] = firstCounterOrder match {
@@ -28,7 +39,7 @@ class OrderMatcher(execIDSequencer: Sequencer, book: OrderBook, orderSender: Ord
       order match {
         case o: MarketOrder =>
           logger.debug("Rejection for order: {} with remaining size: {}", o, o.leaveQty)
-          orderSender.send(OrderRejectionResponse(OrderRejection(execIDSequencer.nextValue, o, "No orders in book", clock.getCurrentDateTime)))
+          orderProcessingSender.send(OrderRejectionResponse(new OrderRejection(tradeIDSequencer.nextValue, execIDSequencer.nextValue, o, clock.getCurrentDateTime, "No orders in book")))
           None
         case o: LimitOrder => Some(o)
       }
@@ -36,7 +47,7 @@ class OrderMatcher(execIDSequencer: Sequencer, book: OrderBook, orderSender: Ord
       if (ordersCrossing(order, counterOrder)) {
         val dealDone = matchOrders(order, counterOrder)
         logger.debug("Deal done: " + dealDone)
-        orderSender.send(OrderExecutionResponse(dealDone))
+        dealDoneToExecutions(dealDone).foreach(execution => orderProcessingSender.send(OrderExecutionResponse(execution)))
 
         if (order.leaveQty > 0) tryMatch(order, book top order.side.reverse)
         else None
@@ -74,6 +85,34 @@ class OrderMatcher(execIDSequencer: Sequencer, book: OrderBook, orderSender: Ord
 
     DealDone(execIDSequencer.nextValue, buyOrder, sellOrder, dealSize, dealPrice, execDateTime)
   }
+
+  def tryCancel(orderCancel: OrderCancel): Unit = {
+    logger.info("Handled order cancel: {}", orderCancel)
+    book find(orderCancel.side, orderCancel.dealID) match {
+      case Some(order) =>
+        if (OrderStatus.orderFinishedStatuses.contains(order.status)) {
+          logger.warn("Unable to cancel order by {}. Order {} already finished", orderCancel.tradeID, orderCancel.dealID)
+        } else {
+          book remove order
+          orderRepository.updateStatus(order.tradeID, Cancelled, order.status)
+          orderProcessingSender.send(OrderAcceptResponse(orderCancel))
+        }
+      case None =>
+        orderRepository.findById(orderCancel.dealID) match {
+          case Some(o) => logger.debug("Unable to cancel order: {}. Order to cancel not found. Cancelling order: {}. Orig Order status " + o.status.toString, orderCancel.dealID, orderCancel.tradeID)
+          case None => logger.debug("Unable to cancel order: {}. Order to cancel not found. Cancelling order: {}", orderCancel.dealID, orderCancel.tradeID)
+        }
+
+    }
+  }
+
+  def dealDoneToExecutions(dealDone: DealDone): List[OrderExecution] = {
+    val buyExecution = new OrderExecution(tradeIDSequencer.nextValue, dealDone.execID, dealDone.buy, dealDone.dealSize, dealDone.dealPrice, dealDone.executionTime)
+    val sellExecution = new OrderExecution(tradeIDSequencer.nextValue, dealDone.execID, dealDone.sell, dealDone.dealSize, dealDone.dealPrice, dealDone.executionTime)
+    List(buyExecution, sellExecution)
+  }
+
+  case class DealDone(execID: Long, buy: Order, sell: Order, dealSize: Double, dealPrice: Double, executionTime: DateTime)
 
 }
 

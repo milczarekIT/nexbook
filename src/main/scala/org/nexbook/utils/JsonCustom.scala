@@ -1,13 +1,13 @@
 package org.nexbook.utils
 
 import net.liftweb.json._
-import org.nexbook.domain.{OrderType, Side}
+import org.nexbook.domain.{OrderStatus, OrderType, Side}
 
 /**
- * Created by milczu on 07.12.15.
+ * Created by milczu on 07.12.15
  */
 object JsonCustom {
-  val allCustomFormats = List(OrderTypeSerializer, SideSerializer)
+  val allCustomFormats = List(OrderTypeSerializer, SideSerializer, OrderStatusSerializer)
 
   case object OrderTypeSerializer extends CustomSerializer[OrderType](format => ( {
     case JString(o) => OrderType.fromString(o)
@@ -21,6 +21,13 @@ object JsonCustom {
     case JNull => null
   }, {
     case s: Side => JString(s.toString)
+  }))
+
+  case object OrderStatusSerializer extends CustomSerializer[OrderStatus](format => ( {
+    case JString(o) => OrderStatus.fromString(o)
+    case JNull => null
+  }, {
+    case o: OrderStatus => JString(o.toString)
   }))
 
   class CustomSerializer[A: Manifest](ser: Formats => (PartialFunction[JValue, A], PartialFunction[Any, JValue])) extends Serializer[A] {

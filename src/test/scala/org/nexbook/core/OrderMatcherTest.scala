@@ -7,7 +7,8 @@ import org.mockito.Mockito.{never, spy, times, verify}
 import org.nexbook.domain._
 import org.nexbook.orderprocessing.OrderProcessingResponseSender
 import org.nexbook.orderprocessing.response.{OrderExecutionResponse, OrderProcessingResponse, OrderRejectionResponse}
-import org.nexbook.sequence.Sequencer
+import org.nexbook.repository.{ExecutionDatabaseRepository, OrderDatabaseRepository, OrderInMemoryRepository}
+import org.nexbook.sequence.SequencerFactory
 import org.nexbook.utils.DefaultClock
 import org.scalatest.mock.MockitoSugar._
 import org.scalatest.{FlatSpec, Matchers}
@@ -24,11 +25,13 @@ class OrderMatcherTest extends FlatSpec with Matchers {
 
   def marketOrder(side: Side = Buy, size: Double = 100, sequence: Long = 2) = MarketOrder(sequence, "EUR/PLN", "cl2", side, size, "FIX2", now, "2", Market)
 
+  val orderInMemoryRepository = mock[OrderInMemoryRepository]
+  val sequencerFactory = new SequencerFactory(mock[OrderDatabaseRepository], mock[ExecutionDatabaseRepository])
+
   "Empty OrderMatcher" should "send rejection for first MarketOrder" in {
-    val execIDSequencer = new Sequencer
     val orderBook = spy(new OrderBook)
     val orderSender = mock[OrderProcessingResponseSender]
-    val orderMatcher = new OrderMatcher(execIDSequencer, orderBook, orderSender, new DefaultClock)
+    val orderMatcher = new OrderMatcher(orderInMemoryRepository, sequencerFactory, orderBook, orderSender, new DefaultClock)
 
     val marketOrder1 = marketOrder()
 
@@ -42,10 +45,9 @@ class OrderMatcherTest extends FlatSpec with Matchers {
   }
 
   "Empty OrderMatcher" should "should add original LimitOrder to OrderBook" in {
-    val execIDSequencer = new Sequencer
     val orderBook = spy(new OrderBook)
     val orderSender = mock[OrderProcessingResponseSender]
-    val orderMatcher = new OrderMatcher(execIDSequencer, orderBook, orderSender, new DefaultClock)
+    val orderMatcher = new OrderMatcher(orderInMemoryRepository, sequencerFactory, orderBook, orderSender, new DefaultClock)
 
     val order = limitOrder()
 
@@ -60,10 +62,9 @@ class OrderMatcherTest extends FlatSpec with Matchers {
   }
 
   "OrderMatcher" should "generate one deal: 2 orders on both sides with same size and price" in {
-    val execIDSequencer = new Sequencer
     val orderBook = spy(new OrderBook)
     val orderSender = mock[OrderProcessingResponseSender]
-    val orderMatcher = new OrderMatcher(execIDSequencer, orderBook, orderSender, new DefaultClock)
+    val orderMatcher = new OrderMatcher(orderInMemoryRepository, sequencerFactory, orderBook, orderSender, new DefaultClock)
 
     val price = 4.32
     val size = 100
@@ -85,14 +86,13 @@ class OrderMatcherTest extends FlatSpec with Matchers {
     orderBook.top(Buy) should be(None)
     orderBook.top(Sell) should be(None)
 
-    verify(orderSender).send(argThat(new OrderExecutionResponseArgumentMatcher(size, price)))
+    verify(orderSender, times(2)).send(argThat(new OrderExecutionResponseArgumentMatcher(size, price)))
   }
 
   "OrderMatcher" should "generate one deal: 2 orders on both sides with same size. First: Limit, Second: Market" in {
-    val execIDSequencer = new Sequencer
     val orderBook = spy(new OrderBook)
     val orderSender = mock[OrderProcessingResponseSender]
-    val orderMatcher = new OrderMatcher(execIDSequencer, orderBook, orderSender, new DefaultClock)
+    val orderMatcher = new OrderMatcher(orderInMemoryRepository, sequencerFactory, orderBook, orderSender, new DefaultClock)
 
     val price = 4.32
     val size = 100
@@ -105,22 +105,21 @@ class OrderMatcherTest extends FlatSpec with Matchers {
     orderMatcher.processOrder(orderBuy)
 
     orderBook.top(Buy) should not be None
-    orderBook.top(Buy).get shouldEqual orderBuy
-    orderBook.top(Sell) should be(None)
+    orderBook.top(Buy) should contain(orderBuy)
+    orderBook.top(Sell) shouldBe None
 
     orderMatcher.processOrder(orderSell)
 
-    orderBook.top(Buy) should be(None)
-    orderBook.top(Sell) should be(None)
+    orderBook.top(Buy) shouldBe None
+    orderBook.top(Sell) shouldBe None
 
-    verify(orderSender).send(argThat(new OrderExecutionResponseArgumentMatcher(size, price)))
+    verify(orderSender, times(2)).send(argThat(new OrderExecutionResponseArgumentMatcher(size, price)))
   }
 
   "OrderMatcher" should "generate 2 deals: 2 buy orders, 1 sell order, with same size. Size is matching, Fulfill" in {
-    val execIDSequencer = new Sequencer
     val orderBook = spy(new OrderBook)
     val orderSender = mock[OrderProcessingResponseSender]
-    val orderMatcher = new OrderMatcher(execIDSequencer, orderBook, orderSender, new DefaultClock)
+    val orderMatcher = new OrderMatcher(orderInMemoryRepository, sequencerFactory, orderBook, orderSender, new DefaultClock)
 
     val price = 4.32
     val size = 100
@@ -143,15 +142,14 @@ class OrderMatcherTest extends FlatSpec with Matchers {
     orderBook.top(Buy) should be(None)
     orderBook.top(Sell) should be(None)
 
-    verify(orderSender, times(2)).send(argThat(new OrderExecutionResponseArgumentMatcher(size / 2, price)))
+    verify(orderSender, times(4)).send(argThat(new OrderExecutionResponseArgumentMatcher(size / 2, price)))
     verify(orderSender, never).send(argThat(new OrderRejectionResponseArgumentMatcher))
   }
 
   "OrderMatcher" should "generate 2 deals: 2 buy orders, 1 sell order and 1 rejection" in {
-    val execIDSequencer = new Sequencer
     val orderBook = spy(new OrderBook)
     val orderSender = mock[OrderProcessingResponseSender]
-    val orderMatcher = new OrderMatcher(execIDSequencer, orderBook, orderSender, new DefaultClock)
+    val orderMatcher = new OrderMatcher(orderInMemoryRepository, sequencerFactory, orderBook, orderSender, new DefaultClock)
 
     val price = 4.32
     val size = 100
@@ -174,15 +172,14 @@ class OrderMatcherTest extends FlatSpec with Matchers {
     orderBook.top(Buy) should be(None)
     orderBook.top(Sell) should be(None)
 
-    verify(orderSender, times(2)).send(argThat(new OrderExecutionResponseArgumentMatcher(size, price)))
+    verify(orderSender, times(4)).send(argThat(new OrderExecutionResponseArgumentMatcher(size, price)))
     verify(orderSender).send(argThat(new OrderRejectionResponseArgumentMatcher))
   }
 
   "OrderMatcher" should "should add 2 counter order to books without any deals" in {
-    val execIDSequencer = new Sequencer
     val orderBook = spy(new OrderBook)
     val orderSender = mock[OrderProcessingResponseSender]
-    val orderMatcher = new OrderMatcher(execIDSequencer, orderBook, orderSender, new DefaultClock)
+    val orderMatcher = new OrderMatcher(orderInMemoryRepository, sequencerFactory, orderBook, orderSender, new DefaultClock)
 
     val priceBuy = 4.30
     val priceSell = 4.40
@@ -195,26 +192,26 @@ class OrderMatcherTest extends FlatSpec with Matchers {
     orderMatcher.processOrder(orderBuy)
     orderMatcher.processOrder(orderSell)
 
-    orderBook.top(Buy) should not be None
-    orderBook.top(Buy).get shouldEqual orderBuy
-    orderBook.top(Sell) should not be None
-    orderBook.top(Sell).get shouldEqual orderSell
+    orderBook.top(Buy) shouldNot be(None)
+    orderBook.top(Buy) should contain(orderBuy)
+    orderBook.top(Sell) shouldNot be(None)
+    orderBook.top(Sell) should contain(orderSell)
 
     verify(orderSender, never).send(any(classOf[OrderProcessingResponse]))
   }
 }
 
-class OrderExecutionResponseArgumentMatcher(dealSize: Double, dealPrice: Double) extends ArgumentMatcher[OrderProcessingResponse] {
+class OrderExecutionResponseArgumentMatcher(dealQty: Double, dealPrice: Double) extends ArgumentMatcher[OrderProcessingResponse] {
 
-  def matchesDealSize(dealDone: DealDone): Boolean = dealDone.dealSize == dealSize
+  def matchesDealSize(dealDone: OrderExecution): Boolean = dealDone.executionQty == dealQty
 
-  def matchesDealPrice(dealDone: DealDone): Boolean = dealDone.dealPrice == dealPrice
+  def matchesDealPrice(dealDone: OrderExecution): Boolean = dealDone.executionPrice == dealPrice
 
   override def matches(argument: scala.Any): Boolean = {
     if (!argument.isInstanceOf[OrderExecutionResponse]) false
     else {
-      val dealDone = argument.asInstanceOf[OrderExecutionResponse].dealDone
-      matchesDealSize(dealDone) && matchesDealPrice(dealDone)
+      val orderExecution = argument.asInstanceOf[OrderExecutionResponse].orderExecution
+      matchesDealSize(orderExecution) && matchesDealPrice(orderExecution)
     }
   }
 }

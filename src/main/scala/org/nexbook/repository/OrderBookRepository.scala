@@ -3,7 +3,7 @@ package org.nexbook.repository
 import org.nexbook.config.ConfigFactory
 import org.nexbook.core.OrderBook
 
-class OrderBookRepository {
+object OrderBookRepository {
   val orderBooks: Map[String, OrderBook] = init
 
   private def init: Map[String, OrderBook] = {

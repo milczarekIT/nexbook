@@ -4,17 +4,22 @@ import org.nexbook.domain._
 
 sealed trait OrderProcessingResponse {
 
-  def payload: ProcessingResponse
+  def payload: AnyRef
+}
+
+case class OrderAcceptResponse(order: Order) extends OrderProcessingResponse {
+  override def payload: Order = order
+}
+
+case class OrderExecutionResponse(orderExecution: OrderExecution) extends OrderProcessingResponse {
+  override def payload: OrderExecution = orderExecution
 }
 
 case class OrderRejectionResponse(rejection: OrderRejection) extends OrderProcessingResponse {
   override def payload: OrderRejection = rejection
 }
 
-case class OrderValidationRejectionResponse(order: NewOrder, rejectReason: String) extends OrderProcessingResponse {
-  override def payload: ProcessingResponse = ???
+case class OrderValidationRejectionResponse(validationRejection: OrderValidationRejection) extends OrderProcessingResponse {
+  override def payload: OrderValidationRejection = validationRejection
 }
 
-case class OrderExecutionResponse(dealDone: DealDone) extends OrderProcessingResponse {
-  override def payload: DealDone = dealDone
-}

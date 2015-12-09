@@ -3,12 +3,13 @@ package org.nexbook.core
 import org.nexbook.domain._
 import org.nexbook.utils.OrderOrdering
 
-import scala.collection.mutable.{SortedSet, TreeSet}
-
+import scala.collection.mutable
 
 trait AbstractOrderBook {
 
   def add(order: LimitOrder)
+
+  def remove(order: LimitOrder)
 
 }
 
@@ -31,14 +32,18 @@ class OrderBook extends AbstractOrderBook {
   }
 
   def removeTop(side: Side) {
-    book(side) removeTop
+    book(side) removeTop()
   }
+
+  def find(side: Side, tradeID: Long): Option[LimitOrder] = book(side) find tradeID
+
+  override def remove(order: LimitOrder) = book(order.side) remove order
 
 }
 
 case class SideOrderBook(ordering: Ordering[LimitOrder]) extends AbstractOrderBook {
 
-  val orders: SortedSet[LimitOrder] = TreeSet.empty(ordering)
+  val orders: mutable.SortedSet[LimitOrder] = mutable.TreeSet.empty(ordering)
 
   def add(order: LimitOrder) = orders += order
 
@@ -47,6 +52,10 @@ case class SideOrderBook(ordering: Ordering[LimitOrder]) extends AbstractOrderBo
     case _ => Some(orders.head)
   }
 
-  def removeTop = if (!orders.isEmpty) orders -= orders.head
+  def removeTop() = if (orders.nonEmpty) orders -= orders.head
+
+  def find(tradeID: Long) = orders.find(_.tradeID == tradeID)
+
+  override def remove(order: LimitOrder): Unit = orders -= order
 }
 

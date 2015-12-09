@@ -1,28 +1,28 @@
 package org.nexbook.fix
 
-import org.nexbook.core.OrderHandler
+import org.nexbook.core.{OrderCancelHandler, OrderHandler}
 import org.slf4j.LoggerFactory
 import quickfix._
-import quickfix.fix44.NewOrderSingle
+import quickfix.fix44.{NewOrderSingle, OrderCancelRequest}
 
-class FixOrderHandler(orderHandler: OrderHandler) extends MessageCracker with Application {
+class FixOrderHandler(orderHandler: OrderHandler, orderCancelHandler: OrderCancelHandler) extends MessageCracker with Application {
 
-  val LOGGER = LoggerFactory.getLogger(classOf[FixOrderHandler])
+  val logger = LoggerFactory.getLogger(classOf[FixOrderHandler])
 
   override def onCreate(sessionId: SessionID) {
-    LOGGER.info("FixOrderHandler Session Created with SessionID = {}", sessionId)
+    logger.info("FixOrderHandler Session Created with SessionID = {}", sessionId)
   }
 
   override def onLogon(sessionId: SessionID) {
-    LOGGER.info("Logon: {}", sessionId)
+    logger.info("Logon: {}", sessionId)
   }
 
   override def onLogout(sessionId: SessionID) {
-    LOGGER.info("Logout: {}", sessionId)
+    logger.info("Logout: {}", sessionId)
   }
 
   override def toAdmin(message: Message, sessionId: SessionID) {
-    LOGGER.trace("ToAdmin: {}", message)
+    logger.trace("ToAdmin: {}", message)
   }
 
   @throws(classOf[RejectLogon])
@@ -30,12 +30,12 @@ class FixOrderHandler(orderHandler: OrderHandler) extends MessageCracker with Ap
   @throws(classOf[IncorrectDataFormat])
   @throws(classOf[FieldNotFound])
   override def fromAdmin(message: Message, sessionId: SessionID) {
-    LOGGER.debug("FromAdmin: {}", message)
+    logger.debug("FromAdmin: {}", message)
   }
 
   @throws(classOf[DoNotSend])
   override def toApp(message: Message, sessionId: SessionID) {
-    LOGGER.trace("ToApp: {}", message)
+    logger.trace("ToApp: {}", message)
   }
 
   @throws(classOf[UnsupportedMessageType])
@@ -43,14 +43,22 @@ class FixOrderHandler(orderHandler: OrderHandler) extends MessageCracker with Ap
   @throws(classOf[IncorrectDataFormat])
   @throws(classOf[FieldNotFound])
   override def fromApp(message: Message, sessionId: SessionID) {
-    LOGGER.trace("FromApp: {}", message)
-    crack(message, sessionId)
+    logger.trace("FromApp: {}", message)
+    try {
+      crack(message, sessionId)
+    } catch {
+      case e: Exception => logger.error("Unexpected exception", e)
+    }
   }
 
   def onMessage(order: NewOrderSingle, sessionId: SessionID) {
-    LOGGER.trace("HandledOrder ClOrdID: " + order.getClOrdID.getValue + ", symbol: " + order.getSymbol.getValue + ", orderQty: " + order.getOrderQty.getValue + ", order: " + order)
+    logger.debug("Handled Order ClOrdID: " + order.getClOrdID.getValue + ", symbol: " + order.getSymbol.getValue + ", orderQty: " + order.getOrderQty.getValue + ", order: " + order)
     orderHandler.handle(FixOrderConverter convert order)
+  }
 
+  def onMessage(orderCancel: OrderCancelRequest, sessionId: SessionID) = {
+    logger.debug("Handled OrderCancel origClOrdID: {}, new clOrdID: {}, from: {}", orderCancel.getOrigClOrdID.getValue, orderCancel.getClOrdID.getValue, sessionId.getSenderCompID)
+    orderCancelHandler.handle(FixOrderConverter convert orderCancel)
   }
 
 }
