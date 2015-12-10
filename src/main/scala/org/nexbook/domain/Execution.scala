@@ -8,17 +8,17 @@ trait Execution extends Trade {
   val executionPrice: Double
 }
 
-case class OrderExecution(tradeID: Long, execID: Long, dealID: Long, executionQty: Double, executionPrice: Double, timestamp: DateTime, clOrdId: String, orderType: OrderType, side: Side, qty: Double, symbol: String, clientId: String, connector: String, override val leaveQty: Double) extends Execution {
+case class OrderExecution(tradeID: Long, execID: Long, dealID: Long, qty: Double, executionQty: Double, executionPrice: Double, override val leaveQty: Double, side: Side, symbol: String, timestamp: DateTime, clOrdId: String, orderType: OrderType, clientId: String, connector: String) extends Execution {
 
-  def this(tradeID: Long, execID: Long, order: Order, executionQty: Double, executionPrice: Double, executionTimestamp: DateTime) = this(tradeID, execID, order.dealID, executionQty, executionPrice, executionTimestamp, order.clOrdId, order.orderType, order.side, order.qty, order.symbol, order.clientId, order.connector, order.leaveQty)
+  def this(tradeID: Long, execID: Long, order: Order, executionQty: Double, executionPrice: Double, executionTimestamp: DateTime) = this(tradeID, execID, order.dealID, order.qty, executionQty, executionPrice, order.leaveQty, order.side, order.symbol, executionTimestamp, order.clOrdId, order.orderType, order.clientId, order.connector)
 
   override val status: OrderStatus = if (leaveQty > 0) Partial else Filled
 
 }
 
-case class OrderRejection(tradeID: Long, execID: Long, dealID: Long, timestamp: DateTime, clOrdId: String, orderType: OrderType, side: Side, qty: Double, symbol: String, clientId: String, connector: String, override val leaveQty: Double, rejectReason: String) extends Execution {
+case class OrderRejection(tradeID: Long, execID: Long, dealID: Long, qty: Double, override val leaveQty: Double, side: Side, symbol: String, timestamp: DateTime, clOrdId: String, orderType: OrderType, clientId: String, connector: String, rejectReason: String) extends Execution {
 
-  def this(tradeID: Long, execID: Long, order: Order, timestamp: DateTime, rejectReason: String) = this(tradeID, execID, order.dealID, timestamp, order.clOrdId, order.orderType, order.side, order.qty, order.symbol, order.clientId, order.connector, order.leaveQty, rejectReason)
+  def this(tradeID: Long, execID: Long, order: Order, timestamp: DateTime, rejectReason: String) = this(tradeID, execID, order.dealID, order.qty, order.leaveQty, order.side, order.symbol, timestamp, order.clOrdId, order.orderType, order.clientId, order.connector, rejectReason)
 
   override val status: OrderStatus = Rejected
   override val executionPrice: Double = 0.00
