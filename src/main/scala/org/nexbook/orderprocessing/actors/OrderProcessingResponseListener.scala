@@ -1,7 +1,6 @@
 package org.nexbook.orderprocessing.actors
 
 import akka.actor._
-import com.softwaremill.macwire._
 import org.nexbook.handler.GeneralResponseHandler
 import org.nexbook.orderprocessing.OrderProcessingResponseHandler
 import org.nexbook.orderprocessing.response.OrderProcessingResponse

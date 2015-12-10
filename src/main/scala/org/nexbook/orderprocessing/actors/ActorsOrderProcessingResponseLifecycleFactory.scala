@@ -1,9 +1,8 @@
 package org.nexbook.orderprocessing.actors
 
-import akka.actor.{ActorSystem, Props}
+import akka.actor.ActorSystem
 import org.nexbook.handler.GeneralResponseHandler
 import org.nexbook.orderprocessing.{OrderProcessingResponseHandler, OrderProcessingResponseLifecycleFactory, OrderProcessingResponseSender}
-import com.softwaremill.macwire._
 
 /**
  * Created by milczu on 11.10.15.

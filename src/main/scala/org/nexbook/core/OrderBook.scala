@@ -1,7 +1,7 @@
 package org.nexbook.core
 
 import org.nexbook.domain._
-import org.nexbook.utils.OrderOrdering
+import org.nexbook.utils.{BookOrdering, BuyBookOrdering, SellBookOrdering}
 
 import scala.collection.mutable
 
@@ -15,8 +15,8 @@ trait AbstractOrderBook {
 
 class OrderBook extends AbstractOrderBook {
 
-  val buyBook = SideOrderBook(OrderOrdering.bookBuyOrdering)
-  val sellBook = SideOrderBook(OrderOrdering.bookSellOrdering)
+  val buyBook = new SideOrderBook(BuyBookOrdering)
+  val sellBook = new SideOrderBook(SellBookOrdering)
 
   def add(order: LimitOrder) = {
     book(order.side) add order
@@ -39,11 +39,17 @@ class OrderBook extends AbstractOrderBook {
 
   override def remove(order: LimitOrder) = book(order.side) remove order
 
+  def priceLevels(side: Side): List[(Double, Double)] = book(side) priceLevels
+
+  def depth(side: Side) = book(side) depth
+
+  def size(side: Side) = book(side) size
+
 }
 
-case class SideOrderBook(ordering: Ordering[LimitOrder]) extends AbstractOrderBook {
+class SideOrderBook(ordering: BookOrdering) extends AbstractOrderBook {
 
-  val orders: mutable.SortedSet[LimitOrder] = mutable.TreeSet.empty(ordering)
+  val orders: mutable.SortedSet[LimitOrder] = mutable.TreeSet.empty(ordering.orderOrdering)
 
   def add(order: LimitOrder) = orders += order
 
@@ -57,5 +63,13 @@ case class SideOrderBook(ordering: Ordering[LimitOrder]) extends AbstractOrderBo
   def find(tradeID: Long) = orders.find(_.tradeID == tradeID)
 
   override def remove(order: LimitOrder): Unit = orders -= order
+
+  def priceLevels: List[(Double, Double)] = {
+    orders.groupBy(_.limit).map(e => (e._1, e._2.foldLeft(0.00)(_ + _.leaveQty.toInt))).toList.sorted(Ordering.Tuple2(ordering.priceOrdering, ordering.priceOrdering))
+  }
+
+  def depth: Int = orders.groupBy(_.limit).keySet.size
+
+  def size = orders.size
 }
 

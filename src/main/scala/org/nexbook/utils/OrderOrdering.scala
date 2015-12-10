@@ -9,29 +9,40 @@ object OrderOrdering {
   val orderTimestampDesc = Ordering.fromLessThan[Order](timestampDescCompare)
   val orderTradeIDDesc = Ordering.fromLessThan[Order](_.tradeID > _.tradeID)
 
-  val tradeIDAsc = Ordering.fromLessThan[Long](_ < _)
-
-  val bookBuyOrdering = Ordering.fromLessThan[LimitOrder](bookBuyCompare)
-  val bookSellOrdering = Ordering.fromLessThan[LimitOrder](bookSellCompare)
-
   private def timestampDescCompare(o1: Order, o2: Order): Boolean = {
     if (o1.timestamp isEqual o2.timestamp) o1.tradeID < o2.tradeID
     else o1.timestamp isAfter o2.timestamp
   }
+}
 
-  /**
-   * limit DESC
-   */
-  private def bookBuyCompare(o1: LimitOrder, o2: LimitOrder): Boolean = {
+sealed trait BookOrdering {
+  protected val tradeIDAsc = Ordering.fromLessThan[Long](_ < _)
+
+  def orderOrdering: Ordering[LimitOrder]
+
+  def priceOrdering: Ordering[Double]
+}
+
+case object BuyBookOrdering extends BookOrdering {
+
+  override def orderOrdering: Ordering[LimitOrder] = Ordering.fromLessThan[LimitOrder](compareOrders)
+
+  private def compareOrders(o1: LimitOrder, o2: LimitOrder): Boolean = {
     if (o1.limit == o2.limit) tradeIDAsc.lt(o1.tradeID, o2.tradeID)
     else o1.limit > o2.limit
   }
 
-  /**
-   * limit ASC
-   */
-  private def bookSellCompare(o1: LimitOrder, o2: LimitOrder): Boolean = {
+  override def priceOrdering: Ordering[Double] = Ordering.fromLessThan[Double](_ > _)
+}
+
+case object SellBookOrdering extends BookOrdering {
+
+  override def orderOrdering: Ordering[LimitOrder] = Ordering.fromLessThan[LimitOrder](compareOrders)
+
+  private def compareOrders(o1: LimitOrder, o2: LimitOrder): Boolean = {
     if (o1.limit == o2.limit) tradeIDAsc.lt(o1.tradeID, o2.tradeID)
     else o1.limit < o2.limit
   }
+
+  override def priceOrdering: Ordering[Double] = Ordering.fromLessThan[Double](_ < _)
 }

@@ -14,16 +14,15 @@
         </encoder>
     </appender>
 
-    <appender name="FILE_WARN" class="ch.qos.logback.core.FileAppender">
-        <file>nexbook-warn.log</file>
-        <append>false</append>
-        <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
-        </encoder>
-    </appender>
-
     <appender name="TRADES" class="ch.qos.logback.core.FileAppender">
         <file>trades.log</file>
+        <append>false</append>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} %msg%n</pattern>
+        </encoder>
+    </appender>
+    <appender name="BOOK" class="ch.qos.logback.core.FileAppender">
+        <file>book.log</file>
         <append>false</append>
         <encoder>
             <pattern>%d{HH:mm:ss.SSS} %msg%n</pattern>
@@ -35,13 +34,13 @@
     <logger name="com.mongodb.casbah" level="info"/>
 
 
-    <logger name="org.nexbook" level="warn" additivity="true">
-        <appender-ref ref="FILE_WARN" />
-    </logger>
-    <logger name="org.nexbook" level="debug" />
+    <logger name="org.nexbook" level="debug"/>
 
     <logger name="TRADES_LOG" level="debug" additivity="false">
         <appender-ref ref="TRADES"/>
+    </logger>
+    <logger name="BOOK_LOG" level="trace" additivity="false">
+        <appender-ref ref="BOOK"/>
     </logger>
 
     <root level="debug">
