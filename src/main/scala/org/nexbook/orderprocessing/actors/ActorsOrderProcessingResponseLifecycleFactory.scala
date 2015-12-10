@@ -3,6 +3,7 @@ package org.nexbook.orderprocessing.actors
 import akka.actor.{ActorSystem, Props}
 import org.nexbook.handler.GeneralResponseHandler
 import org.nexbook.orderprocessing.{OrderProcessingResponseHandler, OrderProcessingResponseLifecycleFactory, OrderProcessingResponseSender}
+import com.softwaremill.macwire._
 
 /**
  * Created by milczu on 11.10.15.
@@ -12,7 +13,7 @@ class ActorsOrderProcessingResponseLifecycleFactory(generalResponseHandler: Gene
   val system = ActorSystem("OrderProcessingResponseSystem")
 
   val (notifier, listener) = {
-    val listenerRef = system.actorOf(Props[OrderProcessingResponseListener], name = "listener")
+    val listenerRef = system.actorOf(OrderProcessingResponseListener.props(generalResponseHandler), name = "listener")
     val notifier = new OrderProcessingResponseNotifier(listenerRef)
 
     (notifier, null)
