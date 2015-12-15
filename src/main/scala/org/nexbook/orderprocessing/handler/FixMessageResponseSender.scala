@@ -1,7 +1,8 @@
-package org.nexbook.handler
+package org.nexbook.orderprocessing.handler
 
 import com.typesafe.config.ConfigFactory
 import org.nexbook.domain._
+import org.nexbook.orderprocessing.ProcessingResponseHandler
 import org.nexbook.orderprocessing.response._
 import org.nexbook.utils.FixUtils
 import org.slf4j.LoggerFactory
@@ -15,9 +16,9 @@ import scala.collection.JavaConverters._
 /**
  * Created by milczu on 06.12.15.
  */
-class ResponseFixResponseSender extends ResponseHandler {
+class FixMessageResponseSender extends ProcessingResponseHandler {
 
-  val logger = LoggerFactory.getLogger(classOf[ResponseFixResponseSender])
+  val logger = LoggerFactory.getLogger(classOf[FixMessageResponseSender])
   val fixSessionSettings = new SessionSettings(ConfigFactory.load().getString("org.nexbook.fix.config.path"))
 
   val defaultConverter = new DefaultProcessingResponseFixMessageConverter

@@ -5,7 +5,7 @@ import org.mockito.ArgumentMatcher
 import org.mockito.Matchers._
 import org.mockito.Mockito.{never, spy, times, verify}
 import org.nexbook.domain._
-import org.nexbook.orderprocessing.OrderProcessingResponseSender
+import org.nexbook.orderprocessing.ProcessingResponseSender
 import org.nexbook.orderprocessing.response.{OrderExecutionResponse, OrderProcessingResponse, OrderRejectionResponse}
 import org.nexbook.repository.{ExecutionDatabaseRepository, OrderDatabaseRepository, OrderInMemoryRepository}
 import org.nexbook.sequence.SequencerFactory
@@ -30,7 +30,7 @@ class OrderMatcherTest extends FlatSpec with Matchers {
 
   "Empty OrderMatcher" should "send rejection for first MarketOrder" in {
     val orderBook = spy(new OrderBook)
-    val orderSender = mock[OrderProcessingResponseSender]
+    val orderSender = mock[ProcessingResponseSender]
     val orderMatcher = new OrderMatcher(orderInMemoryRepository, sequencerFactory, orderBook, orderSender, new DefaultClock)
 
     val marketOrder1 = marketOrder()
@@ -46,7 +46,7 @@ class OrderMatcherTest extends FlatSpec with Matchers {
 
   "Empty OrderMatcher" should "should add original LimitOrder to OrderBook" in {
     val orderBook = spy(new OrderBook)
-    val orderSender = mock[OrderProcessingResponseSender]
+    val orderSender = mock[ProcessingResponseSender]
     val orderMatcher = new OrderMatcher(orderInMemoryRepository, sequencerFactory, orderBook, orderSender, new DefaultClock)
 
     val order = limitOrder()
@@ -63,7 +63,7 @@ class OrderMatcherTest extends FlatSpec with Matchers {
 
   "OrderMatcher" should "generate one deal: 2 orders on both sides with same size and price" in {
     val orderBook = spy(new OrderBook)
-    val orderSender = mock[OrderProcessingResponseSender]
+    val orderSender = mock[ProcessingResponseSender]
     val orderMatcher = new OrderMatcher(orderInMemoryRepository, sequencerFactory, orderBook, orderSender, new DefaultClock)
 
     val price = 4.32
@@ -91,7 +91,7 @@ class OrderMatcherTest extends FlatSpec with Matchers {
 
   "OrderMatcher" should "generate one deal: 2 orders on both sides with same size. First: Limit, Second: Market" in {
     val orderBook = spy(new OrderBook)
-    val orderSender = mock[OrderProcessingResponseSender]
+    val orderSender = mock[ProcessingResponseSender]
     val orderMatcher = new OrderMatcher(orderInMemoryRepository, sequencerFactory, orderBook, orderSender, new DefaultClock)
 
     val price = 4.32
@@ -118,7 +118,7 @@ class OrderMatcherTest extends FlatSpec with Matchers {
 
   "OrderMatcher" should "generate 2 deals: 2 buy orders, 1 sell order, with same size. Size is matching, Fulfill" in {
     val orderBook = spy(new OrderBook)
-    val orderSender = mock[OrderProcessingResponseSender]
+    val orderSender = mock[ProcessingResponseSender]
     val orderMatcher = new OrderMatcher(orderInMemoryRepository, sequencerFactory, orderBook, orderSender, new DefaultClock)
 
     val price = 4.32
@@ -148,7 +148,7 @@ class OrderMatcherTest extends FlatSpec with Matchers {
 
   "OrderMatcher" should "generate 2 deals: 2 buy orders, 1 sell order and 1 rejection" in {
     val orderBook = spy(new OrderBook)
-    val orderSender = mock[OrderProcessingResponseSender]
+    val orderSender = mock[ProcessingResponseSender]
     val orderMatcher = new OrderMatcher(orderInMemoryRepository, sequencerFactory, orderBook, orderSender, new DefaultClock)
 
     val price = 4.32
@@ -178,7 +178,7 @@ class OrderMatcherTest extends FlatSpec with Matchers {
 
   "OrderMatcher" should "should add 2 counter order to books without any deals" in {
     val orderBook = spy(new OrderBook)
-    val orderSender = mock[OrderProcessingResponseSender]
+    val orderSender = mock[ProcessingResponseSender]
     val orderMatcher = new OrderMatcher(orderInMemoryRepository, sequencerFactory, orderBook, orderSender, new DefaultClock)
 
     val priceBuy = 4.30

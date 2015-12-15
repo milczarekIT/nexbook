@@ -1,13 +1,18 @@
 package org.nexbook.fix
 
 import org.nexbook.core.{OrderCancelHandler, OrderHandler}
+import org.nexbook.domain.NewOrder
+import org.nexbook.neworder.IncomingOrderHandlerModule
 import org.slf4j.LoggerFactory
 import quickfix._
 import quickfix.fix44.{NewOrderSingle, OrderCancelRequest}
 
-class FixOrderHandler(orderHandler: OrderHandler, orderCancelHandler: OrderCancelHandler) extends MessageCracker with Application {
+import scala.collection.mutable
 
-  val logger = LoggerFactory.getLogger(classOf[FixOrderHandler])
+class FixMessageHandler(incomingOrderHandlerModule: IncomingOrderHandlerModule, orderCancelHandler: OrderCancelHandler, fixOrderConverter: FixOrderConverter) extends Application {
+
+  val logger = LoggerFactory.getLogger(classOf[FixMessageHandler])
+  val incomingOrderNotifier = incomingOrderHandlerModule.incomingOrderNotifier
 
   override def onCreate(sessionId: SessionID) {
     logger.info("FixOrderHandler Session Created with SessionID = {}", sessionId)
@@ -45,7 +50,10 @@ class FixOrderHandler(orderHandler: OrderHandler, orderCancelHandler: OrderCance
   override def fromApp(message: Message, sessionId: SessionID) {
     logger.trace("FromApp: {}", message)
     try {
-      crack(message, sessionId)
+      message match {
+        case o: NewOrderSingle => onMessage(o, sessionId)
+        case o: OrderCancelRequest => onMessage(o, sessionId)
+      }
     } catch {
       case e: Exception => logger.error("Unexpected exception", e)
     }
@@ -53,12 +61,12 @@ class FixOrderHandler(orderHandler: OrderHandler, orderCancelHandler: OrderCance
 
   def onMessage(order: NewOrderSingle, sessionId: SessionID) {
     logger.debug("Handled Order ClOrdID: " + order.getClOrdID.getValue + ", symbol: " + order.getSymbol.getValue + ", orderQty: " + order.getOrderQty.getValue + ", order: " + order)
-    orderHandler.handle(FixOrderConverter convert order)
+    incomingOrderNotifier.notify(fixOrderConverter convert order)
   }
 
   def onMessage(orderCancel: OrderCancelRequest, sessionId: SessionID) = {
-    logger.debug("Handled OrderCancel origClOrdID: {}, new clOrdID: {}, from: {}", orderCancel.getOrigClOrdID.getValue, orderCancel.getClOrdID.getValue, sessionId.getSenderCompID)
-    orderCancelHandler.handle(FixOrderConverter convert orderCancel)
+    logger.debug("Handled OrderCancel origClOrdID: {}, new clOrdID: {}, from: {}", orderCancel.getOrigClOrdID.getValue, orderCancel.getClOrdID.getValue, sessionId.getTargetCompID)
+    orderCancelHandler.handle(fixOrderConverter convert orderCancel)
   }
 
 }

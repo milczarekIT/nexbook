@@ -2,7 +2,7 @@ package org.nexbook.core
 
 import org.joda.time.DateTime
 import org.nexbook.domain._
-import org.nexbook.orderprocessing.OrderProcessingResponseSender
+import org.nexbook.orderprocessing.ProcessingResponseSender
 import org.nexbook.orderprocessing.response.{OrderAcceptResponse, OrderExecutionResponse, OrderRejectionResponse}
 import org.nexbook.repository.OrderInMemoryRepository
 import org.nexbook.sequence.SequencerFactory
@@ -11,10 +11,10 @@ import org.slf4j.LoggerFactory
 
 import scala.math.BigDecimal.RoundingMode
 
-class OrderMatcher(orderRepository: OrderInMemoryRepository, sequencerFactory: SequencerFactory, book: OrderBook, orderProcessingSender: OrderProcessingResponseSender, clock: Clock) {
+class OrderMatcher(orderRepository: OrderInMemoryRepository, sequencerFactory: SequencerFactory, book: OrderBook, orderProcessingSender: ProcessingResponseSender, clock: Clock) {
 
   val logger = LoggerFactory.getLogger(classOf[OrderMatcher])
-  val bookLogger = LoggerFactory.getLogger("BOOK_LOG")
+  //val bookLogger = LoggerFactory.getLogger("BOOK_LOG")
 
   import org.nexbook.sequence.SequencerFactory._
 
@@ -29,10 +29,9 @@ class OrderMatcher(orderRepository: OrderInMemoryRepository, sequencerFactory: S
         val firstCounterOrder = book top order.side.reverse
         val unfilledOrder = tryMatch(order, firstCounterOrder)
         unfilledOrder match {
-          case Some(unfilled) => {
+          case Some(unfilled) =>
             book add unfilled
-            bookLogger.debug("2) Book ({}:{}) size: {}, depth: {}, price levels: {}", order.side.asInstanceOf[Object], order.symbol.asInstanceOf[Object], book.size(order.side).asInstanceOf[Object], book.depth(order.side).asInstanceOf[Object], book.priceLevels(order.side).asInstanceOf[Object])
-          }
+            //bookLogger.debug("2) Book ({}:{}) size: {}, depth: {}, price levels: {}", order.side.asInstanceOf[Object], order.symbol.asInstanceOf[Object], book.size(order.side).asInstanceOf[Object], book.depth(order.side).asInstanceOf[Object], book.priceLevels(order.side).asInstanceOf[Object])
           case _ => logger.trace("Order ad-hoc filled or rejected: {}", order)
         }
     }
@@ -43,7 +42,7 @@ class OrderMatcher(orderRepository: OrderInMemoryRepository, sequencerFactory: S
       order match {
         case o: MarketOrder =>
           logger.debug("Rejection for order: {} with remaining size: {}", o, o.leaveQty)
-          orderProcessingSender.send(OrderRejectionResponse(new OrderRejection(tradeIDSequencer.nextValue, execIDSequencer.nextValue, o, clock.getCurrentDateTime, "No orders in book")))
+          orderProcessingSender.send(OrderRejectionResponse(new OrderRejection(tradeIDSequencer.nextValue, execIDSequencer.nextValue, o, clock.currentDateTime, "No orders in book")))
           None
         case o: LimitOrder => Some(o)
       }
@@ -70,7 +69,7 @@ class OrderMatcher(orderRepository: OrderInMemoryRepository, sequencerFactory: S
 
 
   private def matchOrders(order: Order, counterOrder: LimitOrder): DealDone = {
-    val execDateTime = clock.getCurrentDateTime
+    val execDateTime = clock.currentDateTime
     def determineDealSize(order: Order, counter: LimitOrder): Double = if (order.leaveQty <= counter.leaveQty) order.leaveQty else counter.leaveQty
     def determineDealPrice(order: Order, counter: LimitOrder): Double = order match {
       case o: MarketOrder => counter.limit
@@ -87,7 +86,7 @@ class OrderMatcher(orderRepository: OrderInMemoryRepository, sequencerFactory: S
     val buyOrder = if (order.side == Buy) order else counterOrder
     val sellOrder = if (order.side == Buy) counterOrder else order
 
-    bookLogger.debug("1) Book ({}:{}) size: {}, depth: {}, price levels: {}", order.side.asInstanceOf[Object], order.symbol.asInstanceOf[Object], book.size(order.side).asInstanceOf[Object], book.depth(order.side).asInstanceOf[Object], book.priceLevels(order.side).asInstanceOf[Object])
+    //bookLogger.debug("1) Book ({}:{}) size: {}, depth: {}, price levels: {}", order.side.asInstanceOf[Object], order.symbol.asInstanceOf[Object], book.size(order.side).asInstanceOf[Object], book.depth(order.side).asInstanceOf[Object], book.priceLevels(order.side).asInstanceOf[Object])
 
     DealDone(execIDSequencer.nextValue, buyOrder, sellOrder, dealSize, dealPrice, execDateTime)
   }

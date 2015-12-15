@@ -17,7 +17,7 @@ class OrderCancelHandler(orderRepository: OrderChainedRepository, sequencerFacto
   val tradeIDSequencer = sequencerFactory sequencer tradeIDSequencerName
 
   override def handle(newOrderCancel: NewOrderCancel) = {
-    def acceptOrder(newOrderCancel: NewOrderCancel, prevOrder: Order): OrderCancel = new OrderCancel(tradeIDSequencer.nextValue, clock.getCurrentDateTime, newOrderCancel.clOrdId, prevOrder)
+    def acceptOrder(newOrderCancel: NewOrderCancel, prevOrder: Order): OrderCancel = new OrderCancel(tradeIDSequencer.nextValue, clock.currentDateTime, newOrderCancel.clOrdId, prevOrder)
 
     orderRepository.findBy(newOrderCancel.origClOrdId, newOrderCancel.connector) match {
       case Some(order) => orderMatchersRepository.find(newOrderCancel.symbol).processOrder(acceptOrder(newOrderCancel, order))

@@ -1,5 +1,6 @@
 package org.nexbook.utils
 
+import org.joda.time.{DateTimeZone, DateTime}
 import org.nexbook.domain._
 import org.scalatest._
 
@@ -12,7 +13,7 @@ class OrderValidatorTest extends FlatSpec with Matchers {
 
   import org.scalatest.OptionValues._
 
-  def sampleOrder(symbol: String = "EUR/PLN", size: Double = 1000.00): NewOrder = NewMarketOrder("a", symbol, "cl1", Buy, size, "FIX_ID")
+  def sampleOrder(symbol: String = "EUR/PLN", size: Double = 1000.00): NewOrder = NewMarketOrder("a", symbol, "cl1", Buy, size, "FIX_ID", DateTime.now(DateTimeZone.UTC))
 
   def createValidator(allowedSymbolsList: List[String]): OrderValidator = {
     new OrderValidator {

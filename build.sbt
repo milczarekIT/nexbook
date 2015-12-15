@@ -2,7 +2,7 @@ name := "nexbook"
 
 version := "1.0"
 
-scalaVersion := "2.11.7"
+scalaVersion := "2.11.4"
 
 resolvers += Resolver.mavenLocal
 

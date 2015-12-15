@@ -29,7 +29,7 @@ class ExecutionDatabaseRepository extends DatabaseRepository[Execution] {
 
   trait ExecutionConverter {
     protected def serializeBasicFields(e: Execution): MongoDBObject = {
-      MongoDBObject("_id" -> e.tradeID, "class" -> e.getClass.getSimpleName, "symbol" -> e.symbol, "clientId" -> e.clientId, "qty" -> e.qty, "side" -> e.side.toString, "orderType" -> e.orderType.toString, "connector" -> e.connector, "timestamp" -> e.timestamp.toDate, "leaveQty" -> e.leaveQty, "clOrdId" -> e.clOrdId, "status" -> e.status.toString, "dealID" -> e.dealID, "execID" -> e.execID, "executionQty" -> e.executionQty, "executionPrice" -> e.executionPrice)
+      MongoDBObject("_id" -> e.tradeID, "class" -> e.getClass.getSimpleName, "symbol" -> e.symbol, "clientId" -> e.clientId, "qty" -> e.qty, "side" -> e.side.toString, "orderType" -> e.orderType.toString, "connector" -> e.connector, "timestamp" -> e.timestamp.toDate, "leaveQty" -> e.leaveQty, "clOrdId" -> e.clOrdId, "status" -> e.status.toString, "dealID" -> e.dealID, "execID" -> e.execID, "executionQty" -> e.executionQty, "executionPrice" -> e.executionPrice, "executionSpeed" -> e.executionSpeed)
     }
 
     def serialize(e: Execution): MongoDBObject
@@ -40,13 +40,13 @@ class ExecutionDatabaseRepository extends DatabaseRepository[Execution] {
   object OrderExecutionConverter extends ExecutionConverter {
     override def serialize(e: Execution): Imports.MongoDBObject = serializeBasicFields(e)
 
-    override def deserialize(m: Imports.MongoDBObject): Execution = new OrderExecution(m.as[Long]("_id"), m.as[Long]("execID"), m.as[Long]("dealID"), m.as[Double]("qty"), m.as[Double]("executionQty"), m.as[Double]("executionPrice"), m.as[Double]("leaveQty"), Side.fromString(m.as[String]("side")), m.as[String]("symbol"), new DateTime(m.as[Date]("timestamp")), m.as[String]("clOrdId"), OrderType.fromString(m.as[String]("orderType")), m.as[String]("clientId"), m.as[String]("connector"))
+    override def deserialize(m: Imports.MongoDBObject): Execution = new OrderExecution(m.as[Long]("_id"), m.as[Long]("execID"), m.as[Long]("dealID"), m.as[Int]("executionSpeed"), m.as[Double]("qty"), m.as[Double]("executionQty"), m.as[Double]("executionPrice"), m.as[Double]("leaveQty"), Side.fromString(m.as[String]("side")), m.as[String]("symbol"), new DateTime(m.as[Date]("timestamp")), m.as[String]("clOrdId"), OrderType.fromString(m.as[String]("orderType")), m.as[String]("clientId"), m.as[String]("connector"))
   }
 
   object OrderRejectionConverter extends ExecutionConverter {
     override def serialize(e: Execution): Imports.MongoDBObject = serializeBasicFields(e) ++ ("rejectReason" -> e.asInstanceOf[OrderRejection].rejectReason)
 
-    override def deserialize(m: Imports.MongoDBObject): Execution = new OrderRejection(m.as[Long]("_id"), m.as[Long]("execID"), m.as[Long]("dealID"), m.as[Double]("qty"), m.as[Double]("leaveQty"), Side.fromString(m.as[String]("side")), m.as[String]("symbol"), new DateTime(m.as[Date]("timestamp")), m.as[String]("clOrdId"), OrderType.fromString(m.as[String]("orderType")), m.as[String]("clientId"), m.as[String]("connector"), m.as[String]("RejectReason"))
+    override def deserialize(m: Imports.MongoDBObject): Execution = new OrderRejection(m.as[Long]("_id"), m.as[Long]("execID"), m.as[Long]("dealID"), m.as[Int]("executionSpeed"), m.as[Double]("qty"), m.as[Double]("leaveQty"), Side.fromString(m.as[String]("side")), m.as[String]("symbol"), new DateTime(m.as[Date]("timestamp")), m.as[String]("clOrdId"), OrderType.fromString(m.as[String]("orderType")), m.as[String]("clientId"), m.as[String]("connector"), m.as[String]("RejectReason"))
   }
 
   def findLastExecID: Long = findMaxNumericField("execID")

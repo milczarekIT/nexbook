@@ -31,7 +31,7 @@ trait Order extends Trade
 
 case class MarketOrder(tradeID: Long, symbol: String, clientId: String, side: Side, qty: Double, connector: String, timestamp: DateTime, clOrdId: String, orderType: OrderType = Market) extends Order {
 
-  def this(newOrder: NewMarketOrder, timestamp: DateTime, tradeID: Long) = this(tradeID, newOrder.symbol, newOrder.clientId, newOrder.side, newOrder.qty, newOrder.connector, timestamp, newOrder.clOrdId)
+  def this(newOrder: NewMarketOrder, tradeID: Long) = this(tradeID, newOrder.symbol, newOrder.clientId, newOrder.side, newOrder.qty, newOrder.connector, newOrder.timestamp, newOrder.clOrdId)
 
   override val dealID: Long = tradeID
 }
@@ -39,7 +39,7 @@ case class MarketOrder(tradeID: Long, symbol: String, clientId: String, side: Si
 
 case class LimitOrder(tradeID: Long, symbol: String, clientId: String, side: Side, qty: Double, limit: Double, connector: String, timestamp: DateTime, clOrdId: String, orderType: OrderType = Limit) extends Order {
 
-  def this(newOrder: NewLimitOrder, timestamp: DateTime, tradeID: Long) = this(tradeID, newOrder.symbol, newOrder.clientId, newOrder.side, newOrder.qty, newOrder.limit, newOrder.connector, timestamp, newOrder.clOrdId)
+  def this(newOrder: NewLimitOrder, tradeID: Long) = this(tradeID, newOrder.symbol, newOrder.clientId, newOrder.side, newOrder.qty, newOrder.limit, newOrder.connector, newOrder.timestamp, newOrder.clOrdId)
 
   override val dealID: Long = tradeID
 }

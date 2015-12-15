@@ -5,7 +5,7 @@ import quickfix._
 /**
  * Created by milczu on 25.08.15.
  */
-class FixOrderHandlerRunner(fixOrderHandler: FixOrderHandler, configPath: String) extends FixApplicationRunner with FixFileBasedConfigurer {
+class FixEngineRunner(fixOrderHandler: FixMessageHandler, configPath: String) extends FixApplicationRunner with FixFileBasedConfigurer {
 
   val fixOrderHandlerSessionSettings = new SessionSettings(configPath)
 

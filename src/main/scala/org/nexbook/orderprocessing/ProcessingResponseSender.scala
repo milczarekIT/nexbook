@@ -5,7 +5,7 @@ import org.nexbook.orderprocessing.response.OrderProcessingResponse
 /**
  * Created by milczu on 25.08.15.
  */
-trait OrderProcessingResponseSender {
+trait ProcessingResponseSender {
 
   def send(response: OrderProcessingResponse)
 }

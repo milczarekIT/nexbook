@@ -11,5 +11,5 @@ trait FixFileBasedConfigurer {
 
   protected def logFactory: LogFactory = new FileLogFactory(sessionSettings)
 
-  protected def messageStoreFactory: MessageStoreFactory = new FileStoreFactory(sessionSettings)
+  protected def messageStoreFactory: MessageStoreFactory = new MemoryStoreFactory //new FileStoreFactory(sessionSettings)
 }

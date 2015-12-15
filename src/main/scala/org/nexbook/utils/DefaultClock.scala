@@ -7,5 +7,5 @@ import org.joda.time.{DateTime, DateTimeZone}
  */
 class DefaultClock extends Clock {
 
-  override def getCurrentDateTime: DateTime = DateTime.now(DateTimeZone.UTC)
+  override def currentDateTime: DateTime = DateTime.now(DateTimeZone.UTC)
 }

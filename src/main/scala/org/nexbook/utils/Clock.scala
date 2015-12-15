@@ -7,5 +7,5 @@ import org.joda.time.DateTime
  */
 trait Clock {
 
-  def getCurrentDateTime: DateTime
+  def currentDateTime: DateTime
 }

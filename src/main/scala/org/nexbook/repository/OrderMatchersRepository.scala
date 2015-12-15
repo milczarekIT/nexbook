@@ -2,14 +2,14 @@ package org.nexbook.repository
 
 import org.nexbook.config.ConfigFactory
 import org.nexbook.core.OrderMatcher
-import org.nexbook.orderprocessing.OrderProcessingResponseSender
+import org.nexbook.orderprocessing.ProcessingResponseSender
 import org.nexbook.sequence.SequencerFactory
 import org.nexbook.utils.Clock
 
 /**
  * Created by milczu on 09.12.15
  */
-class OrderMatchersRepository(orderRepository: OrderInMemoryRepository, sequencerFactory: SequencerFactory, orderProcessingSender: OrderProcessingResponseSender, clock: Clock) {
+class OrderMatchersRepository(orderRepository: OrderInMemoryRepository, sequencerFactory: SequencerFactory, orderProcessingSender: ProcessingResponseSender, clock: Clock) {
 
   val orderMatchers = initMatchers
 
