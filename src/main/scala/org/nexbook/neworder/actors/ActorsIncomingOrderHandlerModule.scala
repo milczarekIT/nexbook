@@ -1,9 +1,10 @@
 package org.nexbook.neworder.actors
 
-import akka.actor.{Props, Actor, ActorSystem}
+import akka.actor.{Actor, ActorSystem, Props}
+import akka.routing.RoundRobinRouter
 import org.nexbook.core.OrderHandler
 import org.nexbook.domain.NewOrder
-import org.nexbook.neworder.{IncomingOrderNotifier, IncomingOrderHandlerModule}
+import org.nexbook.neworder.{IncomingOrderHandlerModule, IncomingOrderNotifier}
 
 /**
  * Created by milczu on 11.12.15
@@ -18,6 +19,6 @@ class ActorsIncomingOrderHandlerModule(orderHandler: OrderHandler) extends Incom
         case order: NewOrder => orderHandler handle order
       }
     }
-    new ActorIncomingOrderNotifier(system.actorOf(Props(new OrderHandlerActorWrapper), "orderHandlerListener"))
+    new ActorIncomingOrderNotifier(system.actorOf(Props(new OrderHandlerActorWrapper).withRouter(RoundRobinRouter(8)), "orderHandlerListener"))
   }
 }

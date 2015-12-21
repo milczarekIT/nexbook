@@ -30,13 +30,13 @@ class FixMessageResponseSender extends ProcessingResponseHandler {
   )
 
   override def handle(response: OrderProcessingResponse) = {
-    asFixMessages(response) match {
+    fixMessageResponse(response) match {
       case Some(m) => Session.sendToTarget(m._1, m._2)
       case None => logger.error("FixMessageConverter not defined for: {}", response.getClass)
     }
   }
 
-  def asFixMessages(response: OrderProcessingResponse): Option[(Message, SessionID)] = converters.getOrElse(response.getClass, defaultConverter).convert(response)
+  def fixMessageResponse(response: OrderProcessingResponse): Option[(Message, SessionID)] = converters.getOrElse(response.getClass, defaultConverter).convert(response)
 
   trait ProcessingResponseFixMessageConverter[T <: OrderProcessingResponse] {
     def sessionIDByTargetCompID(connector: String): SessionID = fixSessionSettings.sectionIterator().asScala.find(_.getTargetCompID == connector).get
