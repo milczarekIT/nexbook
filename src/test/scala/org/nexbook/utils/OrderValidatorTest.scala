@@ -1,6 +1,6 @@
 package org.nexbook.utils
 
-import org.joda.time.{DateTimeZone, DateTime}
+import org.joda.time.{DateTime, DateTimeZone}
 import org.nexbook.domain._
 import org.scalatest._
 
@@ -11,8 +11,6 @@ import scala.collection.immutable.List
  */
 class OrderValidatorTest extends FlatSpec with Matchers {
 
-  import org.scalatest.OptionValues._
-
   def sampleOrder(symbol: String = "EUR/PLN", size: Double = 1000.00): NewOrder = NewMarketOrder("a", symbol, "cl1", Buy, size, "FIX_ID", DateTime.now(DateTimeZone.UTC))
 
   def createValidator(allowedSymbolsList: List[String]): OrderValidator = {
@@ -22,26 +20,24 @@ class OrderValidatorTest extends FlatSpec with Matchers {
   }
 
   "Order Validator" should "return validation error - now allowed symbol" in {
-
     val validator = createValidator(List("EUR/PLN"))
     val result = validator validate sampleOrder("EUR/USD")
-    result should not be None
-    result.value.message should not be (null)
-    result.value.message should startWith("Not supported instrument: ")
+    result shouldBe 'failure
+	result.failed.get.getMessage should startWith ("Not supported instrument: ")
   }
 
   "Order Validator" should "return validation error - incorrect size" in {
     val validator = createValidator(List("EUR/PLN"))
     val result = validator validate sampleOrder(size = -100.00)
-    result should not be None
-    result.value.message should not be (null)
-    result.value.message should equal("Invalid order size")
+
+    result.failed.get should have message "Invalid order size"
   }
 
   "Order Validator" should "return None - valid order" in {
     val validator = createValidator(List("EUR/PLN"))
     val result = validator validate sampleOrder()
-    result should be(None)
+	result shouldBe 'success
   }
+
 
 }

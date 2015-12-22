@@ -1,18 +1,16 @@
 package org.nexbook.fix
 
-import org.nexbook.core.{OrderCancelHandler, OrderHandler}
-import org.nexbook.domain.NewOrder
-import org.nexbook.neworder.IncomingOrderHandlerModule
+import org.nexbook.app.OrderHandlersModule
+import org.nexbook.neworderhandler.OrderCancelHandler
 import org.slf4j.LoggerFactory
 import quickfix._
 import quickfix.fix44.{NewOrderSingle, OrderCancelRequest}
 
-import scala.collection.mutable
-
-class FixMessageHandler(incomingOrderHandlerModule: IncomingOrderHandlerModule, orderCancelHandler: OrderCancelHandler, fixOrderConverter: FixOrderConverter) extends Application {
+class FixMessageHandler(orderHandlersModule: OrderHandlersModule, orderCancelHandler: OrderCancelHandler, fixOrderConverter: FixOrderConverter) extends Application {
 
   val logger = LoggerFactory.getLogger(classOf[FixMessageHandler])
-  val incomingOrderNotifier = incomingOrderHandlerModule.incomingOrderNotifier
+  val newOrderHandlers = orderHandlersModule.newOrderHandlers
+  val newOrderCancelHandlers = orderHandlersModule.newOrderCancelsHandlers
 
   override def onCreate(sessionId: SessionID) {
     logger.info("FixOrderHandler Session Created with SessionID = {}", sessionId)
@@ -61,12 +59,12 @@ class FixMessageHandler(incomingOrderHandlerModule: IncomingOrderHandlerModule, 
 
   def onMessage(order: NewOrderSingle, sessionId: SessionID) {
     logger.debug("Handled Order ClOrdID: " + order.getClOrdID.getValue + ", symbol: " + order.getSymbol.getValue + ", orderQty: " + order.getOrderQty.getValue + ", order: " + order)
-    incomingOrderNotifier.notify(fixOrderConverter convert order)
+    newOrderHandlers.foreach(_.handle(fixOrderConverter convert order))
   }
 
   def onMessage(orderCancel: OrderCancelRequest, sessionId: SessionID) = {
     logger.debug("Handled OrderCancel origClOrdID: {}, new clOrdID: {}, from: {}", orderCancel.getOrigClOrdID.getValue, orderCancel.getClOrdID.getValue, sessionId.getTargetCompID)
-    orderCancelHandler.handle(fixOrderConverter convert orderCancel)
+    newOrderCancelHandlers.foreach(_.handle(fixOrderConverter convert orderCancel))
   }
 
 }

@@ -2,8 +2,7 @@ package org.nexbook.core
 
 import org.joda.time.DateTime
 import org.nexbook.domain._
-import org.nexbook.orderprocessing.ProcessingResponseSender
-import org.nexbook.orderprocessing.response.{OrderAcceptResponse, OrderExecutionResponse, OrderRejectionResponse}
+import org.nexbook.orderbookresponsehandler.response.{OrderAcceptResponse, OrderBookResponse, OrderExecutionResponse, OrderRejectionResponse}
 import org.nexbook.repository.OrderInMemoryRepository
 import org.nexbook.sequence.SequencerFactory
 import org.nexbook.utils.Clock
@@ -11,7 +10,7 @@ import org.slf4j.LoggerFactory
 
 import scala.math.BigDecimal.RoundingMode
 
-class OrderMatcher(orderRepository: OrderInMemoryRepository, sequencerFactory: SequencerFactory, book: OrderBook, orderProcessingSender: ProcessingResponseSender, clock: Clock) {
+class OrderMatcher(orderRepository: OrderInMemoryRepository, sequencerFactory: SequencerFactory, book: OrderBook, orderBookResponseHandlers: List[Handler[OrderBookResponse]], clock: Clock) {
 
   val logger = LoggerFactory.getLogger(classOf[OrderMatcher])
   //val bookLogger = LoggerFactory.getLogger("BOOK_LOG")
@@ -42,7 +41,7 @@ class OrderMatcher(orderRepository: OrderInMemoryRepository, sequencerFactory: S
       order match {
         case o: MarketOrder =>
           logger.debug("Rejection for order: {} with remaining size: {}", o, o.leaveQty)
-          orderProcessingSender.send(OrderRejectionResponse(new OrderRejection(tradeIDSequencer.nextValue, execIDSequencer.nextValue, o, clock.currentDateTime, "No orders in book")))
+          orderBookResponseHandlers.foreach(_.handle(OrderRejectionResponse(new OrderRejection(tradeIDSequencer.nextValue, execIDSequencer.nextValue, o, clock.currentDateTime, "No orders in book"))))
           None
         case o: LimitOrder => Some(o)
       }
@@ -50,7 +49,7 @@ class OrderMatcher(orderRepository: OrderInMemoryRepository, sequencerFactory: S
       if (ordersCrossing(order, counterOrder)) {
         val dealDone = matchOrders(order, counterOrder)
         logger.debug("Deal done: " + dealDone)
-        dealDoneToExecutions(dealDone).foreach(execution => orderProcessingSender.send(OrderExecutionResponse(execution)))
+        dealDoneToExecutions(dealDone).foreach(execution => orderBookResponseHandlers.foreach(_.handle(OrderExecutionResponse(execution))))
 
         if (order.leaveQty > 0) tryMatch(order, book top order.side.reverse)
         else None
@@ -100,7 +99,7 @@ class OrderMatcher(orderRepository: OrderInMemoryRepository, sequencerFactory: S
         } else {
           book remove order
           orderRepository.updateStatus(order.tradeID, Cancelled, order.status)
-          orderProcessingSender.send(OrderAcceptResponse(orderCancel))
+		  orderBookResponseHandlers.foreach(_.handle(OrderAcceptResponse(orderCancel)))
         }
       case None =>
         orderRepository.findById(orderCancel.dealID) match {

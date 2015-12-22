@@ -25,14 +25,13 @@ class TradeIdGenerator(initValue: String) {
   private def asStringValue(value: Long): String = {
     def decodeAtLevel(index: Int, value: Long, decodedChars: List[Char]): List[Char] = index match {
       case -1 => decodedChars.reverse
-      case _ => {
+      case _ =>
         val levelResult = Math.pow(TradeIdGenerator.LETTER_RANGE, index).toLong
         val countedInt = (value / levelResult).toInt
         val countedChar: Char = (countedInt + TradeIdGenerator.ASCII_LETTER_OFFSET).toChar
         decodeAtLevel(index - 1, value - (countedInt * levelResult), countedChar :: decodedChars)
-      }
     }
-    (decodeAtLevel(TradeIdGenerator.LETTER_COUNT - 1, value / (Math.pow(10, TradeIdGenerator.DIGIT_COUNT).toLong), List())).mkString + ("%0" + TradeIdGenerator.DIGIT_COUNT + "d").format(value % Math.pow(10, TradeIdGenerator.DIGIT_COUNT).toInt)
+    decodeAtLevel(TradeIdGenerator.LETTER_COUNT - 1, value / Math.pow(10, TradeIdGenerator.DIGIT_COUNT).toLong, List()).mkString + ("%0" + TradeIdGenerator.DIGIT_COUNT + "d").format(value % Math.pow(10, TradeIdGenerator.DIGIT_COUNT).toInt)
   }
 
   private def toLong(str: String): Long = {
@@ -40,7 +39,7 @@ class TradeIdGenerator(initValue: String) {
       def encodeLetterIndex(letterIndex: (Int, Int)): Long = letterIndex match {
         case (letter, index) => letter * Math.pow(10, TradeIdGenerator.DIGIT_COUNT).toLong * Math.pow(TradeIdGenerator.LETTER_RANGE, index).toLong
       }
-      letters.toList.reverse.map(c => c.toInt - TradeIdGenerator.ASCII_LETTER_OFFSET).view.zipWithIndex.map(encodeLetterIndex(_)).toList.reduceLeft[Long](_ + _)
+      letters.toList.reverse.map(c => c.toInt - TradeIdGenerator.ASCII_LETTER_OFFSET).view.zipWithIndex.map(encodeLetterIndex).toList.sum
     }
     val (letters, digits) = str.splitAt(TradeIdGenerator.LETTER_COUNT)
     decodeLetters(letters) + digits.toInt
