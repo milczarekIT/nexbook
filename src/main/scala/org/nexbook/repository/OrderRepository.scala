@@ -3,8 +3,8 @@ package org.nexbook.repository
 import org.nexbook.domain.{Order, OrderStatus}
 
 /**
- * Created by milczu on 08.12.15.
- */
+  * Created by milczu on 08.12.15.
+  */
 trait OrderRepository {
 
   def add(order: Order)

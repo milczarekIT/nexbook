@@ -1,8 +1,8 @@
 package org.nexbook.config
 
 /**
- * Created by milczu on 25.08.15.
- */
+  * Created by milczu on 25.08.15.
+  */
 object ConfigFactory {
   val supportedCurrencyPairs = initSupportedCurrencyPairs
 

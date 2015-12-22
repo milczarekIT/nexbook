@@ -3,8 +3,8 @@ package org.nexbook.domain
 import org.joda.time.DateTime
 
 /**
- * Created by milczu on 09.12.15
- */
+  * Created by milczu on 09.12.15
+  */
 case class OrderCancel(tradeID: Long, timestamp: DateTime, clOrdId: String, order: Order) extends Order {
 
   val orderType = order.orderType

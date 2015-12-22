@@ -3,8 +3,8 @@ package org.nexbook.fix
 import quickfix._
 
 /**
- * Created by milczu on 25.08.15.
- */
+  * Created by milczu on 25.08.15.
+  */
 class FixEngineRunner(fixOrderHandler: FixMessageHandler, configPath: String) extends FixApplicationRunner with FixFileBasedConfigurer {
 
   val fixOrderHandlerSessionSettings = new SessionSettings(configPath)

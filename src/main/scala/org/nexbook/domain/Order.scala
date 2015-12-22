@@ -11,8 +11,8 @@ trait Trade extends TradeDetails {
   private var currentStatus: OrderStatus = New
 
   def addFillQty(qty: Double) = {
-    Assert.isTrue(qty <= leaveQty)
-    this.filledQty += qty
+	Assert.isTrue(qty <= leaveQty)
+	this.filledQty += qty
   }
 
   def dealID: Long
@@ -20,7 +20,7 @@ trait Trade extends TradeDetails {
   def leaveQty = qty - filledQty
 
   def updateStatus(newStatus: OrderStatus) = {
-    currentStatus = newStatus
+	currentStatus = newStatus
   }
 
   override def status: OrderStatus = currentStatus

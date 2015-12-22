@@ -17,14 +17,14 @@ class OrderInMemoryRepository extends OrderRepository {
   def findById(tradeID: Long): Option[Order] = orders.find(_.tradeID == tradeID)
 
   override def updateStatus(tradeID: Long, newStatus: OrderStatus, oldStatus: OrderStatus): Boolean = {
-    findById(tradeID) match {
-      case Some(order) =>
-        if (order.status == oldStatus) {
-          order.updateStatus(newStatus)
-          true
-        }
-        else false
-      case None => false
-    }
+	findById(tradeID) match {
+	  case Some(order) =>
+		if (order.status == oldStatus) {
+		  order.updateStatus(newStatus)
+		  true
+		}
+		else false
+	  case None => false
+	}
   }
 }

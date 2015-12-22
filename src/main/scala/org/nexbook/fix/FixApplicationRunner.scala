@@ -4,8 +4,8 @@ import org.slf4j.LoggerFactory
 import quickfix._
 
 /**
- * Created by milczu on 25.08.15.
- */
+  * Created by milczu on 25.08.15.
+  */
 trait FixApplicationRunner {
 
   val logger = LoggerFactory.getLogger(classOf[App])
@@ -22,11 +22,11 @@ trait FixApplicationRunner {
   protected def sessionSettings: SessionSettings
 
   protected def socketAcceptor: SocketAcceptor = {
-    new SocketAcceptor(application, messageStoreFactory, sessionSettings, logFactory, messageFactory)
+	new SocketAcceptor(application, messageStoreFactory, sessionSettings, logFactory, messageFactory)
   }
 
   def run = {
-    socketAcceptorInstance.start
-    logger.info("FIX Acceptor Initialized")
+	socketAcceptorInstance.start
+	logger.info("FIX Acceptor Initialized")
   }
 }

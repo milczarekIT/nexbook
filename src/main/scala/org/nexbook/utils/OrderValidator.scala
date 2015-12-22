@@ -6,8 +6,8 @@ import org.nexbook.domain.NewOrder
 import scala.util.{Failure, Success, Try}
 
 /**
- * Created by milczu on 25.08.15.
- */
+  * Created by milczu on 25.08.15.
+  */
 class ValidationException(message: String) extends Exception(message)
 
 class OrderValidator {
@@ -22,16 +22,16 @@ class OrderValidator {
   def allowedSymbols = ConfigFactory.supportedCurrencyPairs
 
   def validate(order: NewOrder): Try[NewOrder] = {
-    def validate(order: NewOrder, validations: List[OrderValidation]): Try[NewOrder] = validations match {
-      case List() => Success(order)
-      case _ =>
-         validations.head(order) match {
-          case Success(o) => validate(o, validations.tail)
-          case Failure(e) => Failure(e)
-        }
+	def validate(order: NewOrder, validations: List[OrderValidation]): Try[NewOrder] = validations match {
+	  case List() => Success(order)
+	  case _ =>
+		validations.head(order) match {
+		  case Success(o) => validate(o, validations.tail)
+		  case Failure(e) => Failure(e)
+		}
 
-    }
-    validate(order, defaultValidations)
+	}
+	validate(order, defaultValidations)
   }
 
 

@@ -20,8 +20,11 @@ trait BasicComponentProvider {
   lazy val executionDatabaseRepository = wire[ExecutionDatabaseRepository]
   lazy val sequencerFactory = wire[SequencerFactory]
   lazy val clock = new DefaultClock
+
   def module: Module
+
   def ordBookH: List[Handler[OrderBookResponse]] = module.orderResponseHandlers
+
   lazy val orderMatchersRepository = wire[OrderMatchersRepository]
   lazy val orderHandler: OrderHandler = wire[OrderHandler]
   lazy val orderCancelHandler = wire[OrderCancelHandler]

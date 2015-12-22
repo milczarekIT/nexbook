@@ -13,19 +13,19 @@ class FixMessageHandler(orderHandlersModule: OrderHandlersModule, orderCancelHan
   val newOrderCancelHandlers = orderHandlersModule.newOrderCancelsHandlers
 
   override def onCreate(sessionId: SessionID) {
-    logger.info("FixOrderHandler Session Created with SessionID = {}", sessionId)
+	logger.info(s"FixOrderHandler Session Created with SessionID: $sessionId")
   }
 
   override def onLogon(sessionId: SessionID) {
-    logger.info("Logon: {}", sessionId)
+	logger.info(s"Logon: $sessionId")
   }
 
   override def onLogout(sessionId: SessionID) {
-    logger.info("Logout: {}", sessionId)
+	logger.info(s"Logout: $sessionId")
   }
 
   override def toAdmin(message: Message, sessionId: SessionID) {
-    logger.trace("ToAdmin: {}", message)
+	logger.trace(s"ToAdmin: $message")
   }
 
   @throws(classOf[RejectLogon])
@@ -33,12 +33,12 @@ class FixMessageHandler(orderHandlersModule: OrderHandlersModule, orderCancelHan
   @throws(classOf[IncorrectDataFormat])
   @throws(classOf[FieldNotFound])
   override def fromAdmin(message: Message, sessionId: SessionID) {
-    logger.debug("FromAdmin: {}", message)
+	logger.debug(s"FromAdmin: $message")
   }
 
   @throws(classOf[DoNotSend])
   override def toApp(message: Message, sessionId: SessionID) {
-    logger.trace("ToApp: {}", message)
+	logger.trace(s"ToApp: $message")
   }
 
   @throws(classOf[UnsupportedMessageType])
@@ -46,25 +46,25 @@ class FixMessageHandler(orderHandlersModule: OrderHandlersModule, orderCancelHan
   @throws(classOf[IncorrectDataFormat])
   @throws(classOf[FieldNotFound])
   override def fromApp(message: Message, sessionId: SessionID) {
-    logger.trace("FromApp: {}", message)
-    try {
-      message match {
-        case o: NewOrderSingle => onMessage(o, sessionId)
-        case o: OrderCancelRequest => onMessage(o, sessionId)
-      }
-    } catch {
-      case e: Exception => logger.error("Unexpected exception", e)
-    }
+	logger.trace(s"FromApp: $message")
+	try {
+	  message match {
+		case o: NewOrderSingle => onMessage(o, sessionId)
+		case o: OrderCancelRequest => onMessage(o, sessionId)
+	  }
+	} catch {
+	  case e: Exception => logger.error("Unexpected exception", e)
+	}
   }
 
   def onMessage(order: NewOrderSingle, sessionId: SessionID) {
-    logger.debug("Handled Order ClOrdID: " + order.getClOrdID.getValue + ", symbol: " + order.getSymbol.getValue + ", orderQty: " + order.getOrderQty.getValue + ", order: " + order)
-    newOrderHandlers.foreach(_.handle(fixOrderConverter convert order))
+	logger.debug(s"Handled Order ClOrdID: ${order.getClOrdID.getValue}, symbol: ${order.getSymbol.getValue}, orderQty: ${order.getOrderQty.getValue}, order: $order")
+	newOrderHandlers.foreach(_.handle(fixOrderConverter convert order))
   }
 
   def onMessage(orderCancel: OrderCancelRequest, sessionId: SessionID) = {
-    logger.debug("Handled OrderCancel origClOrdID: {}, new clOrdID: {}, from: {}", orderCancel.getOrigClOrdID.getValue, orderCancel.getClOrdID.getValue, sessionId.getTargetCompID)
-    newOrderCancelHandlers.foreach(_.handle(fixOrderConverter convert orderCancel))
+	logger.debug(s"Handled OrderCancel origClOrdID: ${orderCancel.getOrigClOrdID.getValue}, new clOrdID: ${orderCancel.getClOrdID.getValue}, from: ${sessionId.getTargetCompID}")
+	newOrderCancelHandlers.foreach(_.handle(fixOrderConverter convert orderCancel))
   }
 
 }

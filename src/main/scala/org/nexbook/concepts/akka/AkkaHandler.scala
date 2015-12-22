@@ -13,5 +13,5 @@ trait AkkaHandler[T] extends Handler[T] {
 
   def actorRefHandlers: List[ActorRef]
 
-  override def handle(o: T) = actorRefHandlers foreach(_ ! o)
+  override def handle(o: T) = actorRefHandlers foreach (_ ! o)
 }

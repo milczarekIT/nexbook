@@ -7,7 +7,7 @@ import org.nexbook.concepts.pubsub.PubSubModule
 import org.nexbook.fix.{FixEngineRunner, FixMessageHandler}
 import org.slf4j.LoggerFactory
 
-object OrderBookApp extends BasicComponentProvider{
+object OrderBookApp extends BasicComponentProvider {
 
   val LOGGER = LoggerFactory.getLogger(classOf[App])
 
@@ -18,22 +18,18 @@ object OrderBookApp extends BasicComponentProvider{
   val mode = Mode.fromString(config.getString("org.nexbook.mode"))
 
   val module: Module = mode match {
-    case PubSub => new PubSubModule with DelegatorsProvider
-    case Akka => wire[AkkaModule]
+	case PubSub => new PubSubModule with DelegatorsProvider
+	case Akka => wire[AkkaModule]
   }
   val orderResponseHandlers = module.orderResponseHandlers
 
 
-
-
-
-
   def main(args: Array[String]) {
-    LOGGER.info("NexBook starting")
-    LOGGER.debug("Mode: {}", mode)
+	LOGGER.info("NexBook starting")
+	LOGGER.debug("Mode: {}", mode)
 
-    val fixMessageHandler: FixMessageHandler = wire[FixMessageHandler]
-    val fixEngineRunner = new FixEngineRunner(fixMessageHandler, fixConfigPath)
-    fixEngineRunner.run
+	val fixMessageHandler: FixMessageHandler = wire[FixMessageHandler]
+	val fixEngineRunner = new FixEngineRunner(fixMessageHandler, fixConfigPath)
+	fixEngineRunner.run
   }
 }

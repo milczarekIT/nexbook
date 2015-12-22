@@ -3,8 +3,8 @@ package org.nexbook.domain
 import org.joda.time.DateTime
 
 /**
- * Created by milczu on 08.12.15.
- */
+  * Created by milczu on 08.12.15.
+  */
 trait TradeDetails {
 
   val symbol: String

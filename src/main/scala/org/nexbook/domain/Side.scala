@@ -14,9 +14,9 @@ case object Buy extends Side {
 
 object Side {
   def fromString(s: String): Side = s match {
-    case "Buy" => Buy
-    case "Sell" => Sell
-    case _ => throw new IllegalArgumentException
+	case "Buy" => Buy
+	case "Sell" => Sell
+	case _ => throw new IllegalArgumentException
   }
 }
 

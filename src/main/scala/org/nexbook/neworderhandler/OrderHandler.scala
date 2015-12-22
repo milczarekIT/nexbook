@@ -23,26 +23,26 @@ class OrderHandler(orderBookResponseHandlers: List[Handler[OrderBookResponse]], 
 
 
   def handle(newOrder: NewOrder) {
-    def onValidationSuccess(order: NewOrder) {
-      def acceptOrder(newOrder: NewOrder) = newOrder match {
-        case l: NewLimitOrder => new LimitOrder(l, sequencer.nextValue)
-        case m: NewMarketOrder => new MarketOrder(m, sequencer.nextValue)
-      }
-      logger.debug("Handled order: {} from: " + order.connector, order)
-      val acceptedOrder = acceptOrder(newOrder)
-      orderBookResponseHandlers.foreach(_.handle(OrderAcceptResponse(acceptedOrder)))
-      orderMatchersRepository.find(newOrder.symbol).processOrder(acceptedOrder)
-    }
-    def onValidationException(order: NewOrder, e: ValidationException) = {
+	def onValidationSuccess(order: NewOrder) {
+	  def acceptOrder(newOrder: NewOrder) = newOrder match {
+		case l: NewLimitOrder => new LimitOrder(l, sequencer.nextValue)
+		case m: NewMarketOrder => new MarketOrder(m, sequencer.nextValue)
+	  }
+	  logger.debug("Handled order: {} from: " + order.connector, order)
+	  val acceptedOrder = acceptOrder(newOrder)
+	  orderBookResponseHandlers.foreach(_.handle(OrderAcceptResponse(acceptedOrder)))
+	  orderMatchersRepository.find(newOrder.symbol).processOrder(acceptedOrder)
+	}
+	def onValidationException(order: NewOrder, e: ValidationException) = {
 	  orderBookResponseHandlers.foreach(_.handle(OrderValidationRejectionResponse(OrderValidationRejection(newOrder, e.getMessage))))
 	}
 
 
-    orderValidator.validate(newOrder) match {
-      case Success(o) => onValidationSuccess(o)
-      case Failure(e: ValidationException) => onValidationException(newOrder, e)
+	orderValidator.validate(newOrder) match {
+	  case Success(o) => onValidationSuccess(o)
+	  case Failure(e: ValidationException) => onValidationException(newOrder, e)
 	  case Failure(e) => logger.error("Unexpected exception", e)
-    }
+	}
   }
 
 
