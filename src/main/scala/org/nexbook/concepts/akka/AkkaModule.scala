@@ -18,5 +18,5 @@ class AkkaModule extends Module with DelegatorsProvider {
 
   override lazy val newOrderCancelsHandlers: List[Handler[NewOrderCancel]] = List(new AkkaNewOrderCancelHandler(orderCancelHandlers))
 
-  override lazy val orderResponseHandlers: List[Handler[OrderBookResponse]] = List(new AkkaOrderBookResponseHandler(orderResponseHandler))
+  override lazy val orderBookResponseHandlers: List[Handler[OrderBookResponse]] = List(new AkkaOrderBookResponseHandler(orderResponseHandler))
 }

@@ -18,5 +18,5 @@ class PubSubModule extends Module with DelegatorsProvider {
 
   override def newOrderCancelsHandlers: List[Handler[NewOrderCancel]] = List(new PubSubNewOrderCancelHandler(orderCancelHandlers))
 
-  override def orderResponseHandlers: List[Handler[OrderBookResponse]] = List(new PubSubOrderBookResponseHandler(orderResponseHandler))
+  override def orderBookResponseHandlers: List[Handler[OrderBookResponse]] = List(new PubSubOrderBookResponseHandler(orderResponseHandler))
 }

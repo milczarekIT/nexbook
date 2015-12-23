@@ -10,9 +10,9 @@ import org.slf4j.LoggerFactory
 
 import scala.math.BigDecimal.RoundingMode
 
-class OrderMatcher(orderRepository: OrderInMemoryRepository, sequencerFactory: SequencerFactory, book: OrderBook, orderBookResponseHandlers: List[Handler[OrderBookResponse]], clock: Clock) {
+class MatchingEngine(orderRepository: OrderInMemoryRepository, sequencerFactory: SequencerFactory, book: OrderBook, orderBookResponseHandlers: List[Handler[OrderBookResponse]], clock: Clock) {
 
-  val logger = LoggerFactory.getLogger(classOf[OrderMatcher])
+  val logger = LoggerFactory.getLogger(classOf[MatchingEngine])
   val bookLogger = LoggerFactory.getLogger("BOOK_LOG")
 
   import org.nexbook.sequence.SequencerFactory._

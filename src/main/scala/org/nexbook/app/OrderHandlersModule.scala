@@ -13,5 +13,5 @@ trait OrderHandlersModule {
 
   def newOrderCancelsHandlers: List[Handler[NewOrderCancel]]
 
-  def orderResponseHandlers: List[Handler[OrderBookResponse]]
+  def orderBookResponseHandlers: List[Handler[OrderBookResponse]]
 }

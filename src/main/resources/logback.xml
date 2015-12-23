@@ -43,7 +43,7 @@
     <logger name="TRADES_LOG" level="debug" additivity="false">
         <appender-ref ref="TRADES"/>
     </logger>
-    <logger name="BOOK_LOG" level="trace" additivity="false">
+    <logger name="BOOK_LOG" level="info" additivity="false">
         <appender-ref ref="BOOK"/>
     </logger>
 

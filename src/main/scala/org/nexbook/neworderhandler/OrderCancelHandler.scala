@@ -2,7 +2,7 @@ package org.nexbook.neworderhandler
 
 import org.nexbook.core.Handler
 import org.nexbook.domain.{NewOrderCancel, Order, OrderCancel}
-import org.nexbook.repository.{OrderChainedRepository, OrderMatchersRepository}
+import org.nexbook.repository.{MatchingEnginesRepository, OrderChainedRepository}
 import org.nexbook.sequence.SequencerFactory
 import org.nexbook.utils.Clock
 import org.slf4j.LoggerFactory
@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory
 /**
   * Created by milczu on 09.12.15
   */
-class OrderCancelHandler(orderRepository: OrderChainedRepository, sequencerFactory: SequencerFactory, clock: Clock, orderMatchersRepository: OrderMatchersRepository) extends Handler[NewOrderCancel] {
+class OrderCancelHandler(orderRepository: OrderChainedRepository, sequencerFactory: SequencerFactory, clock: Clock, matchingEnginesRepository: MatchingEnginesRepository) extends Handler[NewOrderCancel] {
 
   import org.nexbook.sequence.SequencerFactory._
 
@@ -21,7 +21,7 @@ class OrderCancelHandler(orderRepository: OrderChainedRepository, sequencerFacto
 	def acceptOrder(newOrderCancel: NewOrderCancel, prevOrder: Order): OrderCancel = new OrderCancel(tradeIDSequencer.nextValue, clock.currentDateTime, newOrderCancel.clOrdId, prevOrder)
 
 	orderRepository.findBy(newOrderCancel.origClOrdId, newOrderCancel.connector) match {
-	  case Some(order) => orderMatchersRepository.find(newOrderCancel.symbol).processOrder(acceptOrder(newOrderCancel, order))
+	  case Some(order) => matchingEnginesRepository.find(newOrderCancel.symbol).processOrder(acceptOrder(newOrderCancel, order))
 	  case None => logger.warn("Unable to handle order cancel. Original order not found")
 	}
   }

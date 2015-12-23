@@ -3,7 +3,7 @@ package org.nexbook.neworderhandler
 import org.nexbook.core.Handler
 import org.nexbook.domain._
 import org.nexbook.orderbookresponsehandler.response.{OrderAcceptResponse, OrderBookResponse, OrderValidationRejectionResponse}
-import org.nexbook.repository.OrderMatchersRepository
+import org.nexbook.repository.MatchingEnginesRepository
 import org.nexbook.sequence.SequencerFactory
 import org.nexbook.utils.{Clock, OrderValidator, ValidationException}
 import org.slf4j.LoggerFactory
@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory
 import scala.util.{Failure, Success}
 
 
-class OrderHandler(orderBookResponseHandlers: List[Handler[OrderBookResponse]], sequencerFactory: SequencerFactory, clock: Clock, orderMatchersRepository: OrderMatchersRepository) extends Handler[NewOrder] {
+class OrderHandler(orderBookResponseHandlers: List[Handler[OrderBookResponse]], sequencerFactory: SequencerFactory, clock: Clock, matchingEnginesRepository: MatchingEnginesRepository) extends Handler[NewOrder] {
 
   val logger = LoggerFactory.getLogger(classOf[OrderHandler])
 
@@ -31,7 +31,7 @@ class OrderHandler(orderBookResponseHandlers: List[Handler[OrderBookResponse]], 
 	  logger.debug("Handled order: {} from: " + order.connector, order)
 	  val acceptedOrder = acceptOrder(newOrder)
 	  orderBookResponseHandlers.foreach(_.handle(OrderAcceptResponse(acceptedOrder)))
-	  orderMatchersRepository.find(newOrder.symbol).processOrder(acceptedOrder)
+	  matchingEnginesRepository.find(newOrder.symbol).processOrder(acceptedOrder)
 	}
 	def onValidationException(order: NewOrder, e: ValidationException) = {
 	  orderBookResponseHandlers.foreach(_.handle(OrderValidationRejectionResponse(OrderValidationRejection(newOrder, e.getMessage))))

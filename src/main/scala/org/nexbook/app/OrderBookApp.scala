@@ -21,7 +21,7 @@ object OrderBookApp extends BasicComponentProvider {
 	case PubSub => new PubSubModule with DelegatorsProvider
 	case Akka => wire[AkkaModule]
   }
-  val orderResponseHandlers = module.orderResponseHandlers
+  val orderResponseHandlers = module.orderBookResponseHandlers
 
 
   def main(args: Array[String]) {
