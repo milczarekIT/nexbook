@@ -1,6 +1,6 @@
 package org.nexbook.utils
 
-import org.nexbook.config.ConfigFactory
+import org.nexbook.app.AppConfig
 import org.nexbook.domain.NewOrder
 
 import scala.util.{Failure, Success, Try}
@@ -19,7 +19,7 @@ class OrderValidator {
 
   val defaultValidations = List(symbolValidation, sizeValidation)
 
-  def allowedSymbols = ConfigFactory.supportedCurrencyPairs
+  def allowedSymbols = AppConfig.supportedCurrencyPairs
 
   def validate(order: NewOrder): Try[NewOrder] = {
 	def validate(order: NewOrder, validations: List[OrderValidation]): Try[NewOrder] = validations match {

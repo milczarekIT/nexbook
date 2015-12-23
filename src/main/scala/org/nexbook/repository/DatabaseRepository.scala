@@ -1,6 +1,7 @@
 package org.nexbook.repository
 
-import com.typesafe.config.ConfigFactory
+import com.typesafe.config.Config
+import org.nexbook.app.AppConfig
 
 /**
   * Created by milczu on 07.12.15.
@@ -9,9 +10,9 @@ trait DatabaseRepository[T] {
 
   import com.mongodb.casbah.Imports._
 
-  val dbConfig = ConfigFactory.load().getConfig("org.nexbook.mongo")
-  val (host, port, db) = (dbConfig.getString("host"), dbConfig.getInt("port"), dbConfig.getString("dbName"))
-  val client = MongoClient(host, port)(db)
+  lazy val mongodbConfig: Config = AppConfig.mongodbConfig
+  lazy val (host, port, db) = (mongodbConfig.getString("host"), mongodbConfig.getInt("port"), mongodbConfig.getString("database"))
+  lazy val client = MongoClient(host, port)(db)
   val findAllLimit = 10000
 
   protected val collectionName: String

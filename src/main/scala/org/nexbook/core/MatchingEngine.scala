@@ -1,16 +1,16 @@
 package org.nexbook.core
 
 import org.joda.time.DateTime
+import org.nexbook.app.AppConfig
 import org.nexbook.domain._
 import org.nexbook.orderbookresponsehandler.response.{OrderAcceptResponse, OrderBookResponse, OrderExecutionResponse, OrderRejectionResponse}
 import org.nexbook.repository.OrderInMemoryRepository
 import org.nexbook.sequence.SequencerFactory
-import org.nexbook.utils.Clock
 import org.slf4j.LoggerFactory
 
 import scala.math.BigDecimal.RoundingMode
 
-class MatchingEngine(orderRepository: OrderInMemoryRepository, sequencerFactory: SequencerFactory, book: OrderBook, orderBookResponseHandlers: List[Handler[OrderBookResponse]], clock: Clock) {
+class MatchingEngine(orderRepository: OrderInMemoryRepository, sequencerFactory: SequencerFactory, book: OrderBook, orderBookResponseHandlers: List[Handler[OrderBookResponse]]) {
 
   val logger = LoggerFactory.getLogger(classOf[MatchingEngine])
   val bookLogger = LoggerFactory.getLogger("BOOK_LOG")
@@ -43,7 +43,7 @@ class MatchingEngine(orderRepository: OrderInMemoryRepository, sequencerFactory:
 	  order match {
 		case o: MarketOrder =>
 		  logger.debug(s"Rejection for order: $o with remaining size: ${o.leaveQty}")
-		  orderBookResponseHandlers.foreach(_.handle(OrderRejectionResponse(new OrderRejection(tradeIDSequencer.nextValue, execIDSequencer.nextValue, o, clock.currentDateTime, "No orders in book"))))
+		  orderBookResponseHandlers.foreach(_.handle(OrderRejectionResponse(new OrderRejection(tradeIDSequencer.nextValue, execIDSequencer.nextValue, o, AppConfig.clock.currentDateTime, "No orders in book"))))
 		  None
 		case o: LimitOrder => Some(o)
 	  }
@@ -70,7 +70,7 @@ class MatchingEngine(orderRepository: OrderInMemoryRepository, sequencerFactory:
 
 
   private def matchOrders(order: Order, counterOrder: LimitOrder): DealDone = {
-	val execDateTime = clock.currentDateTime
+	val execDateTime = AppConfig.clock.currentDateTime
 	def determineDealSize(order: Order, counter: LimitOrder): Double = if (order.leaveQty <= counter.leaveQty) order.leaveQty else counter.leaveQty
 	def determineDealPrice(order: Order, counter: LimitOrder): Double = order match {
 	  case o: MarketOrder => counter.limit

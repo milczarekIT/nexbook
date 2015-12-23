@@ -9,7 +9,6 @@ import org.nexbook.orderbookresponsehandler.handler.OrderBookResponseHandler
 import org.nexbook.orderbookresponsehandler.response.{OrderBookResponse, OrderExecutionResponse, OrderRejectionResponse}
 import org.nexbook.repository.{ExecutionDatabaseRepository, OrderDatabaseRepository, OrderInMemoryRepository}
 import org.nexbook.sequence.SequencerFactory
-import org.nexbook.utils.DefaultClock
 import org.scalatest.mock.MockitoSugar._
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -31,7 +30,7 @@ class MatchingEngineTest extends FlatSpec with Matchers {
   "Empty MatchingEngine" should "send rejection for first MarketOrder" in {
 	val orderBook = spy(new OrderBook)
 	val orderBookResponseHandler = mock[OrderBookResponseHandler]
-	val matchingEngine = new MatchingEngine(orderInMemoryRepository, sequencerFactory, orderBook, List(orderBookResponseHandler), new DefaultClock)
+	val matchingEngine = new MatchingEngine(orderInMemoryRepository, sequencerFactory, orderBook, List(orderBookResponseHandler))
 
 	val marketOrder1 = marketOrder()
 
@@ -47,7 +46,7 @@ class MatchingEngineTest extends FlatSpec with Matchers {
   "Empty MatchingEngine" should "should add original LimitOrder to OrderBook" in {
 	val orderBook = spy(new OrderBook)
 	val orderBookResponseHandler = mock[OrderBookResponseHandler]
-	val matchingEngine = new MatchingEngine(orderInMemoryRepository, sequencerFactory, orderBook, List(orderBookResponseHandler), new DefaultClock)
+	val matchingEngine = new MatchingEngine(orderInMemoryRepository, sequencerFactory, orderBook, List(orderBookResponseHandler))
 
 	val order = limitOrder()
 
@@ -64,7 +63,7 @@ class MatchingEngineTest extends FlatSpec with Matchers {
   "MatchingEngine" should "generate one deal: 2 orders on both sides with same size and price" in {
 	val orderBook = spy(new OrderBook)
 	val orderBookResponseHandler = mock[OrderBookResponseHandler]
-	val matchingEngine = new MatchingEngine(orderInMemoryRepository, sequencerFactory, orderBook, List(orderBookResponseHandler), new DefaultClock)
+	val matchingEngine = new MatchingEngine(orderInMemoryRepository, sequencerFactory, orderBook, List(orderBookResponseHandler))
 
 	val price = 4.32
 	val size = 100
@@ -92,7 +91,7 @@ class MatchingEngineTest extends FlatSpec with Matchers {
   "MatchingEngine" should "generate one deal: 2 orders on both sides with same size. First: Limit, Second: Market" in {
 	val orderBook = spy(new OrderBook)
 	val orderBookResponseHandler = mock[OrderBookResponseHandler]
-	val matchingEngine = new MatchingEngine(orderInMemoryRepository, sequencerFactory, orderBook, List(orderBookResponseHandler), new DefaultClock)
+	val matchingEngine = new MatchingEngine(orderInMemoryRepository, sequencerFactory, orderBook, List(orderBookResponseHandler))
 
 	val price = 4.32
 	val size = 100
@@ -119,7 +118,7 @@ class MatchingEngineTest extends FlatSpec with Matchers {
   "MatchingEngine" should "generate 2 deals: 2 buy orders, 1 sell order, with same size. Size is matching, Fulfill" in {
 	val orderBook = spy(new OrderBook)
 	val orderBookResponseHandler = mock[OrderBookResponseHandler]
-	val matchingEngine = new MatchingEngine(orderInMemoryRepository, sequencerFactory, orderBook, List(orderBookResponseHandler), new DefaultClock)
+	val matchingEngine = new MatchingEngine(orderInMemoryRepository, sequencerFactory, orderBook, List(orderBookResponseHandler))
 
 	val price = 4.32
 	val size = 100
@@ -149,7 +148,7 @@ class MatchingEngineTest extends FlatSpec with Matchers {
   "MatchingEngine" should "generate 2 deals: 2 buy orders, 1 sell order and 1 rejection" in {
 	val orderBook = spy(new OrderBook)
 	val orderBookResponseHandler = mock[OrderBookResponseHandler]
-	val matchingEngine = new MatchingEngine(orderInMemoryRepository, sequencerFactory, orderBook, List(orderBookResponseHandler), new DefaultClock)
+	val matchingEngine = new MatchingEngine(orderInMemoryRepository, sequencerFactory, orderBook, List(orderBookResponseHandler))
 
 	val price = 4.32
 	val size = 100
@@ -179,7 +178,7 @@ class MatchingEngineTest extends FlatSpec with Matchers {
   "MatchingEngine" should "should add 2 counter order to books without any deals" in {
 	val orderBook = spy(new OrderBook)
 	val orderBookResponseHandler = mock[OrderBookResponseHandler]
-	val matchingEngine = new MatchingEngine(orderInMemoryRepository, sequencerFactory, orderBook, List(orderBookResponseHandler), new DefaultClock)
+	val matchingEngine = new MatchingEngine(orderInMemoryRepository, sequencerFactory, orderBook, List(orderBookResponseHandler))
 
 	val priceBuy = 4.30
 	val priceSell = 4.40

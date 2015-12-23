@@ -1,6 +1,6 @@
 package org.nexbook.orderbookresponsehandler.handler
 
-import com.typesafe.config.ConfigFactory
+import org.nexbook.app.AppConfig
 import org.nexbook.domain._
 import org.nexbook.orderbookresponsehandler.response._
 import org.nexbook.utils.FixUtils
@@ -18,7 +18,7 @@ import scala.collection.JavaConverters._
 class FixMessageResponseSender extends OrderBookResponseHandler {
 
   val logger = LoggerFactory.getLogger(classOf[FixMessageResponseSender])
-  val fixSessionSettings = new SessionSettings(ConfigFactory.load().getString("org.nexbook.fix.config.path"))
+  val fixSessionSettings = new SessionSettings(AppConfig.fixConfigPath)
 
   val defaultConverter = new DefaultProcessingResponseFixMessageConverter
   val converters: Map[Class[_], ProcessingResponseFixMessageConverter[_]] = Map(
