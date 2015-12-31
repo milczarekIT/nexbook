@@ -47,14 +47,19 @@ class FixMessageHandler(orderHandlersModule: OrderHandlersModule, orderCancelHan
   @throws(classOf[FieldNotFound])
   override def fromApp(message: Message, sessionId: SessionID) {
 	logger.trace(s"FromApp: $message")
-	try {
-	  message match {
-		case o: NewOrderSingle => onMessage(o, sessionId)
-		case o: OrderCancelRequest => onMessage(o, sessionId)
-	  }
-	} catch {
-	  case e: Exception => logger.error("Unexpected exception", e)
+	message match {
+	  case _: NewOrderSingle | _: OrderCancelRequest =>
+		logger.info(s"onMessage: ${System.currentTimeMillis} handled message $message")
 	}
+
+//	try {
+//	  message match {
+//		case o: NewOrderSingle => onMessage(o, sessionId)
+//		case o: OrderCancelRequest => onMessage(o, sessionId)
+//	  }
+//	} catch {
+//	  case e: Exception => logger.error("Unexpected exception", e)
+//	}
   }
 
   def onMessage(order: NewOrderSingle, sessionId: SessionID) {

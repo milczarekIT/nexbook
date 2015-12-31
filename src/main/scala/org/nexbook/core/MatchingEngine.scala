@@ -4,13 +4,14 @@ import org.joda.time.DateTime
 import org.nexbook.app.AppConfig
 import org.nexbook.domain._
 import org.nexbook.orderbookresponsehandler.response.{OrderAcceptResponse, OrderBookResponse, OrderExecutionResponse, OrderRejectionResponse}
+import org.nexbook.orderchange.{OrderChange, OrderChangeCommand, OrderFillChange}
 import org.nexbook.repository.OrderInMemoryRepository
 import org.nexbook.sequence.SequencerFactory
 import org.slf4j.LoggerFactory
 
 import scala.math.BigDecimal.RoundingMode
 
-class MatchingEngine(orderRepository: OrderInMemoryRepository, sequencerFactory: SequencerFactory, book: OrderBook, orderBookResponseHandlers: List[Handler[OrderBookResponse]]) {
+class MatchingEngine(orderRepository: OrderInMemoryRepository, sequencerFactory: SequencerFactory, book: OrderBook, orderBookResponseHandlers: List[Handler[OrderBookResponse]], orderChangeHandlers: List[Handler[OrderChangeCommand]]) {
 
   val logger = LoggerFactory.getLogger(classOf[MatchingEngine])
   val bookLogger = LoggerFactory.getLogger("BOOK_LOG")
@@ -20,7 +21,7 @@ class MatchingEngine(orderRepository: OrderInMemoryRepository, sequencerFactory:
   val tradeIDSequencer = sequencerFactory sequencer tradeIDSequencerName
   val execIDSequencer = sequencerFactory sequencer execIDSequencerName
 
-  def processOrder(order: Order) = this.synchronized {
+  def processOrder(order: Order) = synchronized {
 	orderRepository add order
 	order match {
 	  case cancel: OrderCancel => tryCancel(cancel)
@@ -53,8 +54,7 @@ class MatchingEngine(orderRepository: OrderInMemoryRepository, sequencerFactory:
 		logger.debug("Deal done: " + dealDone)
 		dealDoneToExecutions(dealDone).foreach(execution => orderBookResponseHandlers.foreach(_.handle(OrderExecutionResponse(execution))))
 
-		if (order.leaveQty > 0) tryMatch(order, book top order.side.reverse)
-		else None
+		if (order.leaveQty > 0) tryMatch(order, book top order.side.reverse) else None
 	  } else {
 		Some(order.asInstanceOf[LimitOrder])
 	  }
@@ -79,13 +79,28 @@ class MatchingEngine(orderRepository: OrderInMemoryRepository, sequencerFactory:
 
 	val dealSize = determineDealSize(order, counterOrder)
 	val dealPrice = determineDealPrice(order, counterOrder)
-	order addFillQty dealSize
-	counterOrder addFillQty dealSize
-	if (counterOrder.leaveQty == 0.00) {
-	  book removeTop counterOrder.side
+
+	def applyFills: List[OrderChange] = {
+	  val (prevOrderStatus, prevOrderLeaveQty) = (order.status, order.leaveQty)
+	  val (prevCounterOrderStatus, prevCounterOrderLeaveQty) = (counterOrder.status, counterOrder.leaveQty)
+
+	  order addFillQty dealSize
+	  counterOrder addFillQty dealSize
+	  if (counterOrder.leaveQty == 0.00) {
+		counterOrder.updateStatus(Filled)
+		book removeTop counterOrder.side
+	  } else {
+		counterOrder.updateStatus(Partial)
+	  }
+	  val orderChange = new OrderFillChange(order.tradeID, prevOrderStatus, order.status, prevOrderLeaveQty, order.leaveQty)
+	  val counterOrderChange = new OrderFillChange(counterOrder.tradeID, prevCounterOrderStatus, counterOrder.status, prevCounterOrderLeaveQty, counterOrder.leaveQty)
+	  List(orderChange, counterOrderChange)
 	}
-	val buyOrder = if (order.side == Buy) order else counterOrder
-	val sellOrder = if (order.side == Buy) counterOrder else order
+
+	val orderChanges = applyFills
+	for(handler <- orderChangeHandlers; change <- orderChanges) { handler.handle(OrderChangeCommand(change)) }
+
+	val (buyOrder, sellOrder) = if (order.side == Buy) (order, counterOrder) else (counterOrder, order)
 
 	if(bookLogger.isDebugEnabled) {
 	  bookLogger.debug(s"1) Book (${order.side}:${order.symbol}) size: ${book.size(order.side)}, depth: ${book.depth(order.side)}, price levels: ${book.priceLevels(order.side)}")

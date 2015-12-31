@@ -1,6 +1,7 @@
 package org.nexbook.neworderhandler.akka
 
 import akka.actor.{ActorRef, Props}
+import akka.routing.RoundRobinRouter
 import org.nexbook.concepts.akka.{AkkaHandler, AkkaHandlerWrapper}
 import org.nexbook.core.Handler
 import org.nexbook.domain.NewOrder
@@ -10,5 +11,5 @@ import org.nexbook.domain.NewOrder
   */
 class AkkaNewOrderHandler(delegators: List[Handler[NewOrder]]) extends AkkaHandler[NewOrder] {
 
-  override def actorRefHandlers: List[ActorRef] = delegators.map(handler => actorSystem.actorOf(Props(new AkkaHandlerWrapper[NewOrder](handler))))
+  override def actorRefHandlers: List[ActorRef] = delegators.map(handler => actorSystem.actorOf(Props(new AkkaHandlerWrapper[NewOrder](handler)).withRouter(RoundRobinRouter(200))))
 }

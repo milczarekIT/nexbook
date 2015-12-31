@@ -8,6 +8,8 @@ resolvers += Resolver.mavenLocal
 
 resolvers += "Sonatype OSS" at "https://oss.sonatype.org/content/repositories/releases"
 
+resolvers += "marketcetera" at "http://repo.marketcetera.org/maven"
+
 libraryDependencies ++= Seq(
   "joda-time" % "joda-time" % "2.8.1",
   "org.scalatest" % "scalatest_2.11" % "2.2.5",
@@ -21,5 +23,7 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" % "akka-actor_2.11" % "2.3.12",
   "net.liftweb" % "lift-json_2.11" % "2.6.2",
   "net.liftweb" % "lift-json-ext_2.11" % "2.6.2",
-  "org.mongodb" % "casbah_2.11" % "2.8.2"
+  "org.mongodb" % "casbah_2.11" % "2.8.2",
+  "org.apache.commons" % "commons-lang3" % "3.4",
+  "quickfixj" % "quickfixj-all" % "1.5.3"
 )

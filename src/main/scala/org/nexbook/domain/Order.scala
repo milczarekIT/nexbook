@@ -43,5 +43,3 @@ case class LimitOrder(tradeID: Long, symbol: String, clientId: String, side: Sid
 
   override val dealID: Long = tradeID
 }
-
-

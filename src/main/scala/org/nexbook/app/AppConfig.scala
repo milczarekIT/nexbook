@@ -5,20 +5,22 @@ import org.nexbook.utils.{Clock, DefaultClock}
 import org.slf4j.LoggerFactory
 
 /**
-  * Created by milczu on 25.08.15.
+  * Created by milczu on 23.12.15.
   */
 class AppConfig {
 
   val logger = LoggerFactory.getLogger(classOf[AppConfig])
+  val defaultConfigName = "nexbook"
   val rootConfig: Config = resolveAppConfig
 
   def resolveAppConfig: Config = {
-	Option[String](System.getProperty("config.name")) match {
+	val configName = Option[String](System.getProperty("config.name")) match {
 	  case None =>
-		logger.warn("VM property 'config.name' not defined. Running with default config: nexbook.conf")
-		ConfigFactory.load("config/nexbook.conf").getConfig("nexbook")
-	  case Some(configName) => ConfigFactory.load(s"config/$configName").getConfig("nexbook")
+		logger.warn(s"VM property 'config.name' not defined. Running with default config: $defaultConfigName")
+		defaultConfigName
+	  case Some(cn) => cn
 	}
+	ConfigFactory.load(s"config/$configName").getConfig("nexbook")
   }
 }
 

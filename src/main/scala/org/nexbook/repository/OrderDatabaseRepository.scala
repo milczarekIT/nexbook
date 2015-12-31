@@ -14,8 +14,8 @@ class OrderDatabaseRepository extends DatabaseRepository[Order] with OrderReposi
   import com.mongodb.casbah.Imports._
 
   override protected val collectionName: String = "orders"
-  override protected val serialize: (Order) => MongoDBObject = convertToMongoDbObject
-  override protected val deserialize: (MongoDBObject) => Order = convertFromMongoDBObject
+  override protected val serialize: Serialize = convertToMongoDbObject
+  override protected val deserialize: Deserialize = convertFromMongoDBObject
 
   private def convertToMongoDbObject(o: Order): MongoDBObject = o match {
 	case c: OrderCancel => OrderCancelConverter.serialize(c)
@@ -74,9 +74,15 @@ class OrderDatabaseRepository extends DatabaseRepository[Order] with OrderReposi
 	collection.findOne(MongoDBObject("clOrdId" -> clOrdId, "connector" -> connector)).map(o => deserialize(o))
   }
 
-  override def updateStatus(tradeID: Long, newStatus: OrderStatus, oldStatus: OrderStatus): Boolean = {
-	val query = MongoDBObject("_id" -> tradeID, "status" -> oldStatus.toString)
-	val update = MongoDBObject("status" -> newStatus.toString)
+  override def updateStatus(tradeID: Long, status: OrderStatus, prevStatus: OrderStatus): Boolean = {
+	val query = MongoDBObject("_id" -> tradeID, "status" -> prevStatus.toString)
+	val update = MongoDBObject("status" -> status.toString)
+	collection.findAndModify(query, update).nonEmpty
+  }
+
+  def updateStatusAndLeaveQty(tradeID: Long, status: OrderStatus, prevStatus: OrderStatus, prevLeaveQty: Double, leaveQty: Double): Boolean = {
+	val query = MongoDBObject("_id" -> tradeID, "status" -> prevStatus.toString, "leaveQty" -> prevLeaveQty)
+	val update = MongoDBObject("status" -> status.toString, "leaveQty" -> leaveQty)
 	collection.findAndModify(query, update).nonEmpty
   }
 }

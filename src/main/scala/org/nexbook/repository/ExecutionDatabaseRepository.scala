@@ -14,8 +14,8 @@ class ExecutionDatabaseRepository extends DatabaseRepository[Execution] {
   import com.mongodb.casbah.Imports._
 
   override protected val collectionName: String = "executions"
-  override protected val serialize: (Execution) => MongoDBObject = e => executionConverter(e).serialize(e)
-  override protected val deserialize: (MongoDBObject) => Execution = m => executionConverter(m).deserialize(m)
+  override protected val serialize: Serialize = e => executionConverter(e).serialize(e)
+  override protected val deserialize: Deserialize = m => executionConverter(m).deserialize(m)
 
   private def executionConverter(e: Execution): ExecutionConverter = e match {
 	case rejection: OrderRejection => OrderRejectionConverter

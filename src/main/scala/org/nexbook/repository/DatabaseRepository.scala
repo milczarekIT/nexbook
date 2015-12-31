@@ -10,6 +10,9 @@ trait DatabaseRepository[T] {
 
   import com.mongodb.casbah.Imports._
 
+  type Serialize = T => MongoDBObject
+  type Deserialize = MongoDBObject => T
+
   lazy val mongodbConfig: Config = AppConfig.mongodbConfig
   lazy val (host, port, db) = (mongodbConfig.getString("host"), mongodbConfig.getInt("port"), mongodbConfig.getString("database"))
   lazy val client = MongoClient(host, port)(db)
@@ -19,8 +22,8 @@ trait DatabaseRepository[T] {
 
   protected def collection = client(collectionName)
 
-  protected val serialize: (T => MongoDBObject)
-  protected val deserialize: (MongoDBObject => T)
+  protected val serialize: Serialize
+  protected val deserialize: Deserialize
 
   def add(obj: T): Unit = {
 	collection insert serialize(obj)

@@ -1,6 +1,7 @@
 package org.nexbook.neworderhandler.akka
 
 import akka.actor.{ActorRef, Props}
+import akka.routing.RoundRobinRouter
 import org.nexbook.concepts.akka.{AkkaHandler, AkkaHandlerWrapper}
 import org.nexbook.core.Handler
 import org.nexbook.domain.NewOrderCancel
@@ -10,5 +11,6 @@ import org.nexbook.domain.NewOrderCancel
   */
 class AkkaNewOrderCancelHandler(delegators: List[Handler[NewOrderCancel]]) extends AkkaHandler[NewOrderCancel] {
 
-  override def actorRefHandlers: List[ActorRef] = delegators.map(handler => actorSystem.actorOf(Props(new AkkaHandlerWrapper[NewOrderCancel](handler))))
+  override def actorRefHandlers: List[ActorRef] = delegators.map(handler => actorSystem.actorOf(Props(new AkkaHandlerWrapper[NewOrderCancel](handler)).withRouter(RoundRobinRouter(20))))
+
 }

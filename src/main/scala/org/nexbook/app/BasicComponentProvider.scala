@@ -5,6 +5,7 @@ import org.nexbook.core.Handler
 import org.nexbook.fix.FixOrderConverter
 import org.nexbook.neworderhandler.{OrderCancelHandler, OrderHandler}
 import org.nexbook.orderbookresponsehandler.response.OrderBookResponse
+import org.nexbook.orderchange.OrderChangeCommand
 import org.nexbook.repository._
 import org.nexbook.sequence.SequencerFactory
 import org.nexbook.utils.DefaultClock
@@ -22,6 +23,7 @@ trait BasicComponentProvider {
   lazy val clock = new DefaultClock
   def module: Module
   def orderBookResponseHandlers: List[Handler[OrderBookResponse]] = module.orderBookResponseHandlers
+  def orderChangeChandlers: List[Handler[OrderChangeCommand]] =  module.orderChangeHandlers
   lazy val matchingEnginesRepository = wire[MatchingEnginesRepository]
   lazy val orderHandler: OrderHandler = wire[OrderHandler]
   lazy val orderCancelHandler = wire[OrderCancelHandler]
