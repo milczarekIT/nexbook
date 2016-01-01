@@ -27,3 +27,5 @@ libraryDependencies ++= Seq(
   "org.apache.commons" % "commons-lang3" % "3.4",
   "quickfixj" % "quickfixj-all" % "1.5.3"
 )
+
+testOptions in Test += Tests.Argument("-l", "org.nexbook.tags.IntegrationTest")

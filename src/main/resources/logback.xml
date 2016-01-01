@@ -49,9 +49,13 @@
         <appender-ref ref="BOOK"/>
     </logger>
 
+
+
     <root level="debug">
         <appender-ref ref="FILE_ASYNC"/>
-        <!--<appender-ref ref="STDOUT"/>-->
+    </root>
+    <root level="info">
+        <appender-ref ref="STDOUT"/>
     </root>
 
 </configuration>

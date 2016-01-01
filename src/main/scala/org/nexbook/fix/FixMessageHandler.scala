@@ -49,7 +49,7 @@ class FixMessageHandler(orderHandlersModule: OrderHandlersModule, orderCancelHan
 	logger.trace(s"FromApp: $message")
 	message match {
 	  case _: NewOrderSingle | _: OrderCancelRequest =>
-		logger.info(s"onMessage: ${System.currentTimeMillis} handled message $message")
+		logger.debug(s"onMessage: ${System.currentTimeMillis} handled message $message")
 	}
 
 //	try {
@@ -62,13 +62,13 @@ class FixMessageHandler(orderHandlersModule: OrderHandlersModule, orderCancelHan
 //	}
   }
 
-  def onMessage(order: NewOrderSingle, sessionId: SessionID) {
+  def onMessage(order: NewOrderSingle, sessionID: SessionID) {
 	logger.debug(s"Handled Order ClOrdID: ${order.getClOrdID.getValue}, symbol: ${order.getSymbol.getValue}, orderQty: ${order.getOrderQty.getValue}, order: $order")
 	newOrderHandlers.foreach(_.handle(fixOrderConverter convert order))
   }
 
-  def onMessage(orderCancel: OrderCancelRequest, sessionId: SessionID) = {
-	logger.debug(s"Handled OrderCancel origClOrdID: ${orderCancel.getOrigClOrdID.getValue}, new clOrdID: ${orderCancel.getClOrdID.getValue}, from: ${sessionId.getTargetCompID}")
+  def onMessage(orderCancel: OrderCancelRequest, sessionID: SessionID) = {
+	logger.debug(s"Handled OrderCancel origClOrdID: ${orderCancel.getOrigClOrdID.getValue}, new clOrdID: ${orderCancel.getClOrdID.getValue}, from: ${sessionID.getTargetCompID}")
 	newOrderCancelHandlers.foreach(_.handle(fixOrderConverter convert orderCancel))
   }
 

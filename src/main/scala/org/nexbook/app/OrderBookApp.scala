@@ -12,7 +12,7 @@ object OrderBookApp extends BasicComponentProvider {
   val mode = AppConfig.mode
 
   val module: Module = mode match {
-	case PubSub => new PubSubModule
+	case PubSub => wire[PubSubModule]
 	case Akka => wire[AkkaModule]
   }
   val orderResponseHandlers = module.orderBookResponseHandlers
