@@ -6,6 +6,7 @@ import org.nexbook.tags.IntegrationTest
 import org.scalatest.concurrent.Timeouts
 import org.scalatest.{FlatSpec, Matchers}
 import org.slf4j.LoggerFactory
+import quickfix.field.MsgType
 import quickfix.{Message, SessionID}
 
 /**
@@ -20,6 +21,20 @@ class OrderBookAppTest extends FlatSpec with Matchers with Timeouts {
   val expectedCount = 100000
 
   import org.scalatest.time.SpanSugar._
+
+  "testData" should "contains 95248 NewOrderSingle and 4752 OrderCancelRequest" in {
+	val testDataPath = "src/test/resources/data/orders8.fix"
+	logger.info(s"load test data: $testDataPath")
+	val messages: List[Message] = fixMsgReader.readAll(testDataPath).map(_._1)
+
+	messages should have size expectedCount
+
+	val countsByMsgType: Map[String, Int] = messages.groupBy(m => m.getHeader.getField(new MsgType()).getValue).map(e => e._1 -> e._2.size).toMap
+
+	countsByMsgType("D") shouldBe equal(95248)
+	countsByMsgType("F") shouldBe equal(4752)
+
+  }
 
   "OrderBook" should "work fast!" taggedAs IntegrationTest in {
 	failAfter(120 seconds) {
@@ -43,7 +58,7 @@ class OrderBookAppTest extends FlatSpec with Matchers with Timeouts {
 		logger.info("Wait for alive appRunner")
 		Thread.sleep(1000)
 	  }
-	  logger.debug("AppRunner is alive")
+	  logger.info("AppRunner is alive")
 
 	  logger.info("Apply FIX messages")
 	  messages.foreach(m => fixMessageHandler.fromApp(m._1, m._2))
@@ -105,7 +120,6 @@ class OrderBookAppTest extends FlatSpec with Matchers with Timeouts {
 	  if (!output.matches("\\d+")) {
 		logger.warn(s"returned output: $output for $phrase"); 0
 	  } else output.toInt
-	  //Source.fromFile(s"$appRoot/$logFile").getLines().count(_.contains(phrase))
 	}
   }
 
