@@ -46,29 +46,24 @@ class FixMessageHandler(orderHandlersModule: OrderHandlersModule, orderCancelHan
   @throws(classOf[IncorrectDataFormat])
   @throws(classOf[FieldNotFound])
   override def fromApp(message: Message, sessionId: SessionID) {
-	logger.trace(s"FromApp: $message")
-	message match {
-	  case _: NewOrderSingle | _: OrderCancelRequest =>
-		logger.debug(s"onMessage: ${System.currentTimeMillis} handled message $message")
+	logger.trace(s"FromApp: ${System.currentTimeMillis}: $message")
+	try {
+	  message match {
+		case o: NewOrderSingle => onMessage(o, sessionId)
+		case o: OrderCancelRequest => onMessage(o, sessionId)
+	  }
+	} catch {
+	  case e: Exception => logger.error("Unexpected exception", e)
 	}
-
-//	try {
-//	  message match {
-//		case o: NewOrderSingle => onMessage(o, sessionId)
-//		case o: OrderCancelRequest => onMessage(o, sessionId)
-//	  }
-//	} catch {
-//	  case e: Exception => logger.error("Unexpected exception", e)
-//	}
   }
 
   def onMessage(order: NewOrderSingle, sessionID: SessionID) {
-	logger.debug(s"Handled Order ClOrdID: ${order.getClOrdID.getValue}, symbol: ${order.getSymbol.getValue}, orderQty: ${order.getOrderQty.getValue}, order: $order")
+	logger.debug(s"onMessage: ${System.currentTimeMillis} handled message $order from: ${sessionID.getTargetCompID}")
 	newOrderHandlers.foreach(_.handle(fixOrderConverter convert order))
   }
 
   def onMessage(orderCancel: OrderCancelRequest, sessionID: SessionID) = {
-	logger.debug(s"Handled OrderCancel origClOrdID: ${orderCancel.getOrigClOrdID.getValue}, new clOrdID: ${orderCancel.getClOrdID.getValue}, from: ${sessionID.getTargetCompID}")
+	logger.debug(s"onMessage: ${System.currentTimeMillis} handled message $orderCancel from: ${sessionID.getTargetCompID}")
 	newOrderCancelHandlers.foreach(_.handle(fixOrderConverter convert orderCancel))
   }
 

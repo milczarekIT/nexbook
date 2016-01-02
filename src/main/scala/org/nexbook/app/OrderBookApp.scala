@@ -1,5 +1,7 @@
 package org.nexbook.app
 
+import java.util.concurrent.atomic.AtomicBoolean
+
 import com.softwaremill.macwire._
 import org.nexbook.concepts.akka.AkkaModule
 import org.nexbook.concepts.pubsub.PubSubModule
@@ -8,8 +10,10 @@ import org.slf4j.LoggerFactory
 
 object OrderBookApp extends BasicComponentProvider {
 
-  val LOGGER = LoggerFactory.getLogger(classOf[App])
+  val logger = LoggerFactory.getLogger(classOf[App])
   val mode = AppConfig.mode
+  val runningMode = AppConfig.runningMode
+  val appWorking = new AtomicBoolean(true)
 
   val module: Module = mode match {
 	case PubSub => wire[PubSubModule]
@@ -17,13 +21,25 @@ object OrderBookApp extends BasicComponentProvider {
   }
   val orderResponseHandlers = module.orderBookResponseHandlers
 
-  def main(args: Array[String]) {
-	LOGGER.info("NexBook starting")
-	LOGGER.debug("Mode: {}", mode)
+  val fixMessageHandler: FixMessageHandler = wire[FixMessageHandler]
 
-	val fixMessageHandler: FixMessageHandler = wire[FixMessageHandler]
-	val fixEngineRunner = new FixEngineRunner(fixMessageHandler, AppConfig.fixConfigPath)
-	fixEngineRunner.run
+  def main(args: Array[String]) {
+	logger.info(s"NexBook starting, config name: ${AppConfig.configName}, app mode: $mode, running mode: $runningMode")
+
+	if(Live == runningMode) {
+	  val fixEngineRunner = new FixEngineRunner(fixMessageHandler, AppConfig.fixConfigPath)
+	  fixEngineRunner.run
+	} else {
+	  while (appWorking.get) {
+		logger.info("App is working")
+		Thread.sleep(5000)
+	  }
+	}
+  }
+
+  def stop(): Unit = {
+	logger.info("Stop App")
+	appWorking.compareAndSet(true, false)
   }
 
 

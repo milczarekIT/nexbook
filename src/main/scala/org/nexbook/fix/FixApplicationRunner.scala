@@ -21,12 +21,10 @@ trait FixApplicationRunner {
 
   protected def sessionSettings: SessionSettings
 
-  protected def socketAcceptor: SocketAcceptor = {
-	new SocketAcceptor(application, messageStoreFactory, sessionSettings, logFactory, messageFactory)
-  }
+  protected def socketAcceptor: SocketAcceptor = new SocketAcceptor(application, messageStoreFactory, sessionSettings, logFactory, messageFactory)
 
-  def run = {
-	socketAcceptorInstance.start
+  def run() = {
+	socketAcceptorInstance.start()
 	logger.info("FIX Acceptor Initialized")
   }
 }

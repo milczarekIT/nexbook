@@ -1,61 +1,8 @@
 <configuration scan="true">
 
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
-        </encoder>
-    </appender>
+    <include file="src/main/resources/logback-main.xml"/>
 
-    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-        <file>nexbook.log</file>
-        <append>false</append>
-        <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
-        </encoder>
-    </appender>
-
-    <appender name="FILE_ASYNC" class="ch.qos.logback.classic.AsyncAppender">
-        <queueSize>500</queueSize>
-        <discardingThreshold>0</discardingThreshold>
-        <appender-ref ref="FILE"/>
-    </appender>
-
-    <appender name="TRADES" class="ch.qos.logback.core.FileAppender">
-        <file>trades.log</file>
-        <append>false</append>
-        <encoder>
-            <pattern>%d{HH:mm:ss.SSS} %msg%n</pattern>
-        </encoder>
-    </appender>
-    <appender name="BOOK" class="ch.qos.logback.core.FileAppender">
-        <file>book.log</file>
-        <append>false</append>
-        <encoder>
-            <pattern>%d{HH:mm:ss.SSS} %msg%n</pattern>
-        </encoder>
-    </appender>
-
-    <logger name="quickfix.mina.NetworkingOptions" level="warn"/>
-    <logger name="quickfix.mina.message.FIXMessageDecoder" level="info"/>
-    <logger name="com.mongodb.casbah" level="info"/>
-
-
-    <logger name="org.nexbook" level="debug"/>
-
-    <logger name="TRADES_LOG" level="debug" additivity="false">
-        <appender-ref ref="TRADES"/>
-    </logger>
-    <logger name="BOOK_LOG" level="info" additivity="false">
-        <appender-ref ref="BOOK"/>
-    </logger>
-
-
-
-    <root level="debug">
-        <appender-ref ref="FILE_ASYNC"/>
-    </root>
     <root level="info">
         <appender-ref ref="STDOUT"/>
     </root>
-
 </configuration>

@@ -11,10 +11,14 @@ import org.slf4j.LoggerFactory
 class TradeDatabaseSaver(orderDatabaseRepository: OrderDatabaseRepository, executionDatabaseRepository: ExecutionDatabaseRepository) extends OrderBookResponseHandler {
   val logger = LoggerFactory.getLogger(classOf[TradeDatabaseSaver])
 
-  override def handle(response: OrderBookResponse): Unit = this.synchronized {
+  override def handle(response: OrderBookResponse): Unit = {
 	response.payload match {
-	  case o: Order => orderDatabaseRepository add o
-	  case e: Execution => executionDatabaseRepository add e
+	  case o: Order =>
+		orderDatabaseRepository add o
+		logger.debug(s"Saved order: $o at ${System.currentTimeMillis}")
+	  case e: Execution =>
+		executionDatabaseRepository add e
+		logger.debug(s"Saved execution: $e at ${System.currentTimeMillis}")
 	}
   }
 }

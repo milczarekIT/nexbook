@@ -21,7 +21,7 @@ class MatchingEngine(orderRepository: OrderInMemoryRepository, sequencerFactory:
   val tradeIDSequencer = sequencerFactory sequencer tradeIDSequencerName
   val execIDSequencer = sequencerFactory sequencer execIDSequencerName
 
-  def processOrder(order: Order) = synchronized {
+  def processOrder(order: Order) = {
 	orderRepository add order
 	order match {
 	  case cancel: OrderCancel => tryCancel(cancel)
@@ -37,13 +37,14 @@ class MatchingEngine(orderRepository: OrderInMemoryRepository, sequencerFactory:
 		  case _ => logger.trace(s"Order ad-hoc filled or rejected: $order")
 		}
 	}
+	logger.debug(s"Order processed: $order at ${System.currentTimeMillis}")
   }
 
   protected def tryMatch(order: Order, firstCounterOrder: Option[LimitOrder]): Option[LimitOrder] = firstCounterOrder match {
 	case None =>
 	  order match {
 		case o: MarketOrder =>
-		  logger.debug(s"Rejection for order: $o with remaining size: ${o.leaveQty}")
+		  logger.trace(s"Rejection for order: $o with remaining size: ${o.leaveQty}")
 		  orderBookResponseHandlers.foreach(_.handle(OrderRejectionResponse(new OrderRejection(tradeIDSequencer.nextValue, execIDSequencer.nextValue, o, AppConfig.clock.currentDateTime, "No orders in book"))))
 		  None
 		case o: LimitOrder => Some(o)
@@ -51,7 +52,7 @@ class MatchingEngine(orderRepository: OrderInMemoryRepository, sequencerFactory:
 	case Some(counterOrder) =>
 	  if (ordersCrossing(order, counterOrder)) {
 		val dealDone = matchOrders(order, counterOrder)
-		logger.debug("Deal done: " + dealDone)
+		logger.trace("Deal done: " + dealDone)
 		dealDoneToExecutions(dealDone).foreach(execution => orderBookResponseHandlers.foreach(_.handle(OrderExecutionResponse(execution))))
 
 		if (order.leaveQty > 0) tryMatch(order, book top order.side.reverse) else None
@@ -110,12 +111,13 @@ class MatchingEngine(orderRepository: OrderInMemoryRepository, sequencerFactory:
   }
 
   def tryCancel(orderCancel: OrderCancel): Unit = {
-	logger.info(s"Handled order cancel: $orderCancel")
+	logger.debug(s"Handled order cancel: $orderCancel")
 	book find(orderCancel.side, orderCancel.dealID) match {
 	  case Some(order) =>
 		if (OrderStatus.orderFinishedStatuses.contains(order.status)) {
 		  logger.warn(s"Unable to cancel order by ${orderCancel.tradeID}. Order ${orderCancel.dealID} already finished")
 		} else {
+		  logger.info(s"Cancelled order $order by $orderCancel")
 		  book remove order
 		  orderRepository.updateStatus(order.tradeID, Cancelled, order.status)
 		  orderBookResponseHandlers.foreach(_.handle(OrderAcceptResponse(orderCancel)))

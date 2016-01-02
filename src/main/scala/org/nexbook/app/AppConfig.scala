@@ -45,4 +45,6 @@ object AppConfig {
   lazy val mongodbConfig = rootConfig.getConfig("mongodb")
 
   val configName = name
+
+  lazy val runningMode: RunningMode = RunningMode.fromString(rootConfig.getString("running"))
 }

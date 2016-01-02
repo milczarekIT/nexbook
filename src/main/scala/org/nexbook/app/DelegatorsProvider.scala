@@ -17,7 +17,13 @@ trait DelegatorsProvider extends BasicComponentProvider {
 
   def orderCancelHandlers: List[Handler[NewOrderCancel]] = List(wire[OrderCancelHandler])
 
-  def orderResponseHandlers: List[Handler[OrderBookResponse]] = List(wire[JsonFileLogger], wire[TradeDatabaseSaver], wire[FixMessageResponseSender])
+  def orderResponseHandlers: List[Handler[OrderBookResponse]] = {
+	AppConfig.runningMode match {
+	  case Live => List(wire[JsonFileLogger], wire[TradeDatabaseSaver], wire[FixMessageResponseSender])
+	  case Test => List(wire[JsonFileLogger], wire[TradeDatabaseSaver])
+	}
+
+  }
 
   def orderChangeCommandHandlers: List[Handler[OrderChangeCommand]] = List(wire[DbUpdateOrderChangeHandler])
 }
