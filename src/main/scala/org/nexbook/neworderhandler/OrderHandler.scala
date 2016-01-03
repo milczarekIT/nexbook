@@ -1,5 +1,7 @@
 package org.nexbook.neworderhandler
 
+import java.util.concurrent.atomic.AtomicInteger
+
 import org.nexbook.core.Handler
 import org.nexbook.domain._
 import org.nexbook.orderbookresponsehandler.response.{OrderAcceptResponse, OrderBookResponse, OrderValidationRejectionResponse}
@@ -21,16 +23,21 @@ class OrderHandler(orderBookResponseHandlers: List[Handler[OrderBookResponse]], 
   val execIDSequencer = sequencerFactory sequencer execIDSequencerName
   val orderValidator = new OrderValidator
 
+  val idGen = new AtomicInteger()
+
 
   def handle(newOrder: NewOrder) {
 	def onValidationSuccess(order: NewOrder) {
+	  val id = idGen.incrementAndGet
 	  def acceptOrder(newOrder: NewOrder) = newOrder match {
 		case l: NewLimitOrder => new LimitOrder(l, sequencer.nextValue)
 		case m: NewMarketOrder => new MarketOrder(m, sequencer.nextValue)
 	  }
-	  logger.debug(s"Handled order SUCCESS: $order from: ${order.connector}")
+	  logger.debug(s"$id Handled order SUCCESS: $order from: ${order.connector}")
 	  val acceptedOrder = acceptOrder(newOrder)
-	  orderBookResponseHandlers.foreach(_.handle(OrderAcceptResponse(acceptedOrder)))
+	  orderBookResponseHandlers.foreach(h => {
+		h.handle(OrderAcceptResponse(acceptedOrder))
+	  })
 	  matchingEnginesRepository.find(newOrder.symbol).processOrder(acceptedOrder)
 	}
 	def onValidationException(order: NewOrder, e: ValidationException) = {

@@ -14,10 +14,10 @@ class TradeDatabaseSaver(orderDatabaseRepository: OrderDatabaseRepository, execu
   override def handle(response: OrderBookResponse): Unit = {
 	response.payload match {
 	  case o: Order =>
-		orderDatabaseRepository add o
+		//orderDatabaseRepository add o
 		logger.debug(s"Saved order: $o at ${System.currentTimeMillis}")
 	  case e: Execution =>
-		executionDatabaseRepository add e
+		//executionDatabaseRepository add e
 		logger.debug(s"Saved execution: $e at ${System.currentTimeMillis}")
 	}
   }

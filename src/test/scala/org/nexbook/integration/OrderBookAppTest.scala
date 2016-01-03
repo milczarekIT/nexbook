@@ -4,7 +4,7 @@ import org.joda.time.LocalTime
 import org.joda.time.format.DateTimeFormat
 import org.nexbook.app.OrderBookApp
 import org.nexbook.fix.FixMessageHandler
-import org.nexbook.tags.IntegrationTest
+import org.nexbook.tags.{IntegrationTest, PerformanceTest}
 import org.scalatest.concurrent.Timeouts
 import org.scalatest.{FlatSpec, Matchers}
 import org.slf4j.LoggerFactory
@@ -38,16 +38,10 @@ class OrderBookAppTest extends FlatSpec with Matchers with Timeouts {
 
   }
 
-  "OrderBook" should "work fast!" taggedAs IntegrationTest in {
+  "OrderBook" should "work fast!" taggedAs PerformanceTest in {
 	failAfter(600 seconds) {
 	  logger.info("Test run!")
-	  for (dbCollection <- dbCollections) {
-		val count = MongodbTestUtils.count(dbCollection)
-		logger.info(s"Count $dbCollection : $count")
-		MongodbTestUtils.dropCollection(dbCollection)
-		val count2 = MongodbTestUtils.count(dbCollection)
-		logger.info(s"Count2 $dbCollection : $count2")
-	  }
+	  dbCollections.foreach(MongodbTestUtils.dropCollection)
 
 	  logger.debug("Load all FIX messages for test")
 	  val messages: List[(Message, SessionID)] = fixMsgReader.readAll("src/test/resources/data/orders8.fix")

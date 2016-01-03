@@ -4,8 +4,6 @@ import org.nexbook.core.Handler
 import org.nexbook.repository.OrderDatabaseRepository
 import org.slf4j.LoggerFactory
 
-import scala.util.Try
-
 /**
   * Created by milczu on 12/23/15.
   */
@@ -36,24 +34,26 @@ class DbUpdateOrderChangeHandler(orderDatabaseRepository: OrderDatabaseRepositor
   }
 
   def tryUpdate(orderChange: OrderChange, updateFunc: updateOnDb): Unit = {
-	import scala.concurrent._
-	import ExecutionContext.Implicits.global
-	import scala.concurrent.duration._
-	def delay = Try(Await.ready(Promise().future, updateDelayMillis.milliseconds.fromNow.timeLeft))
-
-	var res = updateFunc(orderChange)
-	if(res) {
-	  logger.debug(s"Update $orderChange was applied without delay")
-	}
-	var attempt = 0
-	while(!res && attempt < attemptsLimit) {
-	  	logger.info(s"Order change $orderChange not applied. Next async attempt ${attempt+1} will be applied in next ${updateDelayMillis}ms")
-		val f: Future[Boolean] = Future{delay; updateFunc(orderChange)}
-	  	res = Await.result(f, Duration.Inf)
-	  	attempt = attempt + 1
-	}
-	if(!res && attempt >= attemptsLimit) {
-		logger.warn(s"OrderChange: $orderChange was not applied after")
-	}
+	logger.trace(s"Db order change: $orderChange")
+//	var res = updateFunc(orderChange)
+//	if(res) {
+//	  logger.debug(s"Update $orderChange was applied without delay")
+//	} else {
+//	  import scala.concurrent._
+//	  import ExecutionContext.Implicits.global
+//	  import scala.concurrent.duration._
+//
+//	  var attempt = 0
+//	  def delay = Try(Await.ready(Promise().future, updateDelayMillis.milliseconds.fromNow.timeLeft))
+//	  while(!res && attempt < attemptsLimit) {
+//		logger.info(s"Order change $orderChange not applied. Next async attempt ${attempt+1} will be applied in next ${updateDelayMillis}ms")
+//		val f: Future[Boolean] = Future{delay; updateFunc(orderChange)}
+//		res = Await.result(f, Duration.Inf)
+//		attempt = attempt + 1
+//	  }
+//	  if(!res && attempt >= attemptsLimit) {
+//		logger.warn(s"OrderChange: $orderChange was not applied after")
+//	  }
+//	}
   }
 }

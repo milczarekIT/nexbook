@@ -14,7 +14,7 @@ class OrderInMemoryRepository extends OrderRepository {
 
   override def findBy(clOrdId: String, connector: String): Option[Order] = orders.find(o => o.clOrdId == clOrdId && o.connector == connector)
 
-  def findById(tradeID: Long): Option[Order] = orders.find(_.tradeID == tradeID)
+  def findById(tradeID: Long): Option[Order] = orders.view.par.find(_.tradeID == tradeID)
 
   override def updateStatus(tradeID: Long, newStatus: OrderStatus, oldStatus: OrderStatus): Boolean = {
 	findById(tradeID) match {

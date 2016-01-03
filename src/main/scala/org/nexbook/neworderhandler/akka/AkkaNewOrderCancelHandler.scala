@@ -11,6 +11,6 @@ import org.nexbook.domain.NewOrderCancel
   */
 class AkkaNewOrderCancelHandler(delegators: List[Handler[NewOrderCancel]]) extends AkkaHandler[NewOrderCancel] {
 
-  override def actorRefHandlers: List[ActorRef] = delegators.map(handler => actorSystem.actorOf(Props(new AkkaHandlerWrapper[NewOrderCancel](handler)).withRouter(RoundRobinRouter(20))))
+  override def actorRefHandlers: List[ActorRef] = delegators.map(handler => actorSystem.actorOf(Props(new AkkaHandlerWrapper[NewOrderCancel](handler)).withRouter(RoundRobinRouter(1))))
 
 }
