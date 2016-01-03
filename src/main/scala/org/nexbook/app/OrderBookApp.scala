@@ -28,11 +28,11 @@ object OrderBookApp extends BasicComponentProvider {
 
 	if(Live == runningMode) {
 	  val fixEngineRunner = new FixEngineRunner(fixMessageHandler, AppConfig.fixConfigPath)
-	  fixEngineRunner.run
+	  fixEngineRunner.run()
 	} else {
 	  while (appWorking.get) {
 		logger.info("App is working")
-		Thread.sleep(5000)
+		Thread.sleep(15000)
 	  }
 	}
   }

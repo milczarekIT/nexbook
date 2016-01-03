@@ -18,11 +18,12 @@ class OrderCancelHandler(orderRepository: OrderChainedRepository, sequencerFacto
   val tradeIDSequencer = sequencerFactory sequencer tradeIDSequencerName
 
   def handle(newOrderCancel: NewOrderCancel) = {
+	logger.debug(s"Handle order cancel: $newOrderCancel")
 	def acceptOrder(newOrderCancel: NewOrderCancel, prevOrder: Order): OrderCancel = new OrderCancel(tradeIDSequencer.nextValue, clock.currentDateTime, newOrderCancel.clOrdId, prevOrder)
 
 	orderRepository.findBy(newOrderCancel.origClOrdId, newOrderCancel.connector) match {
 	  case Some(order) => matchingEnginesRepository.find(newOrderCancel.symbol).processOrder(acceptOrder(newOrderCancel, order))
-	  case None => logger.warn("Unable to handle order cancel. Original order not found")
+	  case None => logger.warn(s"Unable to handle order cancel. ${newOrderCancel.origClOrdId}, connector: ${newOrderCancel.connector}. Original order not found")
 	}
   }
 }

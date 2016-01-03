@@ -28,12 +28,13 @@ class OrderHandler(orderBookResponseHandlers: List[Handler[OrderBookResponse]], 
 		case l: NewLimitOrder => new LimitOrder(l, sequencer.nextValue)
 		case m: NewMarketOrder => new MarketOrder(m, sequencer.nextValue)
 	  }
-	  logger.debug("Handled order: {} from: " + order.connector, order)
+	  logger.debug(s"Handled order SUCCESS: $order from: ${order.connector}")
 	  val acceptedOrder = acceptOrder(newOrder)
 	  orderBookResponseHandlers.foreach(_.handle(OrderAcceptResponse(acceptedOrder)))
 	  matchingEnginesRepository.find(newOrder.symbol).processOrder(acceptedOrder)
 	}
 	def onValidationException(order: NewOrder, e: ValidationException) = {
+	  logger.debug(s"Handled order [ValidationException]: $order, validationException: ${e.getMessage}")
 	  orderBookResponseHandlers.foreach(_.handle(OrderValidationRejectionResponse(OrderValidationRejection(newOrder, e.getMessage))))
 	}
 

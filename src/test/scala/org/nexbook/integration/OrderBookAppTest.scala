@@ -1,5 +1,7 @@
 package org.nexbook.integration
 
+import org.joda.time.LocalTime
+import org.joda.time.format.DateTimeFormat
 import org.nexbook.app.OrderBookApp
 import org.nexbook.fix.FixMessageHandler
 import org.nexbook.tags.IntegrationTest
@@ -18,26 +20,26 @@ class OrderBookAppTest extends FlatSpec with Matchers with Timeouts {
   val logger = LoggerFactory.getLogger(classOf[OrderBookAppTest])
   val fixMsgReader = new FixMessageReader
   val dbCollections = List("orders", "executions")
-  val expectedCount = 100000
+  val expectedTotalOrdersCount = 95248 + 4752 // Orders: 95248, Cancels: 4752, total: 100000
 
   import org.scalatest.time.SpanSugar._
 
-  "testData" should "contains 95248 NewOrderSingle and 4752 OrderCancelRequest" in {
+  "testData orders8.fix" should "contains 95248 NewOrderSingle and 4752 OrderCancelRequest" taggedAs IntegrationTest in {
 	val testDataPath = "src/test/resources/data/orders8.fix"
 	logger.info(s"load test data: $testDataPath")
 	val messages: List[Message] = fixMsgReader.readAll(testDataPath).map(_._1)
 
-	messages should have size expectedCount
+	messages should have size expectedTotalOrdersCount
 
 	val countsByMsgType: Map[String, Int] = messages.groupBy(m => m.getHeader.getField(new MsgType()).getValue).map(e => e._1 -> e._2.size).toMap
 
-	countsByMsgType("D") shouldBe equal(95248)
-	countsByMsgType("F") shouldBe equal(4752)
+	countsByMsgType("D") should equal(95248)
+	countsByMsgType("F") should equal(4752)
 
   }
 
   "OrderBook" should "work fast!" taggedAs IntegrationTest in {
-	failAfter(120 seconds) {
+	failAfter(600 seconds) {
 	  logger.info("Test run!")
 	  for (dbCollection <- dbCollections) {
 		val count = MongodbTestUtils.count(dbCollection)
@@ -51,18 +53,18 @@ class OrderBookAppTest extends FlatSpec with Matchers with Timeouts {
 	  val messages: List[(Message, SessionID)] = fixMsgReader.readAll("src/test/resources/data/orders8.fix")
 	  logger.debug("FIX messages for test loaded")
 
-	  val appRunner = new AppRunner()
-	  appRunner.start()
+	  new AppRunner().start()
 	  val fixMessageHandler: FixMessageHandler = OrderBookApp.fixMessageHandler
-	  while(!appRunner.isAlive) {
-		logger.info("Wait for alive appRunner")
-		Thread.sleep(1000)
-	  }
-	  logger.info("AppRunner is alive")
 
-	  logger.info("Apply FIX messages")
-	  messages.foreach(m => fixMessageHandler.fromApp(m._1, m._2))
-	  logger.info("Applied FIX messages")
+	  new Thread(new Runnable {
+		override def run(): Unit = {
+		  logger.info("Apply FIX messages")
+		  messages.foreach(m => fixMessageHandler.fromApp(m._1, m._2))
+		  logger.info("Applied FIX messages")
+		}
+	  }, "Async FIX message applier").start()
+
+
 
 	  new AppProgressChecker().execute()
 
@@ -84,35 +86,49 @@ class OrderBookAppTest extends FlatSpec with Matchers with Timeouts {
 	val phraseFMH = "FixMessageHandler - onMessage:"
 	val phraseME = "MatchingEngine - Order processed"
 	val phraseTDS = "TradeDatabaseSaver - Saved order"
+	val phraseNotApprovedCancel = "MatchingEngine - Unable to cancel order"
 
 	def execute() = {
+	  Thread.sleep(5000)
 	  while (!isAppFinished) {
-		val countFMH = countOccurrencesInLogFile(phraseFMH)
-		val countME = countOccurrencesInLogFile(phraseME)
 		val countTDS = countOccurrencesInLogFile(phraseTDS)
+		val countME = countOccurrencesInLogFile(phraseME)
+		val countFMH = countOccurrencesInLogFile(phraseFMH)
 
 		logger.info(s"Current counts - FMH: $countFMH, ME: $countME, TDS: $countTDS")
 
-		Thread.sleep(5000)
-		logger.info(s"Afterwait: current counts")
+		Thread.sleep(10000)
 	  }
 	  logger.info("Progress checker finished")
+	  val startLine = findFirstOccurrenceInLogFile(phraseFMH)
+	  val endLine = findLastOccurrenceInLogFile(phraseME)
+
+	  def extractTimeFromLogFile(line: String) = LocalTime.parse(line.split(" ")(0), DateTimeFormat.forPattern("HH:mm:ss.SSS"))
+
+	  val startTime = extractTimeFromLogFile(startLine)
+	  val endTime = extractTimeFromLogFile(endLine)
+	  logger.info(s"Start: $startTime")
+	  logger.info(s"End: $endTime")
+	  val execTime = endTime.toDateTimeToday.getMillis - startTime.toDateTimeToday.getMillis
+	  val execTimeInSeconds = execTime / 1000
+	  val throughput = expectedTotalOrdersCount / execTimeInSeconds
+	  logger.info(s"Exec time: ${execTime}ms. Throughput: $throughput orders/s")
+
 	}
 
 	def isAppFinished: Boolean = {
 	  logger.info("executing isAppFinished")
-	  def allOrdersProcessedInFixMessageHandler: Boolean = countOccurrencesInLogFile(phraseFMH) >= expectedCount
-	  def allOrdersHandlerInMatchingEngine: Boolean = countOccurrencesInLogFile(phraseME) >= expectedCount
-	  def allOrdersSavedInDb: Boolean = countOccurrencesInLogFile(phraseTDS) >= expectedCount
+	  def allOrdersProcessedInFixMessageHandler: Boolean = countOccurrencesInLogFile(phraseFMH) >= expectedTotalOrdersCount
+	  def allOrdersHandlerInMatchingEngine: Boolean = countOccurrencesInLogFile(phraseME) >= expectedTotalOrdersCount
+	  def allOrdersSavedInDb: Boolean = {
+		val notApprovedCancel = countOccurrencesInLogFile(phraseNotApprovedCancel)
+		countOccurrencesInLogFile(phraseTDS) >= (expectedTotalOrdersCount - notApprovedCancel)
+	  }
 
 	  def appFinishedConditions: List[Boolean] = List(allOrdersProcessedInFixMessageHandler, allOrdersHandlerInMatchingEngine, allOrdersSavedInDb)
 
 	  appFinishedConditions.reduce(_ && _)
 	}
-
-
-
-
 
 	def countOccurrencesInLogFile(phrase: String): Int = {
 	  val cmd = s"less $appRoot/$logFile | grep '$phrase' | wc -l"
@@ -120,6 +136,16 @@ class OrderBookAppTest extends FlatSpec with Matchers with Timeouts {
 	  if (!output.matches("\\d+")) {
 		logger.warn(s"returned output: $output for $phrase"); 0
 	  } else output.toInt
+	}
+
+	def findFirstOccurrenceInLogFile(phrase: String): String = {
+	  val cmd = s"less $appRoot/$logFile | grep '$phrase' | head -n 1"
+	  (stringSeqToProcess(Seq("bash", "-c", cmd)) !!).trim
+	}
+
+	def findLastOccurrenceInLogFile(phrase: String): String = {
+	  val cmd = s"less $appRoot/$logFile | grep '$phrase' | tail -n 1"
+	  (stringSeqToProcess(Seq("bash", "-c", cmd)) !!).trim
 	}
   }
 

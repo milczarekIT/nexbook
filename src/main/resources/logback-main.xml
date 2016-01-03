@@ -1,5 +1,7 @@
 <included>
 
+    <property name="asyncQueueSize" value="100000" />
+
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%d{HH:mm:ss.SSS} %r [%thread] %-5level %logger{36} - %msg%n</pattern>
@@ -13,9 +15,8 @@
             <pattern>%d{HH:mm:ss.SSS} %r [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
-
     <appender name="FILE_ASYNC" class="ch.qos.logback.classic.AsyncAppender">
-        <queueSize>500</queueSize>
+        <queueSize>${asyncQueueSize}</queueSize>
         <discardingThreshold>0</discardingThreshold>
         <appender-ref ref="FILE"/>
     </appender>
@@ -27,12 +28,23 @@
             <pattern>%d{HH:mm:ss.SSS} %msg%n</pattern>
         </encoder>
     </appender>
+    <appender name="TRADES_ASYNC" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>${asyncQueueSize}</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <appender-ref ref="TRADES"/>
+    </appender>
+
     <appender name="BOOK" class="ch.qos.logback.core.FileAppender">
         <file>book.log</file>
         <append>false</append>
         <encoder>
             <pattern>%d{HH:mm:ss.SSS} %msg%n</pattern>
         </encoder>
+    </appender>
+    <appender name="BOOK_ASYNC" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>${asyncQueueSize}</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <appender-ref ref="BOOK"/>
     </appender>
 
     <logger name="quickfix.mina.NetworkingOptions" level="warn"/>
@@ -41,10 +53,10 @@
 
 
     <logger name="TRADES_LOG" level="debug" additivity="false">
-        <appender-ref ref="TRADES"/>
+        <appender-ref ref="TRADES_ASYNC"/>
     </logger>
     <logger name="BOOK_LOG" level="info" additivity="false">
-        <appender-ref ref="BOOK"/>
+        <appender-ref ref="BOOK_ASYNC"/>
     </logger>
 
     <root level="debug">
