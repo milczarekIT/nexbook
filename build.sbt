@@ -29,3 +29,5 @@ libraryDependencies ++= Seq(
 )
 
 testOptions in Test += Tests.Argument("-l", "org.nexbook.tags.IntegrationTest")
+
+testOptions in Test += Tests.Argument("-l", "org.nexbook.tags.PerformanceTest")

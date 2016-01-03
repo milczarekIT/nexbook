@@ -28,11 +28,13 @@ class AppConfig {
 }
 
 object AppConfig {
+  import scala.collection.JavaConverters._
+
   protected val defaultConfigName = "nexbook"
 
   private val (name, rootConfig) = new AppConfig().init()
 
-  val supportedCurrencyPairs = List("EUR/USD", "AUD/USD", "GBP/USD", "USD/JPY", "EUR/JPY", "EUR/GBP", "USD/CAD", "USD/CHF")
+  lazy val supportedCurrencyPairs = rootConfig.getStringList("symbols").asScala.toList
 
   lazy val clock: Clock = new DefaultClock
 
