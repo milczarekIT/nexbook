@@ -9,9 +9,9 @@ trait OrderRepository {
 
   def add(order: Order)
 
-  def findAll: List[Order]
+  def findByClOrdId(clOrdId: String): Option[Order]
 
-  def findBy(clOrdId: String, connector: String): Option[Order]
+  def findById(tradeID: Long): Option[Order]
 
   def updateStatus(tradeID: Long, newStatus: OrderStatus, oldStatus: OrderStatus): Boolean
 }

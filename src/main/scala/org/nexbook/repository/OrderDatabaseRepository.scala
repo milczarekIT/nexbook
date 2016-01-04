@@ -70,9 +70,9 @@ class OrderDatabaseRepository extends DatabaseRepository[Order] with OrderReposi
 
   def findLastTradeID: Long = findMaxNumericField("_id")
 
-  override def findBy(clOrdId: String, connector: String): Option[Order] = {
-	collection.findOne(MongoDBObject("clOrdId" -> clOrdId, "connector" -> connector)).map(o => deserialize(o))
-  }
+  override def findByClOrdId(clOrdId: String): Option[Order] = collection.findOne(MongoDBObject("clOrdId" -> clOrdId)).map(o => deserialize(o))
+
+  override def findById(tradeID: Long): Option[Order] = collection.findOne(MongoDBObject("_id" -> tradeID)).map(o => deserialize(o))
 
   override def updateStatus(tradeID: Long, status: OrderStatus, prevStatus: OrderStatus): Boolean = {
 	val query = MongoDBObject("_id" -> tradeID, "status" -> prevStatus.toString)

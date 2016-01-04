@@ -28,12 +28,11 @@ class OrderHandler(orderBookResponseHandlers: List[Handler[OrderBookResponse]], 
 
   def handle(newOrder: NewOrder) {
 	def onValidationSuccess(order: NewOrder) {
-	  val id = idGen.incrementAndGet
 	  def acceptOrder(newOrder: NewOrder) = newOrder match {
 		case l: NewLimitOrder => new LimitOrder(l, sequencer.nextValue)
 		case m: NewMarketOrder => new MarketOrder(m, sequencer.nextValue)
 	  }
-	  logger.debug(s"$id Handled order SUCCESS: $order from: ${order.connector}")
+	  logger.debug(s"Handled order SUCCESS: $order from: ${order.connector}")
 	  val acceptedOrder = acceptOrder(newOrder)
 	  orderBookResponseHandlers.foreach(h => {
 		h.handle(OrderAcceptResponse(acceptedOrder))

@@ -21,7 +21,7 @@ class OrderCancelHandler(orderRepository: OrderChainedRepository, sequencerFacto
 	logger.debug(s"Handle order cancel: $newOrderCancel")
 	def acceptOrder(newOrderCancel: NewOrderCancel, prevOrder: Order): OrderCancel = new OrderCancel(tradeIDSequencer.nextValue, clock.currentDateTime, newOrderCancel.clOrdId, prevOrder)
 
-	orderRepository.findBy(newOrderCancel.origClOrdId, newOrderCancel.connector) match {
+	orderRepository.findByClOrdId(newOrderCancel.origClOrdId) match {
 	  case Some(order) => matchingEnginesRepository.find(newOrderCancel.symbol).processOrder(acceptOrder(newOrderCancel, order))
 	  case None => logger.warn(s"Unable to handle order cancel. ${newOrderCancel.origClOrdId}, connector: ${newOrderCancel.connector}. Original order not found")
 	}

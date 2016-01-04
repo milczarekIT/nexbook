@@ -1,4 +1,4 @@
-package org.nexbook.integration
+package org.nexbook.testutils
 
 import org.joda.time.{DateTime, DateTimeZone}
 import quickfix.field.{MsgType, TransactTime}
@@ -10,11 +10,22 @@ import scala.io.Source
 /**
   * Created by milczu on 1/2/16.
   */
-class FixMessageReader {
+object FixMessageProvider {
 
   val dataDictionary = new DataDictionary("config/FIX44.xml")
+  val defaultTestData = "src/test/resources/data/orders8.fix"
 
-  def readAll(fileName: String): List[(Message, SessionID)] = {
+  def get: List[(Message, SessionID)] = get(defaultTestData, None)
+
+  def get(limit: Int): List[(Message, SessionID)] = get(defaultTestData, Some(limit))
+
+  def get(limit: Option[Int]): List[(Message, SessionID)] = get(defaultTestData, limit)
+
+  def get(fileName: String): List[(Message, SessionID)] = get(fileName, None)
+
+  def get(fileName: String, limit: Int): List[(Message, SessionID)] = get(fileName, Some(limit))
+
+  def get(fileName: String, limit: Option[Int]): List[(Message, SessionID)] = {
 	def toFixMessage(line: String): Message = new Message(line, dataDictionary, false)
 
 	def fixMsgToSpecializedMsg(msg: Message): Message = {
@@ -51,7 +62,14 @@ class FixMessageReader {
 	  new SessionID(beginString, senderCompID, targetCompID, qualifier)
 	}
 
-	val lines: List[String] = Source.fromFile(fileName).getLines.toList
+
+	val lines: List[String] = {
+	  val allLines = Source.fromFile(fileName).getLines();
+	  limit match {
+		case Some(value) => allLines.take(value).toList
+		case None => allLines.toList
+	  }
+	}
 	val convert: String => (Message, SessionID) = toFixMessage _ andThen fixMsgToSpecializedMsg andThen withUpdatedFields andThen(msg => (msg, createSessionID(msg)))
 
 	lines.map(convert(_))

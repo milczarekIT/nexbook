@@ -8,7 +8,8 @@ import org.nexbook.domain._
 import org.nexbook.orderbookresponsehandler.handler.OrderBookResponseHandler
 import org.nexbook.orderbookresponsehandler.response.{OrderBookResponse, OrderExecutionResponse, OrderRejectionResponse}
 import org.nexbook.orderchange.OrderChangeCommand
-import org.nexbook.repository.{ExecutionDatabaseRepository, OrderDatabaseRepository, OrderInMemoryRepository}
+import org.nexbook.repository.mutable.OrderInMemoryRepository
+import org.nexbook.repository.{ExecutionDatabaseRepository, OrderDatabaseRepository}
 import org.nexbook.sequence.SequencerFactory
 import org.scalatest.mock.MockitoSugar._
 import org.scalatest.{Matchers, WordSpecLike}

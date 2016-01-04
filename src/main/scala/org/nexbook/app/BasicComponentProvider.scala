@@ -15,8 +15,8 @@ import org.nexbook.utils.DefaultClock
   */
 trait BasicComponentProvider {
 
-  lazy val orderInMemoryRepository = wire[OrderInMemoryRepository]
-  lazy val orderDatabaseRepository = wire[OrderDatabaseRepository]
+  lazy val orderInMemoryRepository: OrderInMemoryRepository = if(AppConfig.repositoryCollectionType == Mutable) new mutable.OrderInMemoryRepository else new immutable.OrderInMemoryRepository
+  lazy val orderDatabaseRepository: OrderDatabaseRepository = wire[OrderDatabaseRepository]
   lazy val orderRepository = wire[OrderChainedRepository]
   lazy val executionDatabaseRepository = wire[ExecutionDatabaseRepository]
   lazy val sequencerFactory = wire[SequencerFactory]

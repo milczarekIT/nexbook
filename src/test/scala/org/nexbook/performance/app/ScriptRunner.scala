@@ -1,4 +1,4 @@
-package org.nexbook.integration
+package org.nexbook.performance.app
 
 import org.slf4j.LoggerFactory
 

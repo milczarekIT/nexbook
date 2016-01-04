@@ -6,13 +6,12 @@ package org.nexbook.app
 sealed trait Mode
 
 case object Akka extends Mode
-
 case object PubSub extends Mode
 
 object Mode {
   def fromString(s: String): Mode = s match {
 	case "Akka" => Akka
 	case "PubSub" => PubSub
-	case _ => throw new IllegalArgumentException(s"Invalid arg: $s")
+	case _ => throw new IllegalArgumentException(s"Unexpected mode: $s")
   }
 }

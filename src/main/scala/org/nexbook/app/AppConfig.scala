@@ -1,6 +1,7 @@
 package org.nexbook.app
 
 import com.typesafe.config.{Config, ConfigFactory}
+import org.nexbook.repository.RepositoryCollectionType
 import org.nexbook.utils.{Clock, DefaultClock}
 import org.slf4j.LoggerFactory
 
@@ -49,4 +50,6 @@ object AppConfig {
   val configName = name
 
   lazy val runningMode: RunningMode = RunningMode.fromString(rootConfig.getString("running"))
+
+  lazy val repositoryCollectionType: RepositoryCollectionType = RepositoryCollectionType.fromString(rootConfig.getString("repositoryCollectionType"))
 }

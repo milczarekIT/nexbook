@@ -1,4 +1,4 @@
-package org.nexbook.integration
+package org.nexbook.performance.app
 
 import com.typesafe.config.Config
 import org.nexbook.app.AppConfig

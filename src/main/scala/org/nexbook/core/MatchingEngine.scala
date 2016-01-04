@@ -21,7 +21,7 @@ class MatchingEngine(orderRepository: OrderInMemoryRepository, sequencerFactory:
   val tradeIDSequencer = sequencerFactory sequencer tradeIDSequencerName
   val execIDSequencer = sequencerFactory sequencer execIDSequencerName
 
-  def processOrder(order: Order) = synchronized {
+  def processOrder(order: Order) = {
 	orderRepository add order
 	order match {
 	  case cancel: OrderCancel => tryCancel(cancel)

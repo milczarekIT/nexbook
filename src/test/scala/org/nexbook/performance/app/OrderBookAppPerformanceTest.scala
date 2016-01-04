@@ -1,10 +1,11 @@
-package org.nexbook.integration
+package org.nexbook.performance.app
 
 import org.joda.time.LocalTime
 import org.joda.time.format.DateTimeFormat
 import org.nexbook.app.OrderBookApp
 import org.nexbook.fix.FixMessageHandler
 import org.nexbook.tags.{IntegrationTest, PerformanceTest}
+import org.nexbook.testutils.FixMessageProvider
 import org.scalatest.concurrent.Timeouts
 import org.scalatest.{FlatSpec, Matchers}
 import org.slf4j.LoggerFactory
@@ -14,11 +15,10 @@ import quickfix.{Message, SessionID}
 /**
   * Created by milczu on 1/2/16.
   */
-class OrderBookAppTest extends FlatSpec with Matchers with Timeouts {
+class OrderBookAppPerformanceTest extends FlatSpec with Matchers with Timeouts {
 
   System.setProperty("config.name", "nexbook")
-  val logger = LoggerFactory.getLogger(classOf[OrderBookAppTest])
-  val fixMsgReader = new FixMessageReader
+  val logger = LoggerFactory.getLogger(classOf[OrderBookAppPerformanceTest])
   val dbCollections = List("orders", "executions")
   val expectedTotalOrdersCount = 95248 + 4752 // Orders: 95248, Cancels: 4752, total: 100000
 
@@ -27,7 +27,7 @@ class OrderBookAppTest extends FlatSpec with Matchers with Timeouts {
   "testData orders8.fix" should "contains 95248 NewOrderSingle and 4752 OrderCancelRequest" taggedAs IntegrationTest in {
 	val testDataPath = "src/test/resources/data/orders8.fix"
 	logger.info(s"load test data: $testDataPath")
-	val messages: List[Message] = fixMsgReader.readAll(testDataPath).map(_._1)
+	val messages: List[Message] = FixMessageProvider.get(testDataPath).map(_._1)
 
 	messages should have size expectedTotalOrdersCount
 
@@ -44,7 +44,7 @@ class OrderBookAppTest extends FlatSpec with Matchers with Timeouts {
 	  dbCollections.foreach(MongodbTestUtils.dropCollection)
 
 	  logger.debug("Load all FIX messages for test")
-	  val messages: List[(Message, SessionID)] = fixMsgReader.readAll("src/test/resources/data/orders8.fix")
+	  val messages: List[(Message, SessionID)] = FixMessageProvider.get("src/test/resources/data/orders8.fix")
 	  logger.debug("FIX messages for test loaded")
 
 	  new AppRunner().start()

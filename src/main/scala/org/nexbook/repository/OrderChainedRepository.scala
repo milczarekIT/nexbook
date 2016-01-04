@@ -10,11 +10,9 @@ class OrderChainedRepository(inMemoryRepository: OrderInMemoryRepository, databa
 	databaseRepository add order
   }
 
-  def findAll: List[Order] = inMemoryRepository findAll
+  override def findByClOrdId(clOrdId: String): Option[Order] = inMemoryRepository.findByClOrdId(clOrdId) orElse databaseRepository.findByClOrdId(clOrdId)
 
-  override def findBy(clOrdId: String, connector: String): Option[Order] = {
-	inMemoryRepository.findBy(clOrdId, connector) orElse databaseRepository.findBy(clOrdId, connector)
-  }
+  override def findById(tradeID: Long): Option[Order] = inMemoryRepository.findById(tradeID) orElse databaseRepository.findById(tradeID)
 
   override def updateStatus(tradeID: Long, newStatus: OrderStatus, oldStatus: OrderStatus): Boolean = {
 	val resInMemory = inMemoryRepository.updateStatus(tradeID, newStatus, oldStatus)
