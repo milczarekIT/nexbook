@@ -124,7 +124,7 @@ class MatchingEngine(orderRepository: OrderInMemoryRepository, sequencerFactory:
 		}
 	  case None =>
 		orderRepository.findById(orderCancel.dealID) match {
-		  case Some(o) => logger.debug(s"Unable to cancel order: ${orderCancel.dealID}. Order to cancel not found. Cancelling order: ${orderCancel.tradeID}. Orig Order status ${o.status}")
+		  case Some(o) => logger.debug(s"Unable to cancel order: ${orderCancel.dealID}. Order to not in book. Cancelling order: ${orderCancel.tradeID}. Orig Order status ${o.status}")
 		  case None => logger.debug(s"Unable to cancel order: ${orderCancel.dealID}. Order to cancel not found. Cancelling order: ${orderCancel.tradeID}")
 		}
 

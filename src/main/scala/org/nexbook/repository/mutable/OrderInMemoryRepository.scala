@@ -3,13 +3,13 @@ package org.nexbook.repository.mutable
 import org.nexbook.domain.{Order, OrderStatus}
 
 class OrderInMemoryRepository extends org.nexbook.repository.OrderInMemoryRepository {
-  val orders = new scala.collection.mutable.HashMap[Long, Order]()
+  val orders = new scala.collection.mutable.HashMap[String, Order]()
 
-  override def add(order: Order) = orders(order.tradeID) = order
+  override def add(order: Order) = orders(order.clOrdId) = order
 
-  override def findByClOrdId(clOrdId: String): Option[Order] = orders.values.find(_.clOrdId == clOrdId)
+  override def findByClOrdId(clOrdId: String): Option[Order] = orders.get(clOrdId)
 
-  override def findById(tradeID: Long): Option[Order] = orders.get(tradeID)
+  override def findById(tradeID: Long): Option[Order] = orders.values.find(_.tradeID == tradeID)
 
   override def updateStatus(tradeID: Long, newStatus: OrderStatus, oldStatus: OrderStatus): Boolean = {
 	findById(tradeID) match {
