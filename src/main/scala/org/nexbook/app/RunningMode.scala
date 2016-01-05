@@ -6,6 +6,7 @@ package org.nexbook.app
 sealed trait RunningMode
 
 case object Test extends RunningMode
+
 case object Live extends RunningMode
 
 object RunningMode {

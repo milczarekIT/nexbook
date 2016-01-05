@@ -1,16 +1,14 @@
 package org.nexbook.fix
 
 import org.nexbook.app.OrderHandlersModule
-import org.nexbook.neworderhandler.OrderCancelHandler
 import org.slf4j.LoggerFactory
 import quickfix._
 import quickfix.fix44.{NewOrderSingle, OrderCancelRequest}
 
-class FixMessageHandler(orderHandlersModule: OrderHandlersModule, orderCancelHandler: OrderCancelHandler, fixOrderConverter: FixOrderConverter) extends Application {
+class FixMessageHandler(orderHandlersModule: OrderHandlersModule, fixOrderConverter: FixOrderConverter) extends Application {
 
   val logger = LoggerFactory.getLogger(classOf[FixMessageHandler])
   val newOrderHandlers = orderHandlersModule.newOrderHandlers
-  val newOrderCancelHandlers = orderHandlersModule.newOrderCancelsHandlers
 
   override def onCreate(sessionId: SessionID) {
 	logger.info(s"FixOrderHandler Session Created with SessionID: $sessionId")
@@ -59,12 +57,12 @@ class FixMessageHandler(orderHandlersModule: OrderHandlersModule, orderCancelHan
 
   def onMessage(order: NewOrderSingle, sessionID: SessionID) {
 	logger.debug(s"onMessage: ${System.currentTimeMillis} handled message $order from: ${sessionID.getTargetCompID}")
-	newOrderHandlers.foreach(_.handle(fixOrderConverter convert order))
+	newOrderHandlers.foreach(_.handleNewOrder(fixOrderConverter convert order))
   }
 
   def onMessage(orderCancel: OrderCancelRequest, sessionID: SessionID) = {
 	logger.debug(s"onMessage: ${System.currentTimeMillis} handled message $orderCancel from: ${sessionID.getTargetCompID}")
-	newOrderCancelHandlers.foreach(_.handle(fixOrderConverter convert orderCancel))
+	newOrderHandlers.foreach(_.handleNewOrderCancel(fixOrderConverter convert orderCancel))
   }
 
 }

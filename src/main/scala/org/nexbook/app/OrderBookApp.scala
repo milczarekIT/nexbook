@@ -26,7 +26,7 @@ object OrderBookApp extends BasicComponentProvider {
   def main(args: Array[String]) {
 	logger.info(s"NexBook starting, config name: ${AppConfig.configName}, app mode: $mode, running mode: $runningMode")
 
-	if(Live == runningMode) {
+	if (Live == runningMode) {
 	  val fixEngineRunner = new FixEngineRunner(fixMessageHandler, AppConfig.fixConfigPath)
 	  fixEngineRunner.run()
 	} else {
