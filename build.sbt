@@ -28,6 +28,6 @@ libraryDependencies ++= Seq(
   "quickfixj" % "quickfixj-all" % "1.5.3"
 )
 
-testOptions in Test += Tests.Argument("-l", "org.nexbook.tags.IntegrationTest")
+testOptions in Test += Tests.Argument("-l", "org.nexbook.tags.Integration")
 
-testOptions in Test += Tests.Argument("-l", "org.nexbook.tags.PerformanceTest")
+testOptions in Test += Tests.Argument("-l", "org.nexbook.tags.Performance")

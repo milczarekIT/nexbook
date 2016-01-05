@@ -13,7 +13,7 @@ import scala.io.Source
 object FixMessageProvider {
 
   val dataDictionary = new DataDictionary("config/FIX44.xml")
-  val defaultTestData = "src/test/resources/data/orders8.fix"
+  val defaultTestData = "src/test/resources/data/orders8_100k.fix"
 
   def get: List[(Message, SessionID)] = get(defaultTestData, None)
 

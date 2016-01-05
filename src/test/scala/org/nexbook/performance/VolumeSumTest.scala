@@ -1,7 +1,7 @@
 package org.nexbook.performance
 
 import org.nexbook.domain.Order
-import org.nexbook.tags.PerformanceTest
+import org.nexbook.tags.Performance
 import org.nexbook.testutils.OrderProvider
 import org.scalatest.{Matchers, WordSpecLike}
 import org.slf4j.LoggerFactory
@@ -21,7 +21,7 @@ class VolumeSumTest extends WordSpecLike with Matchers with StopWatch {
   "Seq and Par Set processing" should {
 	val allOrders = OrderProvider.get(ordersCounts.max)
 	for (ordersCount <- ordersCounts) {
-	  s"sum volume $ordersCount orders" taggedAs PerformanceTest in {
+	  s"sum volume $ordersCount orders" taggedAs Performance in {
 		logger.info(s"====== Performance test for add operation for OrderInMemoryRepository, orders count: $ordersCount")
 		val orders = allOrders.take(ordersCount)
 		orders should have size ordersCount

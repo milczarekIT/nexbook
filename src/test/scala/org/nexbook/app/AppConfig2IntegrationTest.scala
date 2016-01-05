@@ -1,6 +1,6 @@
 package org.nexbook.app
 
-import org.nexbook.tags.IntegrationTest
+import org.nexbook.tags.Integration
 import org.scalatest.{FlatSpec, Matchers}
 
 /**
@@ -8,7 +8,7 @@ import org.scalatest.{FlatSpec, Matchers}
   */
 class AppConfig2IntegrationTest extends FlatSpec with Matchers {
 
-   "AppConfig" should "return name empty2" taggedAs IntegrationTest in {
+   "AppConfig" should "return name empty2" taggedAs Integration in {
 	System.setProperty("config.name", "empty2")
 
 	AppConfig.configName should equal("empty2")

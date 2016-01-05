@@ -3,7 +3,7 @@ package org.nexbook.performance.repository
 import org.nexbook.domain.Order
 import org.nexbook.performance.StopWatch
 import org.nexbook.repository._
-import org.nexbook.tags.PerformanceTest
+import org.nexbook.tags.Performance
 import org.nexbook.testutils.OrderProvider
 import org.scalatest.concurrent.Timeouts
 import org.scalatest.{Matchers, WordSpecLike}
@@ -25,7 +25,7 @@ class OrderInMemoryRepositoryTest extends WordSpecLike with Matchers with Timeou
   "OrderInMemoryRepository add operation" should {
 	val allOrders = OrderProvider.get(ordersCounts.max)
 	for (ordersCount <- ordersCounts) {
-	  s"add fast $ordersCount orders" taggedAs PerformanceTest in {
+	  s"add fast $ordersCount orders" taggedAs Performance in {
 		logger.info(s"====== Performance test for add operation for OrderInMemoryRepository, orders count: $ordersCount")
 		val orders = allOrders.take(ordersCount)
 		orders should have size ordersCount
@@ -43,7 +43,7 @@ class OrderInMemoryRepositoryTest extends WordSpecLike with Matchers with Timeou
 	for (ordersCount <- ordersCounts) {
 	  val orders = allOrders.take(ordersCount)
 	  val findCount: Int = (findFactor * orders.size).toInt
-	  s"find fast $findCount results for $ordersCount orders in repo" taggedAs PerformanceTest in {
+	  s"find fast $findCount results for $ordersCount orders in repo" taggedAs Performance in {
 		logger.info(s"====== Performance test for findByClOrdId operation, orders count: $ordersCount. Find factor is: $findFactor, so $findCount find operations will be executed")
 
 		orders should have size ordersCount

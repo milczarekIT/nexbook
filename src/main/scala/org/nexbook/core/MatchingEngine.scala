@@ -22,7 +22,7 @@ class MatchingEngine(orderRepository: OrderInMemoryRepository, sequencerFactory:
   val execIDSequencer = sequencerFactory sequencer execIDSequencerName
 
   def processOrder(order: Order) = {
-	orderRepository add order
+	//orderRepository add order
 	order match {
 	  case cancel: OrderCancel => tryCancel(cancel)
 	  case _ =>
