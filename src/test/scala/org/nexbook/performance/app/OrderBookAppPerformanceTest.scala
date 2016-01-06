@@ -20,9 +20,9 @@ class OrderBookAppPerformanceTest extends FlatSpec with Matchers with Timeouts {
 
   System.setProperty("config.name", "nexbook")
   val logger = LoggerFactory.getLogger(classOf[OrderBookAppPerformanceTest])
-  val testDataPath = "src/test/resources/data/orders8_050k.txt"
+  val testDataPath = "src/test/resources/data/orders8_100k.txt"
   val dbCollections = List("orders", "executions")
-  val expectedTotalOrdersCount = 50000 //95248 + 4752 // Orders: 95248, Cancels: 4752, total: 100000
+  val expectedTotalOrdersCount = 100000 //95248 + 4752 // Orders: 95248, Cancels: 4752, total: 100000
 
   import org.scalatest.time.SpanSugar._
 
