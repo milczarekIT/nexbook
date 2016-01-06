@@ -17,7 +17,7 @@ object ScriptRunner {
 	scripts.foreach {
 	  s => {
 		val output: String = (stringSeqToProcess(Seq("bash", s"$appPath/$scriptsDir/$s")) !!).trim
-		if(!output.isEmpty) {
+		if (!output.isEmpty) {
 		  sb.append(output)
 		}
 	  }

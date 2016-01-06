@@ -7,9 +7,9 @@ import java.util.concurrent.atomic.AtomicLong
   */
 class Sequencer(initValue: Long) {
 
-  def this() = this(0)
-
   val counter = new AtomicLong(initValue)
+
+  def this() = this(0)
 
   def nextValue = counter.incrementAndGet
 

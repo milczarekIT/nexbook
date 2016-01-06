@@ -7,6 +7,7 @@ import org.joda.time.DateTime
   */
 case class OrderCancel(tradeID: Long, timestamp: DateTime, clOrdId: String, order: Order) extends Order {
 
+  override val dealID: Long = order.tradeID
   val orderType = order.orderType
   val side = order.side
   val qty = order.qty
@@ -14,7 +15,6 @@ case class OrderCancel(tradeID: Long, timestamp: DateTime, clOrdId: String, orde
   val symbol = order.symbol
   val clientId = order.clientId
   val origClOrdId = order.clOrdId
-  override val dealID: Long = order.tradeID
 
   override def status: OrderStatus = Cancelled
 

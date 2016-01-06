@@ -1,12 +1,11 @@
 package org.nexbook.fix
 
 import org.nexbook.app.OrderHandlersModule
-import org.nexbook.neworderhandler.OrderCancelHandler
 import org.slf4j.LoggerFactory
 import quickfix._
 import quickfix.fix44.{NewOrderSingle, OrderCancelRequest}
 
-class FixMessageHandler(orderHandlersModule: OrderHandlersModule, orderCancelHandler: OrderCancelHandler, fixOrderConverter: FixOrderConverter) extends Application {
+class FixMessageHandler(orderHandlersModule: OrderHandlersModule, fixOrderConverter: FixOrderConverter) extends Application {
 
   val logger = LoggerFactory.getLogger(classOf[FixMessageHandler])
   val newOrderHandlers = orderHandlersModule.newOrderHandlers

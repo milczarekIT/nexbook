@@ -14,8 +14,6 @@ class OrderInMemoryRepository extends org.nexbook.repository.OrderInMemoryReposi
 
   override def findByClOrdId(clOrdId: String): Option[Order] = orders.values.find(clOrdId == _.clOrdId)
 
-  override def findById(tradeID: Long): Option[Order] = orders.get(tradeID)
-
   override def updateStatus(tradeID: Long, newStatus: OrderStatus, oldStatus: OrderStatus): Boolean = {
 	findById(tradeID) match {
 	  case Some(order) =>
@@ -27,6 +25,8 @@ class OrderInMemoryRepository extends org.nexbook.repository.OrderInMemoryReposi
 	  case None => false
 	}
   }
+
+  override def findById(tradeID: Long): Option[Order] = orders.get(tradeID)
 
   override def findAll: List[Order] = orders.values.toList
 

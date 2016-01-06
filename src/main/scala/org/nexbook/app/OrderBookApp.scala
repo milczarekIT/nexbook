@@ -19,14 +19,13 @@ object OrderBookApp extends BasicComponentProvider {
 	case PubSub => wire[PubSubModule]
 	case Akka => wire[AkkaModule]
   }
-  val orderResponseHandlers = module.orderBookResponseHandlers
 
   val fixMessageHandler: FixMessageHandler = wire[FixMessageHandler]
 
   def main(args: Array[String]) {
 	logger.info(s"NexBook starting, config name: ${AppConfig.configName}, app mode: $mode, running mode: $runningMode")
 
-	if(Live == runningMode) {
+	if (Live == runningMode) {
 	  val fixEngineRunner = new FixEngineRunner(fixMessageHandler, AppConfig.fixConfigPath)
 	  fixEngineRunner.run()
 	} else {

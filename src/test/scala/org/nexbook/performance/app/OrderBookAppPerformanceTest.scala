@@ -21,7 +21,7 @@ class OrderBookAppPerformanceTest extends FlatSpec with Matchers with Timeouts {
   val logger = LoggerFactory.getLogger(classOf[OrderBookAppPerformanceTest])
   val testDataPath = "src/test/resources/data/orders8_50k.fix"
   val dbCollections = List("orders", "executions")
-  val expectedTotalOrdersCount = 50000//95248 + 4752 // Orders: 95248, Cancels: 4752, total: 100000
+  val expectedTotalOrdersCount = 50000 //95248 + 4752 // Orders: 95248, Cancels: 4752, total: 100000
 
   import org.scalatest.time.SpanSugar._
 
@@ -33,8 +33,8 @@ class OrderBookAppPerformanceTest extends FlatSpec with Matchers with Timeouts {
 
 	val countsByMsgType: Map[String, Int] = messages.groupBy(m => m.getHeader.getField(new MsgType()).getValue).map(e => e._1 -> e._2.size).toMap
 
-//	countsByMsgType("D") should equal(95248)
-//	countsByMsgType("F") should equal(4752)
+	//	countsByMsgType("D") should equal(95248)
+	//	countsByMsgType("F") should equal(4752)
 
   }
 
@@ -128,7 +128,8 @@ class OrderBookAppPerformanceTest extends FlatSpec with Matchers with Timeouts {
 	  val cmd = s"less $appRoot/$logFile | grep '$phrase' | wc -l"
 	  val output = (stringSeqToProcess(Seq("bash", "-c", cmd)) !!).trim
 	  if (!output.matches("\\d+")) {
-		logger.warn(s"returned output: $output for $phrase"); 0
+		logger.warn(s"returned output: $output for $phrase");
+		0
 	  } else output.toInt
 	}
 

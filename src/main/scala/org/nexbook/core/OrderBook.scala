@@ -22,11 +22,6 @@ class OrderBook extends AbstractOrderBook {
 	book(order.side) add order
   }
 
-  def book(side: Side): SideOrderBook = side match {
-	case Buy => buyBook
-	case Sell => sellBook
-  }
-
   def top(side: Side): Option[LimitOrder] = {
 	book(side) top
   }
@@ -38,6 +33,11 @@ class OrderBook extends AbstractOrderBook {
   def find(side: Side, tradeID: Long): Option[LimitOrder] = book(side) find tradeID
 
   override def remove(order: LimitOrder) = book(order.side) remove order
+
+  def book(side: Side): SideOrderBook = side match {
+	case Buy => buyBook
+	case Sell => sellBook
+  }
 
   def priceLevels(side: Side): List[(Double, Double)] = book(side) priceLevels
 

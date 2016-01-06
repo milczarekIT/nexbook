@@ -1,6 +1,6 @@
 <included>
 
-    <property name="asyncQueueSize" value="1000000" />
+    <property name="asyncQueueSize" value="1000000"/>
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>

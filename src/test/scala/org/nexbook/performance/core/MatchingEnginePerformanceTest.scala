@@ -20,14 +20,16 @@ import scala.concurrent.duration._
 class MatchingEnginePerformanceTest extends WordSpecLike with Matchers with Timeouts with StopWatch {
 
   val logger = LoggerFactory.getLogger(classOf[MatchingEnginePerformanceTest])
-  val orders = OrderProvider.get(50000)//.filter(_.symbol == "EUR/USD").take(12000)
+  val orders = OrderProvider.get(50000) //.filter(_.symbol == "EUR/USD").take(12000)
 
   "OrderInMemoryRepository add operation" should {
 	"do sth" taggedAs Performance in {
 	  val attemptsForWarmCpuCache = 2
 	  val repeats = attemptsForWarmCpuCache + 10
 
-	  def measure(matchingEngine: MatchingEngine) = stopwatch { orders.foreach(matchingEngine.processOrder) }
+	  def measure(matchingEngine: MatchingEngine) = stopwatch {
+		orders.foreach(matchingEngine.processOrder)
+	  }
 
 	  val ordersCount = orders.size
 	  val avgExecTimeNs = (Seq.fill(repeats)(measure(matchingEngine)).drop(attemptsForWarmCpuCache).sum / repeats).nanoseconds.toNanos

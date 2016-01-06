@@ -6,6 +6,7 @@ package org.nexbook.app
 sealed trait Mode
 
 case object Akka extends Mode
+
 case object PubSub extends Mode
 
 object Mode {

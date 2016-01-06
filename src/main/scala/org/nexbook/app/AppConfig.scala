@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory
   * Created by milczu on 23.12.15.
   */
 class AppConfig {
+
   import AppConfig._
 
   val logger = LoggerFactory.getLogger(classOf[AppConfig])
@@ -29,27 +30,18 @@ class AppConfig {
 }
 
 object AppConfig {
+
   import scala.collection.JavaConverters._
 
-  protected val defaultConfigName = "nexbook"
-
-  private val (name, rootConfig) = new AppConfig().init()
-
   lazy val supportedCurrencyPairs = rootConfig.getStringList("symbols").asScala.toList
-
   lazy val clock: Clock = new DefaultClock
-
   lazy val fixConfig = rootConfig.getConfig("fix")
-
   lazy val fixConfigPath = fixConfig.getString("configPath")
-
   lazy val mode: Mode = Mode.fromString(rootConfig.getString("mode"))
-
   lazy val mongodbConfig = rootConfig.getConfig("mongodb")
-
-  val configName = name
-
   lazy val runningMode: RunningMode = RunningMode.fromString(rootConfig.getString("running"))
-
   lazy val repositoryCollectionType: RepositoryCollectionType = RepositoryCollectionType.fromString(rootConfig.getString("repositoryCollectionType"))
+  val configName = name
+  protected val defaultConfigName = "nexbook"
+  private val (name, rootConfig) = new AppConfig().init()
 }

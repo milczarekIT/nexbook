@@ -8,12 +8,15 @@ import quickfix._
   */
 trait FixApplicationRunner {
 
-  val logger = LoggerFactory.getLogger(classOf[App])
   lazy val socketAcceptorInstance = socketAcceptor
+  val logger = LoggerFactory.getLogger(classOf[App])
+
+  def run() = {
+	socketAcceptorInstance.start()
+	logger.info("FIX Acceptor Initialized")
+  }
 
   protected def application: Application
-
-  protected def messageFactory: MessageFactory = new DefaultMessageFactory
 
   protected def logFactory: LogFactory
 
@@ -23,8 +26,5 @@ trait FixApplicationRunner {
 
   protected def socketAcceptor: SocketAcceptor = new SocketAcceptor(application, messageStoreFactory, sessionSettings, logFactory, messageFactory)
 
-  def run() = {
-	socketAcceptorInstance.start()
-	logger.info("FIX Acceptor Initialized")
-  }
+  protected def messageFactory: MessageFactory = new DefaultMessageFactory
 }

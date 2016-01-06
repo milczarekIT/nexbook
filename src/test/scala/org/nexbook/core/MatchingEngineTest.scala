@@ -21,13 +21,12 @@ import org.scalatest.{Matchers, WordSpecLike}
 class MatchingEngineTest extends WordSpecLike with Matchers {
 
   val now = DateTime.now(DateTimeZone.UTC)
+  val orderInMemoryRepository = mock[OrderInMemoryRepository]
+  val sequencerFactory = new SequencerFactory(mock[OrderDatabaseRepository], mock[ExecutionDatabaseRepository])
 
   def limitOrder(side: Side = Buy, limit: Double = 4.32, size: Double = 100, sequence: Long = 1) = LimitOrder(sequence, "EUR/PLN", "cl1", side, size, limit, "FIX1", now, "1", Limit)
 
   def marketOrder(side: Side = Buy, size: Double = 100, sequence: Long = 2) = MarketOrder(sequence, "EUR/PLN", "cl2", side, size, "FIX2", now, "2", Market)
-
-  val orderInMemoryRepository = mock[OrderInMemoryRepository]
-  val sequencerFactory = new SequencerFactory(mock[OrderDatabaseRepository], mock[ExecutionDatabaseRepository])
 
   "Empty MatchingEngine" should {
 	"send rejection for first MarketOrder" in {
@@ -216,10 +215,6 @@ class MatchingEngineTest extends WordSpecLike with Matchers {
 
 class OrderExecutionResponseArgumentMatcher(dealQty: Double, dealPrice: Double) extends ArgumentMatcher[OrderBookResponse] {
 
-  def matchesDealSize(dealDone: OrderExecution): Boolean = dealDone.executionQty == dealQty
-
-  def matchesDealPrice(dealDone: OrderExecution): Boolean = dealDone.executionPrice == dealPrice
-
   override def matches(argument: scala.Any): Boolean = {
 	if (!argument.isInstanceOf[OrderExecutionResponse]) false
 	else {
@@ -227,6 +222,10 @@ class OrderExecutionResponseArgumentMatcher(dealQty: Double, dealPrice: Double) 
 	  matchesDealSize(orderExecution) && matchesDealPrice(orderExecution)
 	}
   }
+
+  def matchesDealSize(dealDone: OrderExecution): Boolean = dealDone.executionQty == dealQty
+
+  def matchesDealPrice(dealDone: OrderExecution): Boolean = dealDone.executionPrice == dealPrice
 }
 
 class OrderRejectionResponseArgumentMatcher extends ArgumentMatcher[OrderBookResponse] {

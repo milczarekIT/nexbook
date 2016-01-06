@@ -19,9 +19,6 @@ trait DatabaseRepository[T] {
   val findAllLimit = 10000
 
   protected val collectionName: String
-
-  protected def collection = client(collectionName)
-
   protected val serialize: Serialize
   protected val deserialize: Deserialize
 
@@ -33,6 +30,8 @@ trait DatabaseRepository[T] {
 	val cursor = collection.find().sort(MongoDBObject("_id" -> -1)).limit(findAllLimit)
 	(for (x <- cursor) yield deserialize(x)).toList
   }
+
+  protected def collection = client(collectionName)
 
   protected def findMaxNumericField(fieldName: String): Long = {
 	val q = MongoDBObject.empty

@@ -6,6 +6,7 @@ package org.nexbook.repository
 sealed trait RepositoryCollectionType
 
 case object Mutable extends RepositoryCollectionType
+
 case object Immutable extends RepositoryCollectionType
 
 object RepositoryCollectionType {

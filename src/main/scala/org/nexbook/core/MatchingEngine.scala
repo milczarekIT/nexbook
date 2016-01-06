@@ -32,12 +32,39 @@ class MatchingEngine(orderRepository: OrderInMemoryRepository, sequencerFactory:
 		  case Some(unfilled) =>
 			book add unfilled
 			if (bookLogger.isDebugEnabled) {
-			bookLogger.debug(s"2) Book (${order.side}:${order.symbol}) size: ${book.size(order.side)}, depth: ${book.depth(order.side)}, price levels: ${book.priceLevels(order.side)}")
+			  bookLogger.debug(s"2) Book (${order.side}:${order.symbol}) size: ${book.size(order.side)}, depth: ${book.depth(order.side)}, price levels: ${book.priceLevels(order.side)}")
 			}
 		  case _ => logger.trace(s"Order ad-hoc filled or rejected: $order")
 		}
 	}
 	logger.debug(s"Order processed: $order at ${System.currentTimeMillis}")
+  }
+
+  def tryCancel(orderCancel: OrderCancel): Unit = {
+	logger.debug(s"Handled order cancel: $orderCancel")
+	book find(orderCancel.side, orderCancel.dealID) match {
+	  case Some(order) =>
+		if (OrderStatus.orderFinishedStatuses.contains(order.status)) {
+		  logger.warn(s"Unable to cancel order by ${orderCancel.tradeID}. Order ${orderCancel.dealID} already finished")
+		} else {
+		  logger.info(s"Cancelled order $order by $orderCancel")
+		  book remove order
+		  orderRepository.updateStatus(order.tradeID, Cancelled, order.status)
+		  orderBookResponseHandlers.foreach(_.handle(OrderAcceptResponse(orderCancel)))
+		}
+	  case None =>
+		orderRepository.findById(orderCancel.dealID) match {
+		  case Some(o) => logger.debug(s"Unable to cancel order: ${orderCancel.dealID}. Order to not in book. Cancelling order: ${orderCancel.tradeID}. Orig Order status ${o.status}")
+		  case None => logger.debug(s"Unable to cancel order: ${orderCancel.dealID}. Order to cancel not found. Cancelling order: ${orderCancel.tradeID}")
+		}
+
+	}
+  }
+
+  def dealDoneToExecutions(dealDone: DealDone): List[OrderExecution] = {
+	val buyExecution = new OrderExecution(tradeIDSequencer.nextValue, dealDone.execID, dealDone.buy, dealDone.dealSize, dealDone.dealPrice, dealDone.executionTime)
+	val sellExecution = new OrderExecution(tradeIDSequencer.nextValue, dealDone.execID, dealDone.sell, dealDone.dealSize, dealDone.dealPrice, dealDone.executionTime)
+	List(buyExecution, sellExecution)
   }
 
   protected def tryMatch(order: Order, firstCounterOrder: Option[LimitOrder]): Option[LimitOrder] = firstCounterOrder match {
@@ -69,7 +96,6 @@ class MatchingEngine(orderRepository: OrderInMemoryRepository, sequencerFactory:
 	}
   }
 
-
   private def matchOrders(order: Order, counterOrder: LimitOrder): DealDone = {
 	val execDateTime = AppConfig.clock.currentDateTime
 	def determineDealSize(order: Order, counter: LimitOrder): Double = if (order.leaveQty <= counter.leaveQty) order.leaveQty else counter.leaveQty
@@ -99,42 +125,17 @@ class MatchingEngine(orderRepository: OrderInMemoryRepository, sequencerFactory:
 	}
 
 	val orderChanges = applyFills
-	for(handler <- orderChangeHandlers; change <- orderChanges) { handler.handle(OrderChangeCommand(change)) }
+	for (handler <- orderChangeHandlers; change <- orderChanges) {
+	  handler.handle(OrderChangeCommand(change))
+	}
 
 	val (buyOrder, sellOrder) = if (order.side == Buy) (order, counterOrder) else (counterOrder, order)
 
-	if(bookLogger.isDebugEnabled) {
+	if (bookLogger.isDebugEnabled) {
 	  bookLogger.debug(s"1) Book (${order.side}:${order.symbol}) size: ${book.size(order.side)}, depth: ${book.depth(order.side)}, price levels: ${book.priceLevels(order.side)}")
 	}
 
 	DealDone(execIDSequencer.nextValue, buyOrder, sellOrder, dealSize, dealPrice, execDateTime)
-  }
-
-  def tryCancel(orderCancel: OrderCancel): Unit = {
-	logger.debug(s"Handled order cancel: $orderCancel")
-	book find(orderCancel.side, orderCancel.dealID) match {
-	  case Some(order) =>
-		if (OrderStatus.orderFinishedStatuses.contains(order.status)) {
-		  logger.warn(s"Unable to cancel order by ${orderCancel.tradeID}. Order ${orderCancel.dealID} already finished")
-		} else {
-		  logger.info(s"Cancelled order $order by $orderCancel")
-		  book remove order
-		  orderRepository.updateStatus(order.tradeID, Cancelled, order.status)
-		  orderBookResponseHandlers.foreach(_.handle(OrderAcceptResponse(orderCancel)))
-		}
-	  case None =>
-		orderRepository.findById(orderCancel.dealID) match {
-		  case Some(o) => logger.debug(s"Unable to cancel order: ${orderCancel.dealID}. Order to not in book. Cancelling order: ${orderCancel.tradeID}. Orig Order status ${o.status}")
-		  case None => logger.debug(s"Unable to cancel order: ${orderCancel.dealID}. Order to cancel not found. Cancelling order: ${orderCancel.tradeID}")
-		}
-
-	}
-  }
-
-  def dealDoneToExecutions(dealDone: DealDone): List[OrderExecution] = {
-	val buyExecution = new OrderExecution(tradeIDSequencer.nextValue, dealDone.execID, dealDone.buy, dealDone.dealSize, dealDone.dealPrice, dealDone.executionTime)
-	val sellExecution = new OrderExecution(tradeIDSequencer.nextValue, dealDone.execID, dealDone.sell, dealDone.dealSize, dealDone.dealPrice, dealDone.executionTime)
-	List(buyExecution, sellExecution)
   }
 
   case class DealDone(execID: Long, buy: Order, sell: Order, dealSize: Double, dealPrice: Double, executionTime: DateTime)
