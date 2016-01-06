@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory
   * Created by milczu on 23.12.15.
   */
 class AppConfig {
-
   import AppConfig._
 
   val logger = LoggerFactory.getLogger(classOf[AppConfig])
@@ -30,7 +29,6 @@ class AppConfig {
 }
 
 object AppConfig {
-
   import scala.collection.JavaConverters._
 
   protected val defaultConfigName = "nexbook"
