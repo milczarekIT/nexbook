@@ -12,7 +12,7 @@ trait PubSubHandler[T] extends Handler[T] with mutable.Publisher[T] {
   def subscribers: List[mutable.Subscriber[T, mutable.Publisher[T]]]
 
   def init = {
-	subscribers.foreach(subscribe(_))
+	subscribers.foreach(subscribe)
   }
 
   override def handle(o: T): Unit = publish(o)

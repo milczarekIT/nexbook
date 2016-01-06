@@ -14,7 +14,6 @@ import scala.math.BigDecimal.RoundingMode
 class MatchingEngine(orderRepository: OrderInMemoryRepository, sequencerFactory: SequencerFactory, book: OrderBook, orderBookResponseHandlers: List[Handler[OrderBookResponse]], orderChangeHandlers: List[Handler[OrderChangeCommand]]) {
 
   val logger = LoggerFactory.getLogger(classOf[MatchingEngine])
-  val bookLogger = LoggerFactory.getLogger("BOOK_LOG")
 
   import org.nexbook.sequence.SequencerFactory._
 
@@ -22,7 +21,7 @@ class MatchingEngine(orderRepository: OrderInMemoryRepository, sequencerFactory:
   val execIDSequencer = sequencerFactory sequencer execIDSequencerName
 
   def processOrder(order: Order) = {
-	//orderRepository add order
+	orderRepository add order
 	order match {
 	  case cancel: OrderCancel => tryCancel(cancel)
 	  case _ =>
@@ -31,9 +30,6 @@ class MatchingEngine(orderRepository: OrderInMemoryRepository, sequencerFactory:
 		unfilledOrder match {
 		  case Some(unfilled) =>
 			book add unfilled
-			if (bookLogger.isDebugEnabled) {
-			  bookLogger.debug(s"2) Book (${order.side}:${order.symbol}) size: ${book.size(order.side)}, depth: ${book.depth(order.side)}, price levels: ${book.priceLevels(order.side)}")
-			}
 		  case _ => logger.trace(s"Order ad-hoc filled or rejected: $order")
 		}
 	}
@@ -130,10 +126,6 @@ class MatchingEngine(orderRepository: OrderInMemoryRepository, sequencerFactory:
 	}
 
 	val (buyOrder, sellOrder) = if (order.side == Buy) (order, counterOrder) else (counterOrder, order)
-
-	if (bookLogger.isDebugEnabled) {
-	  bookLogger.debug(s"1) Book (${order.side}:${order.symbol}) size: ${book.size(order.side)}, depth: ${book.depth(order.side)}, price levels: ${book.priceLevels(order.side)}")
-	}
 
 	DealDone(execIDSequencer.nextValue, buyOrder, sellOrder, dealSize, dealPrice, execDateTime)
   }
