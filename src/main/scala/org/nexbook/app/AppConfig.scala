@@ -41,7 +41,7 @@ object AppConfig {
   lazy val mongodbConfig = rootConfig.getConfig("mongodb")
   lazy val runningMode: RunningMode = RunningMode.fromString(rootConfig.getString("running"))
   lazy val repositoryCollectionType: RepositoryCollectionType = RepositoryCollectionType.fromString(rootConfig.getString("repositoryCollectionType"))
+  private lazy val (name, rootConfig) = new AppConfig().init()
   val configName = name
   protected val defaultConfigName = "nexbook"
-  private val (name, rootConfig) = new AppConfig().init()
 }

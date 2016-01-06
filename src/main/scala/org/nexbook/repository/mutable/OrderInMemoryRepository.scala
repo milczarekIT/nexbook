@@ -5,7 +5,7 @@ import org.nexbook.domain.{Order, OrderStatus}
 class OrderInMemoryRepository extends org.nexbook.repository.OrderInMemoryRepository {
   val orders = new scala.collection.mutable.HashMap[String, Order]()
 
-  override def add(order: Order) = orders(order.clOrdId) = order
+  override def add(order: Order) = synchronized { orders(order.clOrdId) = order }
 
   override def findByClOrdId(clOrdId: String): Option[Order] = orders.get(clOrdId)
 

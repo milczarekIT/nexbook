@@ -20,7 +20,7 @@ class OrderBookAppPerformanceTest extends FlatSpec with Matchers with Timeouts {
 
   System.setProperty("config.name", "nexbook")
   val logger = LoggerFactory.getLogger(classOf[OrderBookAppPerformanceTest])
-  val testDataPath = "src/test/resources/data/orders8_50k.fix"
+  val testDataPath = "src/test/resources/data/orders8_050k.txt"
   val dbCollections = List("orders", "executions")
   val expectedTotalOrdersCount = 50000 //95248 + 4752 // Orders: 95248, Cancels: 4752, total: 100000
 
@@ -84,7 +84,7 @@ class OrderBookAppPerformanceTest extends FlatSpec with Matchers with Timeouts {
 	val phraseNotApprovedCancel = "MatchingEngine - Unable to cancel order"
 
 	def execute() = {
-	  Thread.sleep(15000)
+	  Thread.sleep(20000)
 	  while (!isAppFinished) {
 		val countTDS = countOccurrencesInLogFile(phraseTDS)
 		val countME = countOccurrencesInLogFile(phraseME)
@@ -127,10 +127,11 @@ class OrderBookAppPerformanceTest extends FlatSpec with Matchers with Timeouts {
 	}
 
 	def countOccurrencesInLogFile(phrase: String): Int = {
-	  val cmd = s"less $appRoot/$logFile | grep '$phrase' | wc -l"
+	  val cmd = s"cp $appRoot/$logFile $appRoot/temp.log && less $appRoot/temp.log | grep '$phrase' | wc -l"
 	  val output = (stringSeqToProcess(Seq("bash", "-c", cmd)) !!).trim
+	  (stringSeqToProcess(Seq("bash", "-c", s"rm -rf $appRoot/temp.log")) !)
 	  if (!output.matches("\\d+")) {
-		logger.warn(s"returned output: $output for $phrase");
+		logger.warn(s"returned output: $output for $phrase")
 		0
 	  } else output.toInt
 	}

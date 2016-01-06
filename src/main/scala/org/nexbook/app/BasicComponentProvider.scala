@@ -21,7 +21,6 @@ trait BasicComponentProvider {
   lazy val sequencerFactory = wire[SequencerFactory]
   lazy val clock = new DefaultClock
   lazy val matchingEnginesRepository = wire[MatchingEnginesRepository]
-  //lazy val orderHandler: OrderHandler = wire[OrderHandler]
   lazy val fixOrderConverter = wire[FixOrderConverter]
 
   def module: Module

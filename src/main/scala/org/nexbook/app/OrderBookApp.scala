@@ -19,7 +19,6 @@ object OrderBookApp extends BasicComponentProvider {
 	case PubSub => wire[PubSubModule]
 	case Akka => wire[AkkaModule]
   }
-  val orderResponseHandlers = module.orderBookResponseHandlers
 
   val fixMessageHandler: FixMessageHandler = wire[FixMessageHandler]
 

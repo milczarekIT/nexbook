@@ -42,16 +42,18 @@ class MatchingEngine(orderRepository: OrderInMemoryRepository, sequencerFactory:
 		if (OrderStatus.orderFinishedStatuses.contains(order.status)) {
 		  logger.warn(s"Unable to cancel order by ${orderCancel.tradeID}. Order ${orderCancel.dealID} already finished")
 		} else {
-		  logger.info(s"Cancelled order $order by $orderCancel")
+		  logger.info(s"Cancelling order $order by $orderCancel")
 		  book remove order
 		  orderRepository.updateStatus(order.tradeID, Cancelled, order.status)
 		  orderBookResponseHandlers.foreach(_.handle(OrderAcceptResponse(orderCancel)))
+		  logger.debug(s"Cancelled order $order by $orderCancel")
 		}
 	  case None =>
-		orderRepository.findById(orderCancel.dealID) match {
-		  case Some(o) => logger.debug(s"Unable to cancel order: ${orderCancel.dealID}. Order to not in book. Cancelling order: ${orderCancel.tradeID}. Orig Order status ${o.status}")
-		  case None => logger.debug(s"Unable to cancel order: ${orderCancel.dealID}. Order to cancel not found. Cancelling order: ${orderCancel.tradeID}")
-		}
+		logger.debug(s"Unable to cancel $orderCancel. Orig order not in book")
+//		orderRepository.findById(orderCancel.dealID) match {
+	  //		  case Some(o) => logger.debug(s"Unable to cancel order: ${orderCancel.dealID}. Order to not in book. Cancelling order: ${orderCancel.tradeID}. Orig Order status ${o.status}")
+	  //		  case None => logger.debug(s"Unable to cancel order: ${orderCancel.dealID}. Order to cancel not found. Cancelling order: ${orderCancel.tradeID}")
+	  //		}
 
 	}
   }

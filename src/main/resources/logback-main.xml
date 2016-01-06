@@ -38,9 +38,10 @@
         <appender-ref ref="TRADES"/>
     </appender>
 
-    <logger name="quickfix.mina.NetworkingOptions" level="warn"/>
-    <logger name="quickfix.mina.message.FIXMessageDecoder" level="info"/>
-    <logger name="com.mongodb.casbah" level="info"/>
+    <logger name="quickfix.mina.NetworkingOptions" level="warn" />
+    <logger name="quickfix.mina.message.FIXMessageDecoder" level="info" />
+    <logger name="quickfix.SessionSchedule" level="warn" />
+    <logger name="com.mongodb.casbah" level="info" />
 
 
     <logger name="TRADES_LOG" level="debug" additivity="false">
