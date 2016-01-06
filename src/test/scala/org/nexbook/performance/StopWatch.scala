@@ -6,9 +6,9 @@ package org.nexbook.performance
 trait StopWatch {
 
   def stopwatch(f: => Any): Long = {
-  	val start = System.nanoTime
-  	f
-  	val end = System.nanoTime
+	val start = System.nanoTime
+	f
+	val end = System.nanoTime
 	end - start
   }
 }

@@ -9,15 +9,15 @@ class SequencerFactory(orderDatabaseRepository: OrderDatabaseRepository, executi
 
   private val (tradeIDSequencer, execIDSequencer) = initSequences
 
+  def sequencer(name: String) = name match {
+	case SequencerFactory.tradeIDSequencerName => tradeIDSequencer
+	case SequencerFactory.execIDSequencerName => execIDSequencer
+  }
+
   private def initSequences = {
 	val trade = new Sequencer(orderDatabaseRepository.findLastTradeID)
 	val exec = new Sequencer(executionDatabaseRepository.findLastExecID)
 	(trade, exec)
-  }
-
-  def sequencer(name: String) = name match {
-	case SequencerFactory.tradeIDSequencerName => tradeIDSequencer
-	case SequencerFactory.execIDSequencerName => execIDSequencer
   }
 }
 

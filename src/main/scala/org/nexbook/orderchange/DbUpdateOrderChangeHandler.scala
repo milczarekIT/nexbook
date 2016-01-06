@@ -9,10 +9,8 @@ import org.slf4j.LoggerFactory
   */
 class DbUpdateOrderChangeHandler(orderDatabaseRepository: OrderDatabaseRepository) extends Handler[OrderChangeCommand] {
 
-  val logger = LoggerFactory.getLogger(classOf[DbUpdateOrderChangeHandler])
-
   type updateOnDb = OrderChange => Boolean
-
+  val logger = LoggerFactory.getLogger(classOf[DbUpdateOrderChangeHandler])
   val updateDelayMillis: Int = 1000
   val attemptsLimit = 20
 
@@ -23,14 +21,6 @@ class DbUpdateOrderChangeHandler(orderDatabaseRepository: OrderDatabaseRepositor
   override def handle(changeCommand: OrderChangeCommand) = changeCommand.payload match {
 	case fc: OrderFillChange => tryUpdate(fc, fillChangeUpdate)
 	case sc: OrderStatusChange => tryUpdate(sc, statusChangeUpdate)
-  }
-
-  def onOrderFillChange(fillChange: OrderFillChange): Boolean = {
-	true
-  }
-
-  def onOrderStatusChange(statusChange: OrderStatusChange): Boolean = {
-	orderDatabaseRepository.updateStatus(statusChange.tradeID, statusChange.status, statusChange.prevStatus)
   }
 
   def tryUpdate(orderChange: OrderChange, updateFunc: updateOnDb): Unit = {
@@ -55,5 +45,13 @@ class DbUpdateOrderChangeHandler(orderDatabaseRepository: OrderDatabaseRepositor
 	//		logger.warn(s"OrderChange: $orderChange was not applied after")
 	//	  }
 	//	}
+  }
+
+  def onOrderFillChange(fillChange: OrderFillChange): Boolean = {
+	true
+  }
+
+  def onOrderStatusChange(statusChange: OrderStatusChange): Boolean = {
+	orderDatabaseRepository.updateStatus(statusChange.tradeID, statusChange.status, statusChange.prevStatus)
   }
 }

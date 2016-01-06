@@ -17,38 +17,12 @@ import scala.collection.JavaConverters._
   */
 object OrderProvider {
 
+  type converter = Message => Order
   val clock = new DefaultClock
   val fixConverter = new FixOrderConverter(clock)
   val tradeIDGenerator = new AtomicLong
-  type converter = Message => Order
-
-  def msgType(m: Message): String = m.getHeader.getField(new MsgType()).getValue
-
-  def asNewTradable(m: Message): NewTradable = msgType(m) match {
-	case NewOrderSingle.MSGTYPE => fixConverter.convert(m.asInstanceOf[NewOrderSingle])
-	case _ => throw new IllegalArgumentException
-  }
-
-  def asOrder(t: NewTradable): Order = t match {
-	case l: NewLimitOrder => new LimitOrder(l, tradeIDGenerator.incrementAndGet)
-	case m: NewMarketOrder => new MarketOrder(m, tradeIDGenerator.incrementAndGet)
-  }
-
-  def asNewOrderCancel(m: Message): NewOrderCancel = fixConverter.convert(m.asInstanceOf[OrderCancelRequest])
-
-  def asOrderCancel(c: NewOrderCancel, origOrder: Order): OrderCancel = {
-	new OrderCancel(tradeIDGenerator.incrementAndGet, clock.currentDateTime, c.clOrdId, origOrder)
-  }
 
   def get(): List[Order] = get(None)
-
-  def get(limit: Int): List[Order] = get(Some(limit))
-
-  /**
-	* Implementation for Java
-	* @see def get(limit: Int): List[Order]
-	*/
-  def getList(limit: Int): java.util.List[Order] = get(limit).asJava
 
   def get(limit: Option[Int]): List[Order] = {
 	val fixMsgs = FixMessageProvider.get(limit).map(_._1)
@@ -63,6 +37,32 @@ object OrderProvider {
 
 	newOrders ::: orderCancels
   }
+
+  def asNewTradable(m: Message): NewTradable = msgType(m) match {
+	case NewOrderSingle.MSGTYPE => fixConverter.convert(m.asInstanceOf[NewOrderSingle])
+	case _ => throw new IllegalArgumentException
+  }
+
+  def msgType(m: Message): String = m.getHeader.getField(new MsgType()).getValue
+
+  def asOrder(t: NewTradable): Order = t match {
+	case l: NewLimitOrder => new LimitOrder(l, tradeIDGenerator.incrementAndGet)
+	case m: NewMarketOrder => new MarketOrder(m, tradeIDGenerator.incrementAndGet)
+  }
+
+  def asNewOrderCancel(m: Message): NewOrderCancel = fixConverter.convert(m.asInstanceOf[OrderCancelRequest])
+
+  def asOrderCancel(c: NewOrderCancel, origOrder: Order): OrderCancel = {
+	new OrderCancel(tradeIDGenerator.incrementAndGet, clock.currentDateTime, c.clOrdId, origOrder)
+  }
+
+  /**
+	* Implementation for Java
+	* @see def get(limit: Int): List[Order]
+	*/
+  def getList(limit: Int): java.util.List[Order] = get(limit).asJava
+
+  def get(limit: Int): List[Order] = get(Some(limit))
 
 
 }

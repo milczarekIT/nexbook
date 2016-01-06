@@ -54,11 +54,6 @@ class OrderInMemoryRepositoryTest extends WordSpecLike with Matchers with Timeou
 	}
   }
 
-  def logFinalResult(higher: Long, lower: Long, higherClass: Class[_]) = {
-	val percent = BigDecimal(higher / lower.toDouble * 100 - 100).setScale(2, RoundingMode.HALF_UP).toDouble
-	logger.info(s"this operation is $percent% slower in ${higherClass.getName}")
-  }
-
   def testAddOperation(orders: List[Order]): Unit = {
 	val attemptsForWarmCpuCache = 2
 	val repeats = attemptsForWarmCpuCache + 5
@@ -115,5 +110,10 @@ class OrderInMemoryRepositoryTest extends WordSpecLike with Matchers with Timeou
 	} else {
 	  logFinalResult(avgExecTimePar, avgExecTimeSeq, classOf[mutable.OrderInMemoryParRepository])
 	}
+  }
+
+  def logFinalResult(higher: Long, lower: Long, higherClass: Class[_]) = {
+	val percent = BigDecimal(higher / lower.toDouble * 100 - 100).setScale(2, RoundingMode.HALF_UP).toDouble
+	logger.info(s"this operation is $percent% slower in ${higherClass.getName}")
   }
 }

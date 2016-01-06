@@ -19,12 +19,6 @@ object FixMessageProvider {
 
   def get(limit: Int): List[(Message, SessionID)] = get(defaultTestData, Some(limit))
 
-  def get(limit: Option[Int]): List[(Message, SessionID)] = get(defaultTestData, limit)
-
-  def get(fileName: String): List[(Message, SessionID)] = get(fileName, None)
-
-  def get(fileName: String, limit: Int): List[(Message, SessionID)] = get(fileName, Some(limit))
-
   def get(fileName: String, limit: Option[Int]): List[(Message, SessionID)] = {
 	def toFixMessage(line: String): Message = new Message(line, dataDictionary, false)
 
@@ -70,8 +64,14 @@ object FixMessageProvider {
 		case None => allLines.toList
 	  }
 	}
-	val convert: String => (Message, SessionID) = toFixMessage _ andThen fixMsgToSpecializedMsg andThen withUpdatedFields andThen(msg => (msg, createSessionID(msg)))
+	val convert: String => (Message, SessionID) = toFixMessage _ andThen fixMsgToSpecializedMsg andThen withUpdatedFields andThen (msg => (msg, createSessionID(msg)))
 
 	lines.map(convert(_))
   }
+
+  def get(limit: Option[Int]): List[(Message, SessionID)] = get(defaultTestData, limit)
+
+  def get(fileName: String): List[(Message, SessionID)] = get(fileName, None)
+
+  def get(fileName: String, limit: Int): List[(Message, SessionID)] = get(fileName, Some(limit))
 }
