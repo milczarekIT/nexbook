@@ -1,10 +1,15 @@
 <included>
 
+    <conversionRule conversionWord="nanoTime" converterClass="org.nexbook.logback.NanoTimeConverter"/>
+
+    <property name="asyncQueueSize" value="1000000"/>
+    <property name="defaultPattern" value="%d{HH:mm:ss.SSS} %nanoTime [%thread] %-5level %logger{36} - %msg%n"/>
+
     <property name="asyncQueueSize" value="1000000"/>
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{HH:mm:ss.SSS} %r [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>${defaultPattern}</pattern>
         </encoder>
     </appender>
 
@@ -12,7 +17,7 @@
         <file>nexbook.log</file>
         <append>false</append>
         <encoder>
-            <pattern>%d{HH:mm:ss.SSS} %r [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>${defaultPattern}</pattern>
         </encoder>
     </appender>
     <appender name="FILE_ASYNC" class="ch.qos.logback.classic.AsyncAppender">
@@ -34,29 +39,14 @@
         <appender-ref ref="TRADES"/>
     </appender>
 
-    <appender name="BOOK" class="ch.qos.logback.core.FileAppender">
-        <file>book.log</file>
-        <append>false</append>
-        <encoder>
-            <pattern>%d{HH:mm:ss.SSS} %msg%n</pattern>
-        </encoder>
-    </appender>
-    <appender name="BOOK_ASYNC" class="ch.qos.logback.classic.AsyncAppender">
-        <queueSize>${asyncQueueSize}</queueSize>
-        <discardingThreshold>0</discardingThreshold>
-        <appender-ref ref="BOOK"/>
-    </appender>
-
-    <logger name="quickfix.mina.NetworkingOptions" level="warn"/>
-    <logger name="quickfix.mina.message.FIXMessageDecoder" level="info"/>
-    <logger name="com.mongodb.casbah" level="info"/>
+    <logger name="quickfix.mina.NetworkingOptions" level="warn" />
+    <logger name="quickfix.mina.message.FIXMessageDecoder" level="info" />
+    <logger name="quickfix.SessionSchedule" level="warn" />
+    <logger name="com.mongodb.casbah" level="info" />
 
 
     <logger name="TRADES_LOG" level="debug" additivity="false">
         <appender-ref ref="TRADES_ASYNC"/>
-    </logger>
-    <logger name="BOOK_LOG" level="info" additivity="false">
-        <appender-ref ref="BOOK_ASYNC"/>
     </logger>
 
     <root level="debug">

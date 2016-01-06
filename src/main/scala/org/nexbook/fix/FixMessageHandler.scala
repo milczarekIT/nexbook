@@ -9,7 +9,6 @@ class FixMessageHandler(orderHandlersModule: OrderHandlersModule, fixOrderConver
 
   val logger = LoggerFactory.getLogger(classOf[FixMessageHandler])
   val newOrderHandlers = orderHandlersModule.newOrderHandlers
-  val newOrderCancelHandlers = orderHandlersModule.newOrderCancelsHandlers
 
   override def onCreate(sessionId: SessionID) {
 	logger.info(s"FixOrderHandler Session Created with SessionID: $sessionId")
@@ -58,12 +57,12 @@ class FixMessageHandler(orderHandlersModule: OrderHandlersModule, fixOrderConver
 
   def onMessage(order: NewOrderSingle, sessionID: SessionID) {
 	logger.debug(s"onMessage: ${System.currentTimeMillis} handled message $order from: ${sessionID.getTargetCompID}")
-	newOrderHandlers.foreach(_.handle(fixOrderConverter convert order))
+	newOrderHandlers.foreach(_.handleNewOrder(fixOrderConverter convert order))
   }
 
   def onMessage(orderCancel: OrderCancelRequest, sessionID: SessionID) = {
 	logger.debug(s"onMessage: ${System.currentTimeMillis} handled message $orderCancel from: ${sessionID.getTargetCompID}")
-	newOrderCancelHandlers.foreach(_.handle(fixOrderConverter convert orderCancel))
+	//newOrderHandlers.foreach(_.handleNewOrderCancel(fixOrderConverter convert orderCancel))
   }
 
 }

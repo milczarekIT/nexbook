@@ -2,8 +2,7 @@ package org.nexbook.app
 
 import com.softwaremill.macwire._
 import org.nexbook.core.Handler
-import org.nexbook.domain.{NewOrder, NewOrderCancel}
-import org.nexbook.neworderhandler.{OrderCancelHandler, OrderHandler}
+import org.nexbook.neworderhandler.{NewOrderHandler, OrderHandler}
 import org.nexbook.orderbookresponsehandler.handler.{FixMessageResponseSender, JsonFileLogger, TradeDatabaseSaver}
 import org.nexbook.orderbookresponsehandler.response.OrderBookResponse
 import org.nexbook.orderchange.{DbUpdateOrderChangeHandler, OrderChangeCommand}
@@ -13,9 +12,7 @@ import org.nexbook.orderchange.{DbUpdateOrderChangeHandler, OrderChangeCommand}
   */
 trait DelegatorsProvider extends BasicComponentProvider {
 
-  def orderHandlers: List[Handler[NewOrder]] = List(wire[OrderHandler])
-
-  def orderCancelHandlers: List[Handler[NewOrderCancel]] = List(wire[OrderCancelHandler])
+  def orderHandlers: List[NewOrderHandler] = List(wire[OrderHandler])
 
   def orderResponseHandlers: List[Handler[OrderBookResponse]] = {
 	AppConfig.runningMode match {
