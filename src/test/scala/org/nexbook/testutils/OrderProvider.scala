@@ -9,8 +9,6 @@ import quickfix.Message
 import quickfix.field.MsgType
 import quickfix.fix44.{NewOrderSingle, OrderCancelRequest}
 
-import scala.collection.JavaConverters._
-
 
 /**
   * Created by milczu on 03.01.16.
@@ -18,14 +16,20 @@ import scala.collection.JavaConverters._
 object OrderProvider {
 
   type converter = Message => Order
+  val testDataDir = "src/test/resources/data"
+  val defaultTestDataFile = "orders8_200k.txt"
   val clock = new DefaultClock
   val fixConverter = new FixOrderConverter(clock)
   val tradeIDGenerator = new AtomicLong
 
+  def get(fileName: String): List[Order] = get(fileName, None)
+
   def get(): List[Order] = get(None)
 
-  def get(limit: Option[Int]): List[Order] = {
-	val fixMsgs = FixMessageProvider.get(limit).map(_._1)
+  def get(limit: Option[Int]): List[Order] = get(defaultTestDataFile, limit)
+
+  def get(fileName: String, limit: Option[Int]): List[Order] = {
+	val fixMsgs = FixMessageProvider.get(s"$testDataDir/$fileName", limit).map(_._1)
 	val fixNewOrderSingles = fixMsgs.filter(m => NewOrderSingle.MSGTYPE == msgType(m))
 
 	val newOrders: List[Order] = fixNewOrderSingles.map(asNewTradable _ andThen asOrder)
@@ -55,12 +59,6 @@ object OrderProvider {
   def asOrderCancel(c: NewOrderCancel, origOrder: Order): OrderCancel = {
 	new OrderCancel(tradeIDGenerator.incrementAndGet, clock.currentDateTime, c.clOrdId, origOrder)
   }
-
-  /**
-	* Implementation for Java
-	* @see def get(limit: Int): List[Order]
-	*/
-  def getList(limit: Int): java.util.List[Order] = get(limit).asJava
 
   def get(limit: Int): List[Order] = get(Some(limit))
 

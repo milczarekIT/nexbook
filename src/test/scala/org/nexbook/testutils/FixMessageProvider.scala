@@ -13,13 +13,13 @@ import scala.io.Source
 object FixMessageProvider {
 
   val dataDictionary = new DataDictionary("config/FIX44.xml")
-  val defaultTestData = "src/test/resources/data/orders8_100k.fix"
+  val defaultTestData = "src/test/resources/data/orders8_200k.txt"
 
   def get: List[(Message, SessionID)] = get(defaultTestData, None)
 
   def get(limit: Int): List[(Message, SessionID)] = get(defaultTestData, Some(limit))
 
-  def get(fileName: String, limit: Option[Int]): List[(Message, SessionID)] = {
+  def get(filePath: String, limit: Option[Int]): List[(Message, SessionID)] = {
 	def toFixMessage(line: String): Message = new Message(line, dataDictionary, false)
 
 	def fixMsgToSpecializedMsg(msg: Message): Message = {
@@ -58,7 +58,7 @@ object FixMessageProvider {
 
 
 	val lines: List[String] = {
-	  val allLines = Source.fromFile(fileName).getLines();
+	  val allLines = Source.fromFile(filePath).getLines();
 	  limit match {
 		case Some(value) => allLines.take(value).toList
 		case None => allLines.toList
@@ -66,7 +66,7 @@ object FixMessageProvider {
 	}
 	val convert: String => (Message, SessionID) = toFixMessage _ andThen fixMsgToSpecializedMsg andThen withUpdatedFields andThen (msg => (msg, createSessionID(msg)))
 
-	lines.map(convert(_))
+	lines.map(convert)
   }
 
   def get(limit: Option[Int]): List[(Message, SessionID)] = get(defaultTestData, limit)
