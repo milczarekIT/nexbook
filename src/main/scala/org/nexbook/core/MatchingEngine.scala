@@ -31,7 +31,7 @@ class MatchingEngine(orderRepository: OrderRepository, sequencerFactory: Sequenc
 		  case _ => logger.trace(s"Order ad-hoc filled or rejected: $order")
 		}
 	}
-	logger.debug(s"Order processed: $order at ${System.currentTimeMillis}")
+	logger.debug(s"${order.clOrdId} - Order processed: $order")
   }
 
   def tryCancel(orderCancel: OrderCancel): Unit = {
@@ -114,11 +114,8 @@ class MatchingEngine(orderRepository: OrderRepository, sequencerFactory: Sequenc
 	  } else {
 		counterOrder.updateStatus(Partial)
 	  }
-	  if(order.leaveQty == 0.00) {
-		order.updateStatus(Filled)
-	  } else {
-		order.updateStatus(Partial)
-	  }
+	  order.updateStatus(if(order.leaveQty == 0.00) Filled else Partial)
+
 	  val orderChange = new OrderFillChange(order.tradeID, prevOrderStatus, order.status, prevOrderLeaveQty, order.leaveQty)
 	  val counterOrderChange = new OrderFillChange(counterOrder.tradeID, prevCounterOrderStatus, counterOrder.status, prevCounterOrderLeaveQty, counterOrder.leaveQty)
 	  List(orderChange, counterOrderChange)

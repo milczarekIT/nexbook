@@ -14,7 +14,7 @@
     </appender>
 
     <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-        <file>nexbook.log</file>
+        <file>logs/nexbook.log</file>
         <append>false</append>
         <encoder>
             <pattern>${defaultPattern}</pattern>
@@ -27,7 +27,7 @@
     </appender>
 
     <appender name="TRADES" class="ch.qos.logback.core.FileAppender">
-        <file>trades.log</file>
+        <file>logs/trades.log</file>
         <append>false</append>
         <encoder>
             <pattern>%d{HH:mm:ss.SSS} %msg%n</pattern>

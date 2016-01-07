@@ -8,7 +8,7 @@ import quickfix.fix44.{NewOrderSingle, OrderCancelRequest}
 class FixMessageHandler(orderHandlersModule: OrderHandlersModule, fixOrderConverter: FixOrderConverter) extends Application {
 
   val logger = LoggerFactory.getLogger(classOf[FixMessageHandler])
-  val newOrderHandlers = orderHandlersModule.newOrderHandlers
+  val newOrderHandler = orderHandlersModule.newOrderHandler
 
   override def onCreate(sessionId: SessionID) {
 	logger.info(s"FixOrderHandler Session Created with SessionID: $sessionId")
@@ -56,13 +56,13 @@ class FixMessageHandler(orderHandlersModule: OrderHandlersModule, fixOrderConver
   }
 
   def onMessage(order: NewOrderSingle, sessionID: SessionID) {
-	logger.debug(s"onMessage: ${System.currentTimeMillis} handled message $order from: ${sessionID.getTargetCompID}")
-	newOrderHandlers.foreach(_.handleNewOrder(fixOrderConverter convert order))
+	logger.debug(s"${order.getClOrdID.getValue} - onMessage: handled message - $order from: ${sessionID.getSenderCompID}")
+	newOrderHandler.handleNewOrder(fixOrderConverter convert order)
   }
 
   def onMessage(orderCancel: OrderCancelRequest, sessionID: SessionID) = {
-	logger.debug(s"onMessage: ${System.currentTimeMillis} handled message $orderCancel from: ${sessionID.getTargetCompID}")
-	newOrderHandlers.foreach(_.handleNewOrderCancel(fixOrderConverter convert orderCancel))
+	logger.debug(s"${orderCancel.getClOrdID.getValue} - onMessage: handled message with clOrdID: $orderCancel from: ${sessionID.getSenderCompID}")
+	newOrderHandler.handleNewOrderCancel(fixOrderConverter convert orderCancel)
   }
 
 }

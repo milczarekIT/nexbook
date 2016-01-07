@@ -28,7 +28,7 @@ class OrderHandler(orderRepositoryResolver: OrderRepositoryResolver, orderBookRe
 		case l: NewLimitOrder => new LimitOrder(l, sequencer.nextValue)
 		case m: NewMarketOrder => new MarketOrder(m, sequencer.nextValue)
 	  }
-	  logger.debug(s"Handled order SUCCESS: $order from: ${order.connector}")
+	  logger.debug(s"${order.clOrdId} Handled order SUCCESS: $order from: ${order.connector}")
 	  val acceptedOrder = acceptOrder(newOrder)
 	  orderBookResponseHandlers.foreach(_.handle(OrderAcceptResponse(acceptedOrder)))
 	  orderRepository add acceptedOrder

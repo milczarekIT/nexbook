@@ -16,7 +16,7 @@ class AkkaModule extends Module with DelegatorsProvider {
 
   override def module: Module = this
 
-  override def newOrderHandlers: List[NewOrderHandler] = List(new AkkaNewOrderHandler(orderHandlers))
+  override def newOrderHandler: NewOrderHandler = new AkkaNewOrderHandler(orderHandlers)
 
   override def orderBookResponseHandlers: List[Handler[OrderBookResponse]] = List(new AkkaOrderBookResponseHandler(orderResponseHandlers))
 

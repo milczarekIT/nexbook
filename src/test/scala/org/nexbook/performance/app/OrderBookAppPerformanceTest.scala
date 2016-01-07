@@ -3,6 +3,7 @@ package org.nexbook.performance.app
 import org.nexbook.app.{AppConfig, OrderBookApp}
 import org.nexbook.fix.FixMessageHandler
 import org.nexbook.performance.PerformanceTest
+import org.nexbook.performance.result.ResultLogger
 import org.nexbook.tags.Performance
 import org.nexbook.testutils.FixMessageProvider
 import org.slf4j.LoggerFactory
@@ -14,9 +15,12 @@ import quickfix.{Message, SessionID}
   */
 class OrderBookAppPerformanceTest extends PerformanceTest {
 
+  val resultLogger = new ResultLogger
   System.setProperty("config.name", "nexbook")
   val logger = LoggerFactory.getLogger(classOf[OrderBookAppPerformanceTest])
+  val appRoot = ScriptRunner.executeScript("app-root.sh")
   val testDataPath = "src/test/resources/data/orders8_100k.txt"
+  val resultLog = s"$appRoot/logs/test/result.log"
   val dbCollections = List("orders", "executions")
   val expectedTotalOrdersCount = 100000
 
@@ -49,16 +53,14 @@ class OrderBookAppPerformanceTest extends PerformanceTest {
   }
 
   class AppProgressChecker {
-	val appRoot = ScriptRunner.executeScript("app-root.sh")
 	val scriptsPath = "src/test/resources/scripts"
 	val logFile = "nexbook.log"
 
 	import sys.process._
 
-	val phraseFMH = "FixMessageHandler - onMessage:"
-	val phraseME = "MatchingEngine - Order processed"
-	val phraseTDS = "TradeDatabaseSaver - Saved order"
-	val phraseNotApprovedCancel = "MatchingEngine - Unable to cancel order"
+	val phraseFMH = "FixMessageHandler - .* - onMessage:"
+	val phraseME = "MatchingEngine - .* - Order processed"
+	val phraseTDS = "TradeDatabaseSaver - .* - Saved order"
 
 	def execute() = {
 	  Thread.sleep(20000)
@@ -83,7 +85,7 @@ class OrderBookAppPerformanceTest extends PerformanceTest {
 	  val execTime = Duration(endTime - startTime, NANOSECONDS)
 	  val throughput = (expectedTotalOrdersCount / execTime.toMicros.toDouble * Duration(1, SECONDS).toMicros).toInt
 	  logger.info(s"Duration: ${execTime.toMillis}ms. Throughput: $throughput orders/s")
-
+	  resultLogger.logResultToFile(expectedTotalOrdersCount, resultLog, writeHeader = true)
 	}
 
 	def isAppFinished: Boolean = {
@@ -98,9 +100,9 @@ class OrderBookAppPerformanceTest extends PerformanceTest {
 	}
 
 	def countOccurrencesInLogFile(phrase: String): Int = {
-	  val cmd = s"cp $appRoot/$logFile $appRoot/temp.log && less $appRoot/temp.log | grep '$phrase' | wc -l"
+	  val cmd = s"cp $appRoot/logs/$logFile $appRoot/logs/temp.log && less $appRoot/logs/temp.log | grep '$phrase' | wc -l"
 	  val output = (stringSeqToProcess(Seq("bash", "-c", cmd)) !!).trim
-	  (stringSeqToProcess(Seq("bash", "-c", s"rm -rf $appRoot/temp.log")) !)
+	  (stringSeqToProcess(Seq("bash", "-c", s"rm -rf $appRoot/logs/temp.log")) !)
 	  if (!output.matches("\\d+")) {
 		logger.warn(s"returned output: $output for $phrase")
 		0
@@ -108,12 +110,12 @@ class OrderBookAppPerformanceTest extends PerformanceTest {
 	}
 
 	def findFirstOccurrenceInLogFile(phrase: String): String = {
-	  val cmd = s"less $appRoot/$logFile | grep '$phrase' | head -n 1"
+	  val cmd = s"less $appRoot/logs/$logFile | grep '$phrase' | head -n 1"
 	  (stringSeqToProcess(Seq("bash", "-c", cmd)) !!).trim
 	}
 
 	def findLastOccurrenceInLogFile(phrase: String): String = {
-	  val cmd = s"less $appRoot/$logFile | grep '$phrase' | tail -n 1"
+	  val cmd = s"less $appRoot/logs/$logFile | grep '$phrase' | tail -n 1"
 	  (stringSeqToProcess(Seq("bash", "-c", cmd)) !!).trim
 	}
   }

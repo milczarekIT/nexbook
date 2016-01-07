@@ -10,13 +10,13 @@ import org.nexbook.orderchange.OrderChangeCommand
 import org.nexbook.orderchange.pubsub.PubSubOrderChangeHandler
 
 /**
-  * Created by milczu on 12/21/15.
+  * Created by milczu on 21.12.15.
   */
 class PubSubModule extends Module with DelegatorsProvider {
 
   override def module: Module = this
 
-  override def newOrderHandlers: List[NewOrderHandler] = List(new PubSubNewOrderHandler(orderHandlers))
+  override def newOrderHandler: NewOrderHandler = new PubSubNewOrderHandler(orderHandlers)
 
   override def orderBookResponseHandlers: List[Handler[OrderBookResponse]] = List(new PubSubOrderBookResponseHandler(orderResponseHandlers))
 

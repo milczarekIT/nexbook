@@ -7,6 +7,6 @@ import org.nexbook.neworderhandler.NewOrderHandler
   */
 trait OrderHandlersModule {
 
-  def newOrderHandlers: List[NewOrderHandler]
+  def newOrderHandler: NewOrderHandler
 
 }
