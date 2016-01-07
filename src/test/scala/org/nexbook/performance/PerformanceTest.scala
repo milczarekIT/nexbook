@@ -17,7 +17,7 @@ trait PerformanceTest extends WordSpecLike with Matchers with Timeouts {
   def asyncExecute(threadName: String)(f: => Any): Thread = {
 	val thread = new Thread(new Runnable {
 	  override def run(): Unit = f
-	})
+	}, threadName)
 	thread.start()
 	thread
   }

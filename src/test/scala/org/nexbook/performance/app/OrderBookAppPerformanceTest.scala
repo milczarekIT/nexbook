@@ -2,71 +2,50 @@ package org.nexbook.performance.app
 
 import org.nexbook.app.{AppConfig, OrderBookApp}
 import org.nexbook.fix.FixMessageHandler
-import org.nexbook.tags.{Integration, Performance}
+import org.nexbook.performance.PerformanceTest
+import org.nexbook.tags.Performance
 import org.nexbook.testutils.FixMessageProvider
-import org.scalatest.concurrent.Timeouts
-import org.scalatest.{FlatSpec, Matchers}
 import org.slf4j.LoggerFactory
-import quickfix.field.MsgType
 import quickfix.{Message, SessionID}
 
 
 /**
   * Created by milczu on 1/2/16.
   */
-class OrderBookAppPerformanceTest extends FlatSpec with Matchers with Timeouts {
+class OrderBookAppPerformanceTest extends PerformanceTest {
 
   System.setProperty("config.name", "nexbook")
   val logger = LoggerFactory.getLogger(classOf[OrderBookAppPerformanceTest])
   val testDataPath = "src/test/resources/data/orders8_100k.txt"
   val dbCollections = List("orders", "executions")
-  val expectedTotalOrdersCount = 100000 //95248 + 4752 // Orders: 95248, Cancels: 4752, total: 100000
+  val expectedTotalOrdersCount = 100000
 
   import org.scalatest.time.SpanSugar._
 
-  "testData orders8_2k.fix" should "contains 95248 NewOrderSingle and 4752 OrderCancelRequest" taggedAs Integration in {
-	logger.info(s"load test data: $testDataPath")
-	val messages: List[Message] = FixMessageProvider.get(testDataPath).map(_._1)
+  "OrderBook" should  {
+	"work fast!" taggedAs Performance in {
+	  failAfter(300 seconds) {
+		logger.info("Test run!")
+		dbCollections.foreach(MongodbTestUtils.dropCollection)
 
-	messages should have size expectedTotalOrdersCount
+		logger.debug("Load all FIX messages for test")
+		val messages: List[(Message, SessionID)] = FixMessageProvider.get(testDataPath)
+		logger.debug("FIX messages for test loaded")
 
-	val countsByMsgType: Map[String, Int] = messages.groupBy(m => m.getHeader.getField(new MsgType()).getValue).map(e => e._1 -> e._2.size)
+		asyncExecute("OrderBookApp") { OrderBookApp.main(Array()) }
+		val fixMessageHandler: FixMessageHandler = OrderBookApp.fixMessageHandler
 
-	//	countsByMsgType("D") should equal(95248)
-	//	countsByMsgType("F") should equal(4752)
-
-  }
-
-  "OrderBook" should "work fast!" taggedAs Performance in {
-	failAfter(600 seconds) {
-	  logger.info("Test run!")
-	  dbCollections.foreach(MongodbTestUtils.dropCollection)
-
-	  logger.debug("Load all FIX messages for test")
-	  val messages: List[(Message, SessionID)] = FixMessageProvider.get(testDataPath)
-	  logger.debug("FIX messages for test loaded")
-
-	  new AppRunner().start()
-	  val fixMessageHandler: FixMessageHandler = OrderBookApp.fixMessageHandler
-
-	  new Thread(new Runnable {
-		override def run(): Unit = {
-		  logger.info("Apply FIX messages")
-		  messages.foreach(m => fixMessageHandler.fromApp(m._1, m._2))
-		  logger.info("Applied FIX messages")
+		asyncExecute("Async FIX message applier") {
+			logger.info("Apply FIX messages")
+			messages.foreach(m => fixMessageHandler.fromApp(m._1, m._2))
+			logger.info("Applied FIX messages")
 		}
-	  }, "Async FIX message applier").start()
 
+		new AppProgressChecker().execute()
 
-
-	  new AppProgressChecker().execute()
-
-	  OrderBookApp.stop()
+		OrderBookApp.stop()
+	  }
 	}
-  }
-
-  class AppRunner extends Thread("OrderBookApp") {
-	override def run(): Unit = OrderBookApp.main(Array())
   }
 
   class AppProgressChecker {

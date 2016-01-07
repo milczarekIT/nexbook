@@ -42,6 +42,7 @@ object AppConfig {
   lazy val runningMode: RunningMode = RunningMode.fromString(rootConfig.getString("running"))
   lazy val repositoryCollectionType: RepositoryCollectionType = RepositoryCollectionType.fromString(rootConfig.getString("repositoryCollectionType"))
   lazy val dbPersist: Boolean = rootConfig.getBoolean("dbPersist")
+  lazy val roundRobinRouterPool: Int = rootConfig.getInt("akka.round-robin-router-pool")
   private lazy val (name, rootConfig) = new AppConfig().init()
   val configName = name
   protected val defaultConfigName = "nexbook"

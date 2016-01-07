@@ -1,12 +1,10 @@
 package org.nexbook.performance.repository
 
 import org.nexbook.domain.Order
-import org.nexbook.performance.StopWatch
+import org.nexbook.performance.{PerformanceTest, StopWatch}
 import org.nexbook.repository._
 import org.nexbook.tags.Performance
 import org.nexbook.testutils.OrderProvider
-import org.scalatest.concurrent.Timeouts
-import org.scalatest.{Matchers, WordSpecLike}
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.duration._
@@ -16,7 +14,7 @@ import scala.util.Random
 /**
   * Created by milczu on 03.01.16.
   */
-class OrderInMemoryRepositoryTest extends WordSpecLike with Matchers with Timeouts with StopWatch {
+class OrderInMemoryRepositoryTest extends PerformanceTest with StopWatch {
 
   val logger = LoggerFactory.getLogger(classOf[OrderInMemoryRepositoryTest])
 

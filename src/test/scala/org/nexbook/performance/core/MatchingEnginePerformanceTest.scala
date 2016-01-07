@@ -1,15 +1,13 @@
 package org.nexbook.performance.core
 
 import org.nexbook.core.{MatchingEngine, OrderBook}
-import org.nexbook.performance.StopWatch
+import org.nexbook.performance.{PerformanceTest, StopWatch}
 import org.nexbook.repository.mutable.OrderInMemoryRepository
 import org.nexbook.repository.{ExecutionDatabaseRepository, OrderDatabaseRepository}
 import org.nexbook.sequence.SequencerFactory
 import org.nexbook.tags.Performance
 import org.nexbook.testutils.OrderProvider
-import org.scalatest.concurrent.Timeouts
 import org.scalatest.mock.MockitoSugar._
-import org.scalatest.{Matchers, WordSpecLike}
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.duration._
@@ -17,7 +15,7 @@ import scala.concurrent.duration._
 /**
   * Created by milczu on 05.01.16.
   */
-class MatchingEnginePerformanceTest extends WordSpecLike with Matchers with Timeouts with StopWatch {
+class MatchingEnginePerformanceTest extends PerformanceTest with StopWatch {
 
   val logger = LoggerFactory.getLogger(classOf[MatchingEnginePerformanceTest])
   val orders = OrderProvider.get(50000) //.filter(_.symbol == "EUR/USD").take(12000)
