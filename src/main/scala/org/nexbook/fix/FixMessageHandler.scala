@@ -62,7 +62,7 @@ class FixMessageHandler(orderHandlersModule: OrderHandlersModule, fixOrderConver
 
   def onMessage(orderCancel: OrderCancelRequest, sessionID: SessionID) = {
 	logger.debug(s"onMessage: ${System.currentTimeMillis} handled message $orderCancel from: ${sessionID.getTargetCompID}")
-	//newOrderHandlers.foreach(_.handleNewOrderCancel(fixOrderConverter convert orderCancel))
+	newOrderHandlers.foreach(_.handleNewOrderCancel(fixOrderConverter convert orderCancel))
   }
 
 }
