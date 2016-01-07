@@ -32,8 +32,6 @@ class OrderDatabaseRepository extends DatabaseRepository[Order] with OrderReposi
   }
 
   def updateStatusAndLeaveQty(tradeID: Long, status: OrderStatus, leaveQty: Double, prevStatus: OrderStatus, prevLeaveQty: Double): Boolean = {
-	val byId = findById(tradeID)
-	logger.info(s"updating: $tradeID. found: $byId")
 	val query = MongoDBObject("_id" -> tradeID, "status" -> prevStatus.toString, "leaveQty" -> prevLeaveQty)
 	val update = Seq[(String, Any)](("status", status.toString), ("leaveQty", leaveQty))
 	collection.findAndModify(query, $set(update: _*)).nonEmpty
