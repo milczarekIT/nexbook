@@ -3,7 +3,7 @@ package org.nexbook.repository
 import org.nexbook.domain.{Order, OrderStatus}
 
 
-class OrderChainedRepository(inMemoryRepository: OrderInMemoryRepository, databaseRepository: OrderDatabaseRepository) extends OrderRepository {
+class OrderChainedRepository(val inMemoryRepository: OrderInMemoryRepository, databaseRepository: OrderDatabaseRepository) extends OrderRepository {
 
   def add(order: Order) = {
 	inMemoryRepository add order

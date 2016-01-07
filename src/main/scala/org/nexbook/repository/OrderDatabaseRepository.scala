@@ -5,12 +5,14 @@ import java.util.Date
 import com.mongodb.casbah.Imports
 import org.joda.time.DateTime
 import org.nexbook.domain._
+import org.slf4j.LoggerFactory
 
 /**
   * Created by milczu on 07.12.15.
   */
 class OrderDatabaseRepository extends DatabaseRepository[Order] with OrderRepository {
 
+  val logger = LoggerFactory.getLogger(classOf[OrderDatabaseRepository])
   import com.mongodb.casbah.Imports._
 
   override protected val collectionName: String = "orders"
@@ -25,14 +27,16 @@ class OrderDatabaseRepository extends DatabaseRepository[Order] with OrderReposi
 
   override def updateStatus(tradeID: Long, status: OrderStatus, prevStatus: OrderStatus): Boolean = {
 	val query = MongoDBObject("_id" -> tradeID, "status" -> prevStatus.toString)
-	val update = MongoDBObject("status" -> status.toString)
-	collection.findAndModify(query, update).nonEmpty
+	val update = Seq[(String, Any)](("status", status.toString))
+	collection.findAndModify(query, $set(update: _*)).nonEmpty
   }
 
-  def updateStatusAndLeaveQty(tradeID: Long, status: OrderStatus, prevStatus: OrderStatus, prevLeaveQty: Double, leaveQty: Double): Boolean = {
+  def updateStatusAndLeaveQty(tradeID: Long, status: OrderStatus, leaveQty: Double, prevStatus: OrderStatus, prevLeaveQty: Double): Boolean = {
+	val byId = findById(tradeID)
+	logger.info(s"updating: $tradeID. found: $byId")
 	val query = MongoDBObject("_id" -> tradeID, "status" -> prevStatus.toString, "leaveQty" -> prevLeaveQty)
-	val update = MongoDBObject("status" -> status.toString, "leaveQty" -> leaveQty)
-	collection.findAndModify(query, update).nonEmpty
+	val update = Seq[(String, Any)](("status", status.toString), ("leaveQty", leaveQty))
+	collection.findAndModify(query, $set(update: _*)).nonEmpty
   }
 
   private def convertToMongoDbObject(o: Order): MongoDBObject = o match {

@@ -1,8 +1,6 @@
 package org.nexbook.performance.app
 
-import org.joda.time.LocalTime
-import org.joda.time.format.DateTimeFormat
-import org.nexbook.app.OrderBookApp
+import org.nexbook.app.{AppConfig, OrderBookApp}
 import org.nexbook.fix.FixMessageHandler
 import org.nexbook.tags.{Integration, Performance}
 import org.nexbook.testutils.FixMessageProvider
@@ -32,7 +30,7 @@ class OrderBookAppPerformanceTest extends FlatSpec with Matchers with Timeouts {
 
 	messages should have size expectedTotalOrdersCount
 
-	val countsByMsgType: Map[String, Int] = messages.groupBy(m => m.getHeader.getField(new MsgType()).getValue).map(e => e._1 -> e._2.size).toMap
+	val countsByMsgType: Map[String, Int] = messages.groupBy(m => m.getHeader.getField(new MsgType()).getValue).map(e => e._1 -> e._2.size)
 
 	//	countsByMsgType("D") should equal(95248)
 	//	countsByMsgType("F") should equal(4752)
@@ -86,7 +84,7 @@ class OrderBookAppPerformanceTest extends FlatSpec with Matchers with Timeouts {
 	def execute() = {
 	  Thread.sleep(20000)
 	  while (!isAppFinished) {
-		val countTDS = countOccurrencesInLogFile(phraseTDS)
+		val countTDS = MongodbTestUtils.count("orders")
 		val countME = countOccurrencesInLogFile(phraseME)
 		val countFMH = countOccurrencesInLogFile(phraseFMH)
 
@@ -98,30 +96,24 @@ class OrderBookAppPerformanceTest extends FlatSpec with Matchers with Timeouts {
 	  val startLine = findFirstOccurrenceInLogFile(phraseFMH)
 	  val endLine = findLastOccurrenceInLogFile(phraseME)
 
-	  def extractTimeFromLogFile(line: String): LocalTime = LocalTime.parse(line.split(" ")(0), DateTimeFormat.forPattern("HH:mm:ss.SSS"))
 	  def extractNanoTimeFromLogFile(line: String): Long = line.split(" ")(1).toLong
 
 	  val startTime = extractNanoTimeFromLogFile(startLine)
 	  val endTime = extractNanoTimeFromLogFile(endLine)
-	  logger.info(s"Start: $startTime")
-	  logger.info(s"End: $endTime")
 	  import scala.concurrent.duration._
 	  val execTime = Duration(endTime - startTime, NANOSECONDS)
 	  val throughput = (expectedTotalOrdersCount / execTime.toMicros.toDouble * Duration(1, SECONDS).toMicros).toInt
-	  logger.info(s"Exec time: ${execTime.toMillis}ms. Throughput: $throughput orders/s")
+	  logger.info(s"Duration: ${execTime.toMillis}ms. Throughput: $throughput orders/s")
 
 	}
 
 	def isAppFinished: Boolean = {
 	  logger.info("executing isAppFinished")
-	  def allOrdersProcessedInFixMessageHandler: Boolean = countOccurrencesInLogFile(phraseFMH) >= expectedTotalOrdersCount
-	  def allOrdersHandlerInMatchingEngine: Boolean = countOccurrencesInLogFile(phraseME) >= 49996 //expectedTotalOrdersCount
-	  def allOrdersSavedInDb: Boolean = {
-		val notApprovedCancel = countOccurrencesInLogFile(phraseNotApprovedCancel)
-		countOccurrencesInLogFile(phraseTDS) >= (expectedTotalOrdersCount - notApprovedCancel)
-	  }
+	  def allOrdersProcessedInFixMessageHandler: Boolean = countOccurrencesInLogFile(phraseFMH) == expectedTotalOrdersCount
+	  def allOrdersHandlerInMatchingEngine: Boolean = countOccurrencesInLogFile(phraseME) == expectedTotalOrdersCount
+	  def allOrdersSavedInDb: Boolean = !AppConfig.dbPersist || MongodbTestUtils.count("orders") == expectedTotalOrdersCount
 
-	  def appFinishedConditions: List[Boolean] = List(allOrdersProcessedInFixMessageHandler, allOrdersHandlerInMatchingEngine) // List(allOrdersProcessedInFixMessageHandler, allOrdersHandlerInMatchingEngine, allOrdersSavedInDb)
+	  def appFinishedConditions: List[Boolean] = List(allOrdersProcessedInFixMessageHandler, allOrdersHandlerInMatchingEngine, allOrdersSavedInDb) // List(allOrdersProcessedInFixMessageHandler, allOrdersHandlerInMatchingEngine, allOrdersSavedInDb)
 
 	  appFinishedConditions.reduce(_ && _)
 	}

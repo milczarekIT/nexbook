@@ -19,7 +19,6 @@ trait DelegatorsProvider extends BasicComponentProvider {
 	  case Live => List(wire[JsonFileLogger], wire[TradeDatabaseSaver], wire[FixMessageResponseSender])
 	  case Test => List(wire[JsonFileLogger], wire[TradeDatabaseSaver])
 	}
-
   }
 
   def orderChangeCommandHandlers: List[Handler[OrderChangeCommand]] = List(wire[DbUpdateOrderChangeHandler])

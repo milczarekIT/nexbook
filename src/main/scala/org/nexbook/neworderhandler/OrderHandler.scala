@@ -1,9 +1,10 @@
 package org.nexbook.neworderhandler
 
+import org.nexbook.app.OrderRepositoryResolver
 import org.nexbook.core.Handler
 import org.nexbook.domain._
 import org.nexbook.orderbookresponsehandler.response.{OrderAcceptResponse, OrderBookResponse, OrderValidationRejectionResponse}
-import org.nexbook.repository.{MatchingEnginesRepository, OrderInMemoryRepository}
+import org.nexbook.repository.MatchingEnginesRepository
 import org.nexbook.sequence.SequencerFactory
 import org.nexbook.utils.{Clock, NewOrderValidator, ValidationException}
 import org.slf4j.LoggerFactory
@@ -11,7 +12,7 @@ import org.slf4j.LoggerFactory
 import scala.util.{Failure, Success}
 
 
-class OrderHandler(orderRepository: OrderInMemoryRepository, orderBookResponseHandlers: List[Handler[OrderBookResponse]], sequencerFactory: SequencerFactory, clock: Clock, matchingEnginesRepository: MatchingEnginesRepository) extends NewOrderHandler {
+class OrderHandler(orderRepositoryResolver: OrderRepositoryResolver, orderBookResponseHandlers: List[Handler[OrderBookResponse]], sequencerFactory: SequencerFactory, clock: Clock, matchingEnginesRepository: MatchingEnginesRepository) extends NewOrderHandler {
 
   val logger = LoggerFactory.getLogger(classOf[OrderHandler])
 
@@ -19,6 +20,7 @@ class OrderHandler(orderRepository: OrderInMemoryRepository, orderBookResponseHa
 
   val sequencer = sequencerFactory sequencer tradeIDSequencerName
   val orderValidator = new NewOrderValidator
+  val orderRepository = orderRepositoryResolver.orderRepository
 
   override def handleNewOrder(newOrder: NewOrder) {
 	def onValidationSuccess(order: NewOrder) {
@@ -36,7 +38,6 @@ class OrderHandler(orderRepository: OrderInMemoryRepository, orderBookResponseHa
 	  logger.debug(s"Handled order [ValidationException]: $order, validationException: ${e.getMessage}")
 	  orderBookResponseHandlers.foreach(_.handle(OrderValidationRejectionResponse(OrderValidationRejection(newOrder, e.getMessage))))
 	}
-
 
 	orderValidator.validate(newOrder) match {
 	  case Success(o) => onValidationSuccess(o)

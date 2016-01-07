@@ -5,23 +5,21 @@ import org.nexbook.app.AppConfig
 import org.nexbook.domain._
 import org.nexbook.orderbookresponsehandler.response.{OrderAcceptResponse, OrderBookResponse, OrderExecutionResponse, OrderRejectionResponse}
 import org.nexbook.orderchange.{OrderChange, OrderChangeCommand, OrderFillChange}
-import org.nexbook.repository.OrderInMemoryRepository
+import org.nexbook.repository.OrderRepository
 import org.nexbook.sequence.SequencerFactory
 import org.slf4j.LoggerFactory
 
 import scala.math.BigDecimal.RoundingMode
 
-class MatchingEngine(orderRepository: OrderInMemoryRepository, sequencerFactory: SequencerFactory, book: OrderBook, orderBookResponseHandlers: List[Handler[OrderBookResponse]], orderChangeHandlers: List[Handler[OrderChangeCommand]]) {
+class MatchingEngine(orderRepository: OrderRepository, sequencerFactory: SequencerFactory, book: OrderBook, orderBookResponseHandlers: List[Handler[OrderBookResponse]], orderChangeHandlers: List[Handler[OrderChangeCommand]]) {
 
   val logger = LoggerFactory.getLogger(classOf[MatchingEngine])
 
   import org.nexbook.sequence.SequencerFactory._
-
   val tradeIDSequencer = sequencerFactory sequencer tradeIDSequencerName
   val execIDSequencer = sequencerFactory sequencer execIDSequencerName
 
   def processOrder(order: Order) = {
-	orderRepository add order
 	order match {
 	  case cancel: OrderCancel => tryCancel(cancel)
 	  case _ =>
@@ -54,10 +52,9 @@ class MatchingEngine(orderRepository: OrderInMemoryRepository, sequencerFactory:
 		orderRepository.findById(orderCancel.dealID) match {
 	  		  case Some(o) => logger.debug(s"Unable to cancel order: ${orderCancel.dealID}. Order to not in book. Cancelling order: ${orderCancel.tradeID}. Orig Order status ${o.status}")
 	  		  case None => logger.debug(s"Unable to cancel order: ${orderCancel.dealID}. Order to cancel not found. Cancelling order: ${orderCancel.tradeID}")
-	  		}
+		}
 	}
   }
-
 
   def dealDoneToExecutions(dealDone: DealDone): List[OrderExecution] = {
 	val buyExecution = new OrderExecution(tradeIDSequencer.nextValue, dealDone.execID, dealDone.buy, dealDone.dealSize, dealDone.dealPrice, dealDone.executionTime)
@@ -116,6 +113,11 @@ class MatchingEngine(orderRepository: OrderInMemoryRepository, sequencerFactory:
 		book removeTop counterOrder.side
 	  } else {
 		counterOrder.updateStatus(Partial)
+	  }
+	  if(order.leaveQty == 0.00) {
+		order.updateStatus(Filled)
+	  } else {
+		order.updateStatus(Partial)
 	  }
 	  val orderChange = new OrderFillChange(order.tradeID, prevOrderStatus, order.status, prevOrderLeaveQty, order.leaveQty)
 	  val counterOrderChange = new OrderFillChange(counterOrder.tradeID, prevCounterOrderStatus, counterOrder.status, prevCounterOrderLeaveQty, counterOrder.leaveQty)

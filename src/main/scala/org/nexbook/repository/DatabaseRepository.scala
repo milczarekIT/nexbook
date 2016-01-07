@@ -22,9 +22,7 @@ trait DatabaseRepository[T] {
   protected val serialize: Serialize
   protected val deserialize: Deserialize
 
-  def add(obj: T): Unit = {
-	collection insert serialize(obj)
-  }
+  def add(obj: T): Unit = collection insert serialize(obj)
 
   def findAll(): List[T] = {
 	val cursor = collection.find().sort(MongoDBObject("_id" -> -1)).limit(findAllLimit)
