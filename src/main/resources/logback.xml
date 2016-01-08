@@ -5,7 +5,7 @@
     <logger name="org.nexbook.fix.FixMessageHandler" level="debug" additivity="false">
         <appender-ref ref="FILE_ASYNC"/>
     </logger>
-    <logger name="org.nexbook.core.MatchingEngine" level="debug" additivity="false">
+    <logger name="org.nexbook.core.DefaultMatchingEngine" level="debug" additivity="false">
         <appender-ref ref="FILE_ASYNC"/>
     </logger>
     <logger name="org.nexbook.orderbookresponsehandler.handler.TradeDatabaseSaver" level="debug" additivity="false">

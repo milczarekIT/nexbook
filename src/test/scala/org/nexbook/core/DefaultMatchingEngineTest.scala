@@ -18,7 +18,7 @@ import org.scalatest.{Matchers, WordSpecLike}
 /**
   * Created by milczu on 08.12.15.
   */
-class MatchingEngineTest extends WordSpecLike with Matchers {
+class DefaultMatchingEngineTest extends WordSpecLike with Matchers {
 
   val now = DateTime.now(DateTimeZone.UTC)
   val orderInMemoryRepository = mock[OrderInMemoryRepository]
@@ -33,7 +33,7 @@ class MatchingEngineTest extends WordSpecLike with Matchers {
 	  val orderBook = spy(new OrderBook)
 	  val orderBookResponseHandler = mock[OrderBookResponseHandler]
 	  val orderChangeHandler: Handler[OrderChangeCommand] = mock[Handler[OrderChangeCommand]]
-	  val matchingEngine = new MatchingEngine(orderInMemoryRepository, sequencerFactory, orderBook, List(orderBookResponseHandler), List(orderChangeHandler))
+	  val matchingEngine = new DefaultMatchingEngine(orderInMemoryRepository, sequencerFactory, orderBook, List(orderBookResponseHandler), List(orderChangeHandler))
 
 	  val marketOrder1 = marketOrder()
 
@@ -50,7 +50,7 @@ class MatchingEngineTest extends WordSpecLike with Matchers {
 	  val orderBook = spy(new OrderBook)
 	  val orderBookResponseHandler = mock[OrderBookResponseHandler]
 	  val orderChangeHandler: Handler[OrderChangeCommand] = mock[Handler[OrderChangeCommand]]
-	  val matchingEngine = new MatchingEngine(orderInMemoryRepository, sequencerFactory, orderBook, List(orderBookResponseHandler), List(orderChangeHandler))
+	  val matchingEngine = new DefaultMatchingEngine(orderInMemoryRepository, sequencerFactory, orderBook, List(orderBookResponseHandler), List(orderChangeHandler))
 
 	  val order = limitOrder()
 
@@ -71,7 +71,7 @@ class MatchingEngineTest extends WordSpecLike with Matchers {
 	  val orderBook = spy(new OrderBook)
 	  val orderBookResponseHandler = mock[OrderBookResponseHandler]
 	  val orderChangeHandler: Handler[OrderChangeCommand] = mock[Handler[OrderChangeCommand]]
-	  val matchingEngine = new MatchingEngine(orderInMemoryRepository, sequencerFactory, orderBook, List(orderBookResponseHandler), List(orderChangeHandler))
+	  val matchingEngine = new DefaultMatchingEngine(orderInMemoryRepository, sequencerFactory, orderBook, List(orderBookResponseHandler), List(orderChangeHandler))
 
 	  val price = 4.32
 	  val size = 100
@@ -100,7 +100,7 @@ class MatchingEngineTest extends WordSpecLike with Matchers {
 	  val orderBook = spy(new OrderBook)
 	  val orderBookResponseHandler = mock[OrderBookResponseHandler]
 	  val orderChangeHandler: Handler[OrderChangeCommand] = mock[Handler[OrderChangeCommand]]
-	  val matchingEngine = new MatchingEngine(orderInMemoryRepository, sequencerFactory, orderBook, List(orderBookResponseHandler), List(orderChangeHandler))
+	  val matchingEngine = new DefaultMatchingEngine(orderInMemoryRepository, sequencerFactory, orderBook, List(orderBookResponseHandler), List(orderChangeHandler))
 
 	  val price = 4.32
 	  val size = 100
@@ -128,7 +128,7 @@ class MatchingEngineTest extends WordSpecLike with Matchers {
 	  val orderBook = spy(new OrderBook)
 	  val orderBookResponseHandler = mock[OrderBookResponseHandler]
 	  val orderChangeHandler: Handler[OrderChangeCommand] = mock[Handler[OrderChangeCommand]]
-	  val matchingEngine = new MatchingEngine(orderInMemoryRepository, sequencerFactory, orderBook, List(orderBookResponseHandler), List(orderChangeHandler))
+	  val matchingEngine = new DefaultMatchingEngine(orderInMemoryRepository, sequencerFactory, orderBook, List(orderBookResponseHandler), List(orderChangeHandler))
 
 	  val price = 4.32
 	  val size = 100
@@ -159,7 +159,7 @@ class MatchingEngineTest extends WordSpecLike with Matchers {
 	  val orderBook = spy(new OrderBook)
 	  val orderBookResponseHandler = mock[OrderBookResponseHandler]
 	  val orderChangeHandler: Handler[OrderChangeCommand] = mock[Handler[OrderChangeCommand]]
-	  val matchingEngine = new MatchingEngine(orderInMemoryRepository, sequencerFactory, orderBook, List(orderBookResponseHandler), List(orderChangeHandler))
+	  val matchingEngine = new DefaultMatchingEngine(orderInMemoryRepository, sequencerFactory, orderBook, List(orderBookResponseHandler), List(orderChangeHandler))
 
 	  val price = 4.32
 	  val size = 100
@@ -190,7 +190,7 @@ class MatchingEngineTest extends WordSpecLike with Matchers {
 	  val orderBook = spy(new OrderBook)
 	  val orderBookResponseHandler = mock[OrderBookResponseHandler]
 	  val orderChangeHandler: Handler[OrderChangeCommand] = mock[Handler[OrderChangeCommand]]
-	  val matchingEngine = new MatchingEngine(orderInMemoryRepository, sequencerFactory, orderBook, List(orderBookResponseHandler), List(orderChangeHandler))
+	  val matchingEngine = new DefaultMatchingEngine(orderInMemoryRepository, sequencerFactory, orderBook, List(orderBookResponseHandler), List(orderChangeHandler))
 
 	  val priceBuy = 4.30
 	  val priceSell = 4.40

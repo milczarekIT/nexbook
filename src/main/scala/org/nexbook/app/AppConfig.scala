@@ -43,6 +43,7 @@ object AppConfig {
   lazy val repositoryCollectionType: RepositoryCollectionType = RepositoryCollectionType.fromString(rootConfig.getString("repositoryCollectionType"))
   lazy val dbPersist: Boolean = rootConfig.getBoolean("dbPersist")
   lazy val roundRobinRouterPool: Int = rootConfig.getInt("akka.round-robin-router-pool")
+  lazy val pubSubAsyncPublisher = rootConfig.getBoolean("pubsub.asyncPublisher")
   private lazy val (name, rootConfig) = new AppConfig().init()
   val configName = name
   protected val defaultConfigName = "nexbook"

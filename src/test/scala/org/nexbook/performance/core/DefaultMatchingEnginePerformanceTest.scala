@@ -1,6 +1,6 @@
 package org.nexbook.performance.core
 
-import org.nexbook.core.{MatchingEngine, OrderBook}
+import org.nexbook.core.{DefaultMatchingEngine, OrderBook}
 import org.nexbook.performance.{PerformanceTest, StopWatch}
 import org.nexbook.repository.mutable.OrderInMemoryRepository
 import org.nexbook.repository.{ExecutionDatabaseRepository, OrderDatabaseRepository}
@@ -15,9 +15,9 @@ import scala.concurrent.duration._
 /**
   * Created by milczu on 05.01.16.
   */
-class MatchingEnginePerformanceTest extends PerformanceTest with StopWatch {
+class DefaultMatchingEnginePerformanceTest extends PerformanceTest with StopWatch {
 
-  val logger = LoggerFactory.getLogger(classOf[MatchingEnginePerformanceTest])
+  val logger = LoggerFactory.getLogger(classOf[DefaultMatchingEnginePerformanceTest])
   val orders = OrderProvider.get(50000) //.filter(_.symbol == "EUR/USD").take(12000)
 
   "OrderInMemoryRepository add operation" should {
@@ -25,7 +25,7 @@ class MatchingEnginePerformanceTest extends PerformanceTest with StopWatch {
 	  val attemptsForWarmCpuCache = 2
 	  val repeats = attemptsForWarmCpuCache + 10
 
-	  def measure(matchingEngine: MatchingEngine) = stopwatch {
+	  def measure(matchingEngine: DefaultMatchingEngine) = stopwatch {
 		orders.foreach(matchingEngine.processOrder)
 	  }
 
@@ -37,6 +37,6 @@ class MatchingEnginePerformanceTest extends PerformanceTest with StopWatch {
 	}
   }
 
-  def matchingEngine = new MatchingEngine(new OrderInMemoryRepository, new SequencerFactory(mock[OrderDatabaseRepository], mock[ExecutionDatabaseRepository]), new OrderBook, List(), List())
+  def matchingEngine = new DefaultMatchingEngine(new OrderInMemoryRepository, new SequencerFactory(mock[OrderDatabaseRepository], mock[ExecutionDatabaseRepository]), new OrderBook, List(), List())
 
 }

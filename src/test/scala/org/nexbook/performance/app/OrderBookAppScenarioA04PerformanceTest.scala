@@ -8,10 +8,10 @@ import org.slf4j.LoggerFactory
 /**
   * Created by milczu on 1/2/16.
   */
-class OrderBookAppScenarioA2PerformanceTest extends OrderBookAppPerformanceTest {
+class OrderBookAppScenarioA04PerformanceTest extends OrderBookAppPerformanceTest {
 
-  val logger = LoggerFactory.getLogger(classOf[OrderBookAppScenarioA2PerformanceTest])
-  val scenarioName = "scenario_A_2"
+  val logger = LoggerFactory.getLogger(classOf[OrderBookAppScenarioA04PerformanceTest])
+  val scenarioName = "scenario_A_04"
   System.setProperty("config.name", s"scenarios/$scenarioName")
   val config = ConfigFactory.load(s"config/scenarios/$scenarioName").withFallback(ConfigFactory.load("config/general"))
 
