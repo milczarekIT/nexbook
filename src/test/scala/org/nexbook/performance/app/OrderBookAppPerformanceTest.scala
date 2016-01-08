@@ -1,53 +1,73 @@
 package org.nexbook.performance.app
 
+import com.typesafe.config.Config
 import org.nexbook.app.{AppConfig, OrderBookApp}
 import org.nexbook.fix.FixMessageHandler
 import org.nexbook.performance.PerformanceTest
 import org.nexbook.performance.result.ResultLogger
-import org.nexbook.tags.Performance
 import org.nexbook.testutils.FixMessageProvider
-import org.slf4j.LoggerFactory
+import org.slf4j.Logger
 import quickfix.{Message, SessionID}
 
-
 /**
-  * Created by milczu on 1/2/16.
+  * Created by milczu on 08.01.16.
   */
-class OrderBookAppPerformanceTest extends PerformanceTest {
+trait OrderBookAppPerformanceTest extends PerformanceTest {
 
-  val resultLogger = new ResultLogger
-  System.setProperty("config.name", "nexbook")
-  val logger = LoggerFactory.getLogger(classOf[OrderBookAppPerformanceTest])
   val appRoot = ScriptRunner.executeScript("app-root.sh")
-  val testDataPath = "src/test/resources/data/orders8_100k.txt"
-  val resultLog = s"$appRoot/logs/test/result.log"
+  val resultLogger = new ResultLogger
   val dbCollections = List("orders", "executions")
-  val expectedTotalOrdersCount = 100000
 
-  import org.scalatest.time.SpanSugar._
+  def cleanBeforeTest(): Unit = dbCollections.foreach(MongodbTestUtils.dropCollection)
 
-  "OrderBook" should  {
-	"work fast!" taggedAs Performance in {
-	  failAfter(300 seconds) {
-		logger.info("Test run!")
-		dbCollections.foreach(MongodbTestUtils.dropCollection)
+  def logger: Logger
 
-		logger.debug("Load all FIX messages for test")
-		val messages: List[(Message, SessionID)] = FixMessageProvider.get(testDataPath)
-		logger.debug("FIX messages for test loaded")
+  def benchmarkConfig: Config
 
-		asyncExecute("OrderBookApp") { OrderBookApp.main(Array()) }
-		val fixMessageHandler: FixMessageHandler = OrderBookApp.fixMessageHandler
+  def testDataPath: String
 
-		asyncExecute("Async FIX message applier") {
-			logger.info("Apply FIX messages")
-			messages.foreach(m => fixMessageHandler.fromApp(m._1, m._2))
-			logger.info("Applied FIX messages")
+  def resultLog: String
+
+  def expectedTotalOrdersCount: Int
+
+  val fixMessageApplierThreadPool = 4
+
+  def executeTest() = {
+	logger.info("Test run!")
+	logger.debug("Load all FIX messages for test")
+	val messages: List[(Message, SessionID)] = FixMessageProvider.get(testDataPath)
+	logger.debug("FIX messages for test loaded")
+
+	cleanBeforeTest()
+
+	asyncExecute("OrderBookApp") {
+	  OrderBookApp.main(Array())
+	}
+	applyFixMessages(messages, OrderBookApp.fixMessageHandler)
+
+	new AppProgressChecker().execute()
+
+	resultLogger.logResultToFile(benchmarkConfig, resultLog, writeHeader = true)
+	OrderBookApp.stop()
+  }
+
+
+  def applyFixMessages(messages: List[(Message, SessionID)], fixMessageHandler: FixMessageHandler) = {
+	if (fixMessageApplierThreadPool == 1) {
+	  asyncExecute("Async FIX message applier") {
+		logger.info("Apply FIX messages")
+		messages.foreach(m => fixMessageHandler.fromApp(m._1, m._2))
+		logger.info("Applied FIX messages")
+	  }
+	} else {
+	  val partitionSize = math.ceil(messages.size / fixMessageApplierThreadPool.toDouble).toInt
+	  val messagesPartitions: List[List[(Message, SessionID)]] = messages.grouped(partitionSize).toList
+	  for (part <- messagesPartitions.indices) {
+		asyncExecute(s"Async FIX message applier: $part") {
+		  logger.info("Apply FIX messages")
+		  messagesPartitions(part).foreach(m => fixMessageHandler.fromApp(m._1, m._2))
+		  logger.info(s"Applied FIX messages: $part")
 		}
-
-		new AppProgressChecker().execute()
-
-		OrderBookApp.stop()
 	  }
 	}
   }
@@ -85,7 +105,6 @@ class OrderBookAppPerformanceTest extends PerformanceTest {
 	  val execTime = Duration(endTime - startTime, NANOSECONDS)
 	  val throughput = (expectedTotalOrdersCount / execTime.toMicros.toDouble * Duration(1, SECONDS).toMicros).toInt
 	  logger.info(s"Duration: ${execTime.toMillis}ms. Throughput: $throughput orders/s")
-	  resultLogger.logResultToFile(expectedTotalOrdersCount, resultLog, writeHeader = true)
 	}
 
 	def isAppFinished: Boolean = {
@@ -119,5 +138,4 @@ class OrderBookAppPerformanceTest extends PerformanceTest {
 	  (stringSeqToProcess(Seq("bash", "-c", cmd)) !!).trim
 	}
   }
-
 }

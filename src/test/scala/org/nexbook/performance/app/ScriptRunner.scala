@@ -27,5 +27,11 @@ object ScriptRunner {
   }
 
 
-  def execCommand(command: String): String = (command !!).trim
+  def execCommand(command: String): String = {
+	if(command.split(" ").length == 1) {
+		(command !!).trim
+	} else {
+	  (stringSeqToProcess(Seq("bash", "-c", command)) !!).trim
+	}
+  }
 }

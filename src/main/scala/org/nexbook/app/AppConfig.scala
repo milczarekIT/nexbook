@@ -23,7 +23,7 @@ class AppConfig {
 		defaultConfigName
 	  case Some(cn) => cn
 	}
-	(configName, ConfigFactory.load(s"config/$configName").getConfig("nexbook"))
+	(configName, ConfigFactory.load(s"config/$configName").withFallback(ConfigFactory.load("config/general.conf")).getConfig("nexbook"))
   }
 
   def init(): (String, Config) = (configName, rootConfig)

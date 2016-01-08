@@ -1,5 +1,7 @@
 package org.nexbook.orderbookresponsehandler.handler
 
+import net.liftweb.json.Extraction._
+import net.liftweb.json.Serialization.write
 import org.nexbook.orderbookresponsehandler.response.OrderBookResponse
 import org.nexbook.utils.JsonCustomSerializers
 import org.slf4j.LoggerFactory
@@ -17,9 +19,8 @@ class JsonFileLogger extends OrderBookResponseHandler {
   override def handle(response: OrderBookResponse) = logger.debug(buildLogLine(response.payload))
 
   def buildLogLine(payload: AnyRef): String = {
-	//def asJson(a: AnyRef): String = write(decompose(a))
-	//payload.getClass.getSimpleName + ":" + asJson(payload)
-	payload.toString
+	def asJson(a: AnyRef): String = write(decompose(a))
+	payload.getClass.getSimpleName + ":" + asJson(payload)
   }
 
 }
