@@ -30,7 +30,7 @@ trait OrderBookAppPerformanceTest extends PerformanceTest {
 
   def expectedTotalOrdersCount: Int
 
-  val fixMessageApplierThreadPool = 4
+  val fixMessageApplierThreadPool = 16
 
   def executeTest() = {
 	logger.info("Test run!")

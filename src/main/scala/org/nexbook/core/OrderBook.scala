@@ -53,10 +53,7 @@ class SideOrderBook(ordering: BookOrdering) extends AbstractOrderBook {
 
   def add(order: LimitOrder) = orders += order
 
-  def top: Option[LimitOrder] = orders.toSeq match {
-	case Seq() => None
-	case _ => Some(orders.head)
-  }
+  def top: Option[LimitOrder] = if(orders.isEmpty) None else Some(orders.firstKey)
 
   def removeTop() = if (orders.nonEmpty) orders -= orders.head
 

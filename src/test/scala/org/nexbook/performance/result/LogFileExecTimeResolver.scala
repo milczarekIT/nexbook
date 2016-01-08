@@ -17,7 +17,8 @@ object LogFileExecTimeResolver {
 	def nanoSecondsToMicroMillis(micros: NanoTime) = Duration(micros, NANOSECONDS).toMillis
 	def nanoSecondsToMicroMicros(micros: Microseconds) = Duration(micros, NANOSECONDS).toMicros
 
-	val fmhTimes: Map[ClOrdId, NanoTime] = LogFileTimeResultExtractor.extractTimes(pathToFile, "OrderHandler")
+	//OrderHandler
+	val fmhTimes: Map[ClOrdId, NanoTime] = LogFileTimeResultExtractor.extractTimes(pathToFile, "FixMessageHandler")
 	val meTimes: Map[ClOrdId, NanoTime] = LogFileTimeResultExtractor.extractTimes(pathToFile, "MatchingEngine")
 	Assert.isTrue(fmhTimes.size == expectedResultSize)
 	Assert.isTrue(meTimes.size == expectedResultSize)

@@ -9,6 +9,7 @@ import org.nexbook.repository.OrderRepository
 import org.nexbook.sequence.SequencerFactory
 import org.slf4j.LoggerFactory
 
+import scala.annotation.tailrec
 import scala.math.BigDecimal.RoundingMode
 
 class DefaultMatchingEngine(orderRepository: OrderRepository, sequencerFactory: SequencerFactory, book: OrderBook, orderBookResponseHandlers: List[Handler[OrderBookResponse]], orderChangeHandlers: List[Handler[OrderChangeCommand]]) extends MatchingEngine {
@@ -26,8 +27,7 @@ class DefaultMatchingEngine(orderRepository: OrderRepository, sequencerFactory: 
 		val firstCounterOrder = book top order.side.reverse
 		val unfilledOrder = tryMatch(order, firstCounterOrder)
 		unfilledOrder match {
-		  case Some(unfilled) =>
-			book add unfilled
+		  case Some(unfilled) => book add unfilled
 		  case _ => logger.trace(s"Order ad-hoc filled or rejected: $order")
 		}
 	}
@@ -62,7 +62,7 @@ class DefaultMatchingEngine(orderRepository: OrderRepository, sequencerFactory: 
 	List(buyExecution, sellExecution)
   }
 
-  protected def tryMatch(order: Order, firstCounterOrder: Option[LimitOrder]): Option[LimitOrder] = firstCounterOrder match {
+  @tailrec private def tryMatch(order: Order, firstCounterOrder: Option[LimitOrder]): Option[LimitOrder] = firstCounterOrder match {
 	case None =>
 	  order match {
 		case o: MarketOrder =>
