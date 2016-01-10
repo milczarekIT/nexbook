@@ -3,7 +3,7 @@ package org.nexbook.concepts.pubsub
 import org.nexbook.app.{AppConfig, DelegatorsProvider, Module}
 import org.nexbook.core.Handler
 import org.nexbook.neworderhandler.NewOrderHandler
-import org.nexbook.neworderhandler.pubsub.{AsyncPubSubNewOrderHandler2, PubSubNewOrderHandler}
+import org.nexbook.neworderhandler.pubsub.{AsyncPubSubNewOrderHandler, PubSubNewOrderHandler}
 import org.nexbook.orderbookresponsehandler.pubsub.PubSubOrderBookResponseHandler
 import org.nexbook.orderbookresponsehandler.response.OrderBookResponse
 import org.nexbook.orderchange.OrderChangeCommand
@@ -17,7 +17,7 @@ class PubSubModule extends Module with DelegatorsProvider {
   override def module: Module = this
 
   override def newOrderHandler: NewOrderHandler = {
-	if(AppConfig.pubSubAsyncPublisher) new AsyncPubSubNewOrderHandler2(orderHandlers)
+	if(AppConfig.pubSubAsyncPublisher) new AsyncPubSubNewOrderHandler(orderHandlers)
 	else new PubSubNewOrderHandler(orderHandlers)
   }
 
