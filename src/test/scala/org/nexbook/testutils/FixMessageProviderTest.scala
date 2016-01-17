@@ -1,7 +1,7 @@
 package org.nexbook.testutils
 
 import org.nexbook.tags.Integration
-import org.scalatest.{Matchers, WordSpecLike}
+import org.scalatest.{Matchers, WordSpec}
 import quickfix.Message
 import quickfix.field.OrdType
 import quickfix.fix44.NewOrderSingle
@@ -9,7 +9,7 @@ import quickfix.fix44.NewOrderSingle
 /**
   * Created by milczu on 07.01.16.
   */
-class FixMessageProviderTest extends WordSpecLike with Matchers {
+class FixMessageProviderTest extends WordSpec with Matchers {
 
   type DataType = Message
   

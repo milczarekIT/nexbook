@@ -3,7 +3,7 @@ package org.nexbook.performance
 import org.nexbook.domain.Order
 import org.nexbook.tags.Performance
 import org.nexbook.testutils.OrderProvider
-import org.scalatest.{Matchers, WordSpecLike}
+import org.scalatest.{Matchers, WordSpec}
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable
@@ -12,7 +12,7 @@ import scala.concurrent.duration._
 /**
   * Created by milczu on 04.01.16.
   */
-class VolumeSumTest extends WordSpecLike with Matchers with StopWatch {
+class VolumeSumTest extends WordSpec with Matchers with StopWatch {
 
   val logger = LoggerFactory.getLogger(classOf[VolumeSumTest])
 

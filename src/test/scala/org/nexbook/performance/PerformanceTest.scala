@@ -3,12 +3,12 @@ package org.nexbook.performance
 import java.util.concurrent.atomic.AtomicInteger
 
 import org.scalatest.concurrent.Timeouts
-import org.scalatest.{Matchers, WordSpecLike}
+import org.scalatest.{Matchers, WordSpec}
 
 /**
   * Created by milczu on 07.01.16.
   */
-trait PerformanceTest extends WordSpecLike with Matchers with Timeouts {
+trait PerformanceTest extends WordSpec with Matchers with Timeouts {
 
   val counter = new AtomicInteger
 

@@ -12,13 +12,13 @@ import org.nexbook.repository.mutable.OrderInMemoryRepository
 import org.nexbook.repository.{ExecutionDatabaseRepository, OrderDatabaseRepository}
 import org.nexbook.sequence.SequencerFactory
 import org.scalatest.mock.MockitoSugar._
-import org.scalatest.{Matchers, WordSpecLike}
+import org.scalatest.{Matchers, WordSpec}
 
 
 /**
   * Created by milczu on 08.12.15.
   */
-class DefaultMatchingEngineTest extends WordSpecLike with Matchers {
+class DefaultMatchingEngineTest extends WordSpec with Matchers {
 
   val now = DateTime.now(DateTimeZone.UTC)
   val orderInMemoryRepository = mock[OrderInMemoryRepository]

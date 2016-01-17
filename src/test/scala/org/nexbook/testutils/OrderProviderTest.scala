@@ -2,12 +2,12 @@ package org.nexbook.testutils
 
 import org.nexbook.domain.{Limit, Market, Order, OrderType}
 import org.nexbook.tags.Integration
-import org.scalatest.{Matchers, WordSpecLike}
+import org.scalatest.{Matchers, WordSpec}
 
 /**
   * Created by milczu on 07.01.16.
   */
-class OrderProviderTest extends WordSpecLike with Matchers {
+class OrderProviderTest extends WordSpec with Matchers {
 
   type DataType = Order
   

@@ -7,7 +7,7 @@ import org.scalatest._
 import scala.None
 import scala.collection.immutable.List
 
-class OrderInMemoryRepositoryTest extends WordSpecLike with Matchers {
+class OrderInMemoryRepositoryTest extends WordSpec with Matchers {
 
   val now = DateTime.now(DateTimeZone.UTC)
 

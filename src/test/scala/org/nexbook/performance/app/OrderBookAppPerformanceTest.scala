@@ -9,6 +9,8 @@ import org.nexbook.testutils.FixMessageProvider
 import org.slf4j.Logger
 import quickfix.{Message, SessionID}
 
+import scala.util.Random
+
 /**
   * Created by milczu on 08.01.16.
   */
@@ -30,7 +32,7 @@ trait OrderBookAppPerformanceTest extends PerformanceTest {
 
   def expectedTotalOrdersCount: Int
 
-  val fixMessageApplierThreadPool = 16
+  val fixMessageApplierThreadPool = 3
 
   def executeTest() = {
 	logger.info("Test run!")
@@ -65,7 +67,7 @@ trait OrderBookAppPerformanceTest extends PerformanceTest {
 	  for (part <- messagesPartitions.indices) {
 		asyncExecute(s"Async FIX message applier: $part") {
 		  logger.info("Apply FIX messages")
-		  messagesPartitions(part).foreach(m => fixMessageHandler.fromApp(m._1, m._2))
+		  messagesPartitions(part).foreach { m => fixMessageHandler.fromApp(m._1, m._2); if(Random.nextInt(10) % 3 == 0) Thread.sleep(0,5) else Thread.sleep(0) }
 		  logger.info(s"Applied FIX messages: $part")
 		}
 	  }
