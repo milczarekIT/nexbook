@@ -2,12 +2,14 @@ package org.nexbook.repository.mutable
 
 import org.nexbook.domain.{Order, OrderStatus}
 
+import scala.collection.mutable
+
 class OrderInMemoryRepository extends org.nexbook.repository.OrderInMemoryRepository {
-  val orders = new scala.collection.mutable.HashMap[String, Order]()
+  val orders = new mutable.HashMap[Long, Order]()
 
-  override def add(order: Order) = synchronized { orders(order.clOrdId) = order }
+  override def add(order: Order) = synchronized { orders(order.tradeID) = order }
 
-  override def findByClOrdId(clOrdId: String): Option[Order] = orders.get(clOrdId)
+  override def findByClOrdId(clOrdId: String): Option[Order] = orders.find(_._2.clOrdId == clOrdId).map(_._2)
 
   override def updateStatus(tradeID: Long, newStatus: OrderStatus, oldStatus: OrderStatus): Boolean = {
 	findById(tradeID) match {
@@ -21,7 +23,7 @@ class OrderInMemoryRepository extends org.nexbook.repository.OrderInMemoryReposi
 	}
   }
 
-  override def findById(tradeID: Long): Option[Order] = orders.values.find(_.tradeID == tradeID)
+  override def findById(tradeID: Long): Option[Order] = orders.get(tradeID)
 
   override def findAll: List[Order] = orders.values.toList
 

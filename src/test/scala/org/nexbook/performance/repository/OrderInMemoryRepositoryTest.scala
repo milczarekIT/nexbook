@@ -18,7 +18,7 @@ class OrderInMemoryRepositoryTest extends PerformanceTest with StopWatch {
 
   val logger = LoggerFactory.getLogger(classOf[OrderInMemoryRepositoryTest])
 
-  val ordersCounts = Seq(5000, 50000, 100000)
+  val ordersCounts = Seq(100, 1000, 10000, 100000)
 
   "OrderInMemoryRepository add operation" should {
 	val allOrders = OrderProvider.get(ordersCounts.max)
@@ -34,27 +34,41 @@ class OrderInMemoryRepositoryTest extends PerformanceTest with StopWatch {
 	}
   }
 
-  "OrderInMemoryRepository findByClOrdId operation" should {
-	val findFactor = 0.05
+  "OrderInMemoryRepository findById operation" should {
 	val allOrders = OrderProvider.get(ordersCounts.max)
 
 	for (ordersCount <- ordersCounts) {
 	  val orders = allOrders.take(ordersCount)
-	  val findCount: Int = (findFactor * orders.size).toInt
-	  s"find fast $findCount results for $ordersCount orders in repo" taggedAs Performance in {
-		logger.info(s"====== Performance test for findByClOrdId operation, orders count: $ordersCount. Find factor is: $findFactor, so $findCount find operations will be executed")
+	  s"find fast 100 results for $ordersCount orders in repo" taggedAs Performance in {
+		logger.info(s"====== Performance test for findById operation, orders count: $ordersCount. 100 find operations will be executed")
 
 		orders should have size ordersCount
 		logger.info(s"Loaded $ordersCount orders as test data. Test starting")
 
-		testFindByClOrdIdOperation(orders, findCount)
+		testFindByIdOperation(orders, 100)
+	  }
+	}
+  }
+
+  "OrderInMemoryRepository findByClOrdId operation" should {
+	val allOrders = OrderProvider.get(ordersCounts.max)
+
+	for (ordersCount <- ordersCounts) {
+	  val orders = allOrders.take(ordersCount)
+	  s"find fast 100 results for $ordersCount orders in repo" taggedAs Performance in {
+		logger.info(s"====== Performance test for findByClOrdId operation, orders count: $ordersCount. 100 find operations will be executed")
+
+		orders should have size ordersCount
+		logger.info(s"Loaded $ordersCount orders as test data. Test starting")
+
+		testFindByClOrdIdOperation(orders, 100)
 	  }
 	}
   }
 
   def testAddOperation(orders: List[Order]): Unit = {
 	val attemptsForWarmCpuCache = 2
-	val repeats = attemptsForWarmCpuCache + 5
+	val repeats = attemptsForWarmCpuCache + 10
 
 	def measure(repository: OrderInMemoryRepository, orders: List[Order]): Long = {
 	  val execTime: Long = stopwatch {
@@ -81,26 +95,55 @@ class OrderInMemoryRepositoryTest extends PerformanceTest with StopWatch {
 	}
   }
 
-  def testFindByClOrdIdOperation(orders: List[Order], findCount: Int): Unit = {
+  def testFindByIdOperation(orders: List[Order], findCount: Int): Unit = {
 	val attemptsForWarmCpuCache = 2
-	val repeats = attemptsForWarmCpuCache + 5
+	val repeats = attemptsForWarmCpuCache + 10
 
-	val clOrdIds: List[String] = Random.shuffle(orders).take(findCount).map(_.clOrdId)
+	val tradeIds: List[Long] = Random.shuffle(orders).take(findCount).map(_.tradeID)
 
-	def measure(repository: OrderInMemoryRepository, orders: List[Order], clOrdIds: List[String]): Long = {
+	def measure(repository: OrderInMemoryRepository, orders: List[Order], tradeIds: List[Long]): Long = {
 	  orders.foreach(repository.add)
 	  repository.count should be(orders.size)
 	  stopwatch {
 		failAfter(15 seconds) {
-		  clOrdIds.foreach(repository.findByClOrdId)
+		  tradeIds.foreach(repository.findById)
 		}
 	  }
 	}
 
-	val avgExecTimeSeq = (Seq.fill(repeats)(measure(new mutable.OrderInMemoryRepository, orders, clOrdIds)).drop(attemptsForWarmCpuCache).sum / repeats).nanoseconds.toMicros
+	val avgExecTimeSeq = (Seq.fill(repeats)(measure(new mutable.OrderInMemoryRepository, orders, tradeIds)).drop(attemptsForWarmCpuCache).sum / repeats).nanoseconds.toMicros
 	logger.info(s"avgExecTimeSeq: $avgExecTimeSeq μs")
 
-	val avgExecTimePar = (Seq.fill(repeats)(measure(new mutable.OrderInMemoryParRepository, orders, clOrdIds)).drop(attemptsForWarmCpuCache).sum / repeats).nanoseconds.toMicros
+	val avgExecTimePar = (Seq.fill(repeats)(measure(new mutable.OrderInMemoryParRepository, orders, tradeIds)).drop(attemptsForWarmCpuCache).sum / repeats).nanoseconds.toMicros
+	logger.info(s"avgExecTimePar: $avgExecTimePar μs")
+
+	if (avgExecTimeSeq > avgExecTimePar) {
+	  logFinalResult(avgExecTimeSeq, avgExecTimePar, classOf[mutable.OrderInMemoryRepository])
+	} else {
+	  logFinalResult(avgExecTimePar, avgExecTimeSeq, classOf[mutable.OrderInMemoryParRepository])
+	}
+  }
+
+  def testFindByClOrdIdOperation(orders: List[Order], findCount: Int): Unit = {
+	val attemptsForWarmCpuCache = 2
+	val repeats = attemptsForWarmCpuCache + 10
+
+	val tradeIds: List[String] = Random.shuffle(orders).take(findCount).map(_.clOrdId)
+
+	def measure(repository: OrderInMemoryRepository, orders: List[Order], tradeIds: List[String]): Long = {
+	  orders.foreach(repository.add)
+	  repository.count should be(orders.size)
+	  stopwatch {
+		failAfter(15 seconds) {
+		  tradeIds.foreach(repository.findByClOrdId)
+		}
+	  }
+	}
+
+	val avgExecTimeSeq = (Seq.fill(repeats)(measure(new mutable.OrderInMemoryRepository, orders, tradeIds)).drop(attemptsForWarmCpuCache).sum / repeats).nanoseconds.toMicros
+	logger.info(s"avgExecTimeSeq: $avgExecTimeSeq μs")
+
+	val avgExecTimePar = (Seq.fill(repeats)(measure(new mutable.OrderInMemoryParRepository, orders, tradeIds)).drop(attemptsForWarmCpuCache).sum / repeats).nanoseconds.toMicros
 	logger.info(s"avgExecTimePar: $avgExecTimePar μs")
 
 	if (avgExecTimeSeq > avgExecTimePar) {

@@ -11,7 +11,7 @@ import org.nexbook.neworderhandler.NewOrderHandler
   * Created by milczu on 12/21/15.
   */
 class AsyncPubSubNewOrderHandler(delegators: List[NewOrderHandler]) extends PubSubNewOrderHandler(delegators) {
-  val executors = AppConfig.supportedCurrencyPairs.map(symbol => symbol -> Executors.newSingleThreadScheduledExecutor()).toMap
+  val executors = AppConfig.supportedCurrencyPairs.map(symbol => symbol -> Executors.newFixedThreadPool(64)).toMap
 
   override def handleNewOrder(o: NewOrder): Unit = executors(o.symbol).execute(new Runnable {
 	override def run(): Unit = newOrderPublisher.handle(o)

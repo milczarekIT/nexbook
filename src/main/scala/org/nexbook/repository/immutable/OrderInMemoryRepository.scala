@@ -2,11 +2,10 @@ package org.nexbook.repository.immutable
 
 import org.nexbook.domain.{Order, OrderStatus}
 
-/**
-  * Created by milczu on 03.01.16.
-  */
+import scala.collection.immutable
+
 class OrderInMemoryRepository extends org.nexbook.repository.OrderInMemoryRepository {
-  var orders = new scala.collection.immutable.HashMap[Long, Order]()
+  var orders = new immutable.HashMap[Long, Order]()
 
   override def add(order: Order): Unit = orders.synchronized {
 	orders = orders + (order.tradeID -> order)
