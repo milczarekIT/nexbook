@@ -47,13 +47,14 @@ class OrderBook extends AbstractOrderBook {
 
 }
 
-class SideOrderBook(ordering: BookOrdering) extends AbstractOrderBook {
+class SideOrderBook(bookOrdering: BookOrdering) extends AbstractOrderBook {
 
-  val orders: mutable.SortedSet[LimitOrder] = mutable.TreeSet.empty(ordering.orderOrdering)
+  val orders: mutable.SortedSet[LimitOrder] = mutable.TreeSet.empty(bookOrdering.orderOrdering)
+  val priceLevelsOrdering: Ordering[(Double, Double)] = Ordering.Tuple2(bookOrdering.priceOrdering, bookOrdering.priceOrdering)
 
   def add(order: LimitOrder) = orders += order
 
-  def top: Option[LimitOrder] = if(orders.isEmpty) None else Some(orders.firstKey)
+  def top: Option[LimitOrder] = orders.headOption
 
   def removeTop() = if (orders.nonEmpty) orders -= orders.head
 
@@ -62,7 +63,7 @@ class SideOrderBook(ordering: BookOrdering) extends AbstractOrderBook {
   override def remove(order: LimitOrder): Unit = orders -= order
 
   def priceLevels: List[(Double, Double)] = {
-	orders.groupBy(_.limit).map(e => (e._1, e._2.foldLeft(0.00)(_ + _.leaveQty.toInt))).toList.sorted(Ordering.Tuple2(ordering.priceOrdering, ordering.priceOrdering))
+	orders.groupBy(_.limit).map(e => (e._1, e._2.foldLeft(0.00)(_ + _.leaveQty))).toList.sorted(priceLevelsOrdering)
   }
 
   def depth: Int = orders.groupBy(_.limit).keySet.size
